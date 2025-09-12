@@ -7,7 +7,7 @@ from profiles import make_users
 from optimization_logic import compute_weights, allocate_per_user_day_per_alpha
 
 st.set_page_config(page_title="LimaBlu", layout="wide")
-st.title("LimaBlu — Users")
+st.title("emappa — Users")
 
 # --- Providers (centralized here; import from a data file later) ---
 providers = pd.DataFrame({
