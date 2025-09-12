@@ -6,8 +6,8 @@ import plotly.express as px
 from profiles import make_users
 from optimization_logic import compute_weights, allocate_per_user_day_per_alpha
 
-st.set_page_config(page_title="LimaBlu", layout="wide")
-st.title("emappa — Users")
+st.set_page_config(page_title="e.mappa", layout="wide")
+st.title("e.mappa — Users")
 
 # --- Providers (centralized here; import from a data file later) ---
 providers = pd.DataFrame({
