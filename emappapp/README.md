@@ -1,6 +1,5 @@
 # README.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -45,7 +44,7 @@ These are configured in [src/api/client.ts:11-16](emappa-mobile/src/api/client.t
 
 ### Data Flow Pattern
 
-The app uses a **Repository pattern** with three layers:
+The app uses a Repository pattern with three layers:
 
 1. **API Client** ([src/api/client.ts](emappa-mobile/src/api/client.ts)) - Raw HTTP fetch calls to backend
 2. **Repository** ([src/api/repository.ts](emappa-mobile/src/api/repository.ts)) - Business logic layer with fallback handling
@@ -136,7 +135,7 @@ The app supports three billing models (selectable in Settings):
 
 ## State Management
 
-This app uses **React hooks and local state** (no Redux/Zustand). Services are singleton instances that persist to AsyncStorage:
+This app uses React hooks and local state (no Redux/Zustand). Services are singleton instances that persist to AsyncStorage:
 
 ```typescript
 // Services are initialized in App.tsx on mount
