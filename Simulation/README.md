@@ -1,10 +1,9 @@
-# CLAUDE.md
+# README.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-This repository contains the **e.mappa Trading Platform Simulation** - a proof-of-concept demonstration system for the e.mappa energy aggregation and peer-to-peer trading platform. It simulates a 24-hour operation of the platform with 20 homes in Nyeri, Kenya, showing how the dual-layer system (provider aggregation + P2P trading) optimizes energy distribution and creates value for all stakeholders.
+This repository contains the **e.mappa Platform Simulation** - a proof-of-concept demonstration system for the e.mappa energy aggregation and peer-to-peer trading platform. It simulates a 24-hour operation of the platform with 20 homes in Nyeri, Kenya, showing how the dual-layer system (provider aggregation + P2P trading) optimizes energy distribution and creates value for all stakeholders.
 
 The simulation consists of a complete Python simulation engine and an interactive Streamlit web dashboard for presenting results to stakeholders like KPLC.
 
