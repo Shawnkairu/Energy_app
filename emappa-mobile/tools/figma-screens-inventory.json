@@ -1,0 +1,198 @@
+{
+  "app": "e.mappa / emappa-mobile",
+  "figmaSetup": {
+    "recommendedDeviceFrame": "iPhone 16 / 15 Pro (393 × 852 pt) or your Expo Go device",
+    "layoutTip": "Create one Figma page per major flow, or one row of frames per tab. Leave ~100pt bottom inset for the floating tab bar.",
+    "tabBar": {
+      "labels": ["Home", "Providers", "Usage", "Wallet", "Profile"],
+      "notes": "Floating pill: white fill, ~60pt height, ~40pt horizontal inset, ~30pt corner radius, primary tint for active tab (see globalTheme.colors.primary)."
+    },
+    "pixelWorkflow": [
+      "Run: cd emappa-mobile && npx expo start",
+      "Open each route in Expo Go; screenshot each screen.",
+      "In Figma: File → Place image (or drag) onto a matching device frame; trace or rebuild with auto-layout.",
+      "Use globalTheme + providersTheme below for tokens when redrawing."
+    ],
+    "cursorFigmaMcp": {
+      "workspaceConfig": "emappapp/.cursor/mcp.json → HTTP server https://mcp.figma.com/mcp",
+      "plugin": "emappapp/.cursor/settings.json → plugins.figma.enabled for Figma skills",
+      "steps": [
+        "Restart Cursor or Command Palette: Developer: Reload Window",
+        "Cursor Settings → MCP: enable Figma server; complete login if prompted",
+        "In Agent chat, confirm Figma tools appear (e.g. whoami, get_design_context with a file link)",
+        "Seat/plan affects rate limits — see Figma MCP docs"
+      ]
+    }
+  },
+  "globalTheme": {
+    "colors": {
+      "primary": "#4A5C7A",
+      "secondary": "#A2BFD9",
+      "accent": "#E07856",
+      "background": "#F5F5F5",
+      "surface": "#FFFFFF",
+      "text": "#2C2C2C",
+      "textMuted": "#6B6B6B",
+      "textLight": "#9E9E9E",
+      "soft": "#E0E0E0",
+      "success": "#4CAF50",
+      "warning": "#FDB813",
+      "error": "#F44336"
+    },
+    "homeScreenLocal": {
+      "note": "HomeScreen.tsx uses a separate white/coral palette for the dashboard.",
+      "background": "#FFFFFF",
+      "text": "#1A1A1A",
+      "textMuted": "#6B6B6B",
+      "accent": "#E07856",
+      "accentLight": "#FDF0EC"
+    }
+  },
+  "providersTheme": {
+    "note": "ProvidersScreen.tsx terracotta palette (distinct from global tabs elsewhere).",
+    "primary": "#C4553A",
+    "primaryDark": "#A8402B",
+    "primaryLight": "#E8967A",
+    "primaryPale": "#FCF0EC",
+    "green": "#2A9D6F",
+    "text": "#111111",
+    "textLight": "#AAA4A0",
+    "border": "#F0EDEA",
+    "white": "#FFFFFF"
+  },
+  "screens": [
+    {
+      "id": "auth",
+      "name": "Auth",
+      "route": "RootStack → Auth",
+      "file": "src/screens/AuthScreen.tsx",
+      "sections": [
+        "Brand: e.mappa",
+        "Title: Welcome Back / Create Account",
+        "Email field + password field (icons)",
+        "Primary CTA + toggle sign up",
+        "Demo mode entry"
+      ]
+    },
+    {
+      "id": "home",
+      "name": "Home",
+      "route": "MainTabs → HomeStack → Home",
+      "file": "src/screens/HomeScreen.tsx",
+      "sections": [
+        "Greeting + user context",
+        "Power chart (interactive line), time range chips (1H, 6H, 1D, 1W)",
+        "Solar / grid / battery style metrics",
+        "Actions / links into buy power or related flows"
+      ]
+    },
+    {
+      "id": "buy_power",
+      "name": "Buy Power",
+      "route": "MainTabs → HomeStack → BuyPower",
+      "file": "src/screens/BuyPowerScreen.tsx",
+      "sections": [
+        "Header / back",
+        "Amount presets (KSh)",
+        "Custom input",
+        "GlassCard-style summary",
+        "Purchase CTA"
+      ]
+    },
+    {
+      "id": "billing",
+      "name": "Billing",
+      "route": "MainTabs → HomeStack → Billing",
+      "file": "src/screens/BillingScreen.tsx",
+      "sections": [
+        "Loading or bill table",
+        "Per-provider rows, totals",
+        "Status chips / glass cards"
+      ]
+    },
+    {
+      "id": "providers",
+      "name": "Providers",
+      "route": "MainTabs → ProvidersStack → Providers",
+      "file": "src/screens/ProvidersScreen.tsx",
+      "sections": [
+        "Header: Providers + settings affordance",
+        "Blended rate dark card (KSh/kWh, vs KPLC)",
+        "Horizontal provider cards (sparkline, price, cap/uptime/share, Buy Tokens)",
+        "Pagination dots",
+        "Your Mix: 3D bar chart + legend",
+        "Triangle optimizer (Cost / Capacity / Uptime)",
+        "Trade Energy CTA"
+      ]
+    },
+    {
+      "id": "trading",
+      "name": "Energy Trading",
+      "route": "MainTabs → ProvidersStack → Trading",
+      "file": "src/screens/TradingScreen.tsx",
+      "sections": [
+        "P2P market overview stats",
+        "Line chart (react-native-chart-kit)",
+        "Buy/sell toggle",
+        "Amount & price inputs",
+        "Listings cards",
+        "Submit / summary row"
+      ]
+    },
+    {
+      "id": "usage",
+      "name": "Usage",
+      "route": "MainTabs → UsageStack (single screen)",
+      "file": "src/screens/UsageScreen.tsx",
+      "sections": [
+        "Total usage hero (MWh)",
+        "Energy Flow card: Used by home vs Stored with icons"
+      ]
+    },
+    {
+      "id": "wallet",
+      "name": "Wallet",
+      "route": "MainTabs → WalletStack → Wallet",
+      "file": "src/screens/WalletScreen.tsx",
+      "sections": [
+        "Token balance card",
+        "View full history link",
+        "Recent transactions list or empty state"
+      ]
+    },
+    {
+      "id": "wallet_history",
+      "name": "Wallet History",
+      "route": "MainTabs → WalletStack → WalletHistory",
+      "file": "src/screens/WalletHistoryScreen.tsx",
+      "sections": [
+        "Balance summary",
+        "Scrollable entries (top-up / deduct)",
+        "Clear history affordance"
+      ]
+    },
+    {
+      "id": "profile",
+      "name": "Profile",
+      "route": "MainTabs → ProfileStack (single screen)",
+      "file": "src/screens/ProfileScreen.tsx",
+      "sections": [
+        "Profile header + notifications",
+        "Avatar, name, location, verified badge",
+        "Stats: trades, reviews, months",
+        "Become a Host CTA",
+        "Menu rows (settings, help, logout)"
+      ]
+    }
+  ],
+  "navigationSummary": {
+    "root": ["Auth (logged out)", "MainTabs (logged in)"],
+    "stacks": {
+      "HomeStack": ["Home", "BuyPower", "Billing"],
+      "ProvidersStack": ["Providers", "Trading"],
+      "WalletStack": ["Wallet", "WalletHistory"],
+      "UsageStack": ["Usage only"],
+      "ProfileStack": ["Profile only"]
+    }
+  }
+}

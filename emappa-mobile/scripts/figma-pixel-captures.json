@@ -1,0 +1,54 @@
+{
+  "description": "Pixel-accurate Figma frames via Figma MCP generate_figma_design + Expo Web. Run: npm run web (or npx expo start --web --port 8081).",
+  "figmaFileKey": "iboVhf8WpTPVcjFcvYiqdO",
+  "steps": [
+    "In Cursor Agent, call generate_figma_design with outputMode: existingFile and fileKey above (each screen needs its own captureId).",
+    "Open each captureUrl in Chrome while the dev server is running; wait for Figma to finish importing (~2–5s after load).",
+    "Poll generate_figma_design with captureId until status is completed."
+  ],
+  "captures": [
+    {
+      "name": "Auth",
+      "path": "/auth?emappa_clear_auth=1",
+      "note": "Clears saved session so the login screen shows."
+    },
+    {
+      "name": "Home",
+      "path": "/home?emappa_demo=1",
+      "note": "Seeds demo session and opens Home tab."
+    },
+    {
+      "name": "BuyPower",
+      "path": "/home/buy-power?emappa_demo=1"
+    },
+    {
+      "name": "Billing",
+      "path": "/home/billing?emappa_demo=1"
+    },
+    {
+      "name": "Providers",
+      "path": "/providers?emappa_demo=1"
+    },
+    {
+      "name": "Trading",
+      "path": "/providers/trading?emappa_demo=1"
+    },
+    {
+      "name": "Usage",
+      "path": "/usage-tab?emappa_demo=1"
+    },
+    {
+      "name": "Wallet",
+      "path": "/wallet?emappa_demo=1"
+    },
+    {
+      "name": "WalletHistory",
+      "path": "/wallet/history?emappa_demo=1"
+    },
+    {
+      "name": "Profile",
+      "path": "/profile-tab?emappa_demo=1"
+    }
+  ],
+  "captureUrlTemplate": "http://localhost:8081{path}#figmacapture={captureId}&figmaendpoint={encodedEndpoint}&figmadelay=3000"
+}
