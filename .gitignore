@@ -1,0 +1,8 @@
+# Global ignores for the Energy_app mono-repo
+
+# macOS
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
