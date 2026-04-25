@@ -17,8 +17,10 @@
 /.next/
 /out/
 
-# production
+# production / Vite
 /build
+/dist
+/.vite
 /standalone-dist
 /e-mappa-standalone.html
 
@@ -41,6 +43,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editor / tooling (not part of the shipped site)
+/.claude
+
+# design research / exports (not the app)
+/design-extract-output
+
+# ad-hoc share bundles (use npm run build:standalone instead)
+/share-package/
+/share-package 2/
+/emappa-share*.html
+/emappa-share-package.zip
 
 # local vendor tools
 /vendor/design-extract
