@@ -1,4 +1,4 @@
-# Global ignores for the Energy_app mono-repo
+# Global ignores for the e.mappa repo
 
 # macOS
 .DS_Store
@@ -6,3 +6,27 @@
 # Python caches
 __pycache__/
 *.py[cod]
+
+# JavaScript / Expo / Vite
+node_modules/
+.turbo/
+.tmp/
+.cursor/
+.expo/
+.corepack/
+.pnpm-store/
+dist/
+dist-web/
+web-build/
+*.log
+*.tsbuildinfo
+
+# Vercel
+.vercel/
+
+# Generated/share artifacts
+standalone-dist/
+e-mappa-standalone.html
+
+# Legacy local tool leftovers after flattening the repo
+emappawebsite/

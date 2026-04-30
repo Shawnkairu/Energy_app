@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "e.mappa",
+    "slug": "emappa-mobile",
+    "version": "1.0.0",
+    "scheme": "emappa",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": ["expo-router"]
+  }
+}

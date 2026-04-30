@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@emappa/shared": ["packages/shared/src/index.ts"],
+      "@emappa/shared/*": ["packages/shared/src/*"],
+      "@emappa/ui": ["packages/ui/src/index.ts"],
+      "@emappa/ui/*": ["packages/ui/src/*"],
+      "@emappa/api-client": ["packages/api-client/src/index.ts"],
+      "@emappa/api-client/*": ["packages/api-client/src/*"]
+    }
+  }
+}
