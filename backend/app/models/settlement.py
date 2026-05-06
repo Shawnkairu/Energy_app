@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Index, Numeric, Text, func
+from sqlalchemy import DateTime, Boolean, CheckConstraint, ForeignKey, Index, Numeric, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -26,8 +26,8 @@ class SettlementPeriod(Base):
     building_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("buildings.id"), nullable=False
     )
-    period_start: Mapped[datetime] = mapped_column(nullable=False)
-    period_end: Mapped[datetime] = mapped_column(nullable=False)
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     e_gen: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     e_sold: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     e_waste: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
@@ -35,4 +35,4 @@ class SettlementPeriod(Base):
     payouts: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     simulation: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
     data_source: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

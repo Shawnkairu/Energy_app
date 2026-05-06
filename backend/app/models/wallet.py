@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index, Numeric, Text, func
+from sqlalchemy import DateTime, CheckConstraint, ForeignKey, Index, Numeric, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -26,7 +26,7 @@ class WalletTransaction(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
-    at: Mapped[datetime] = mapped_column(server_default=func.now())
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     kind: Mapped[str] = mapped_column(Text, nullable=False)
     amount_kes: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     reference: Mapped[str] = mapped_column(Text, nullable=False)

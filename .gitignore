@@ -34,3 +34,4 @@ e-mappa-standalone.html
 # Legacy local tool leftovers after flattening the repo
 emappawebsite/
 .vercel
+backend/.env

@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, Numeric, Text
+from sqlalchemy import DateTime, BigInteger, CheckConstraint, ForeignKey, Index, Numeric, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -24,7 +24,7 @@ class EnergyReading(Base):
     building_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("buildings.id"), nullable=False
     )
-    timestamp: Mapped[datetime] = mapped_column(nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     kind: Mapped[str] = mapped_column(Text, nullable=False)
     value: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     unit: Mapped[str] = mapped_column(Text, nullable=False)

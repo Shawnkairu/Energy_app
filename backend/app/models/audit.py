@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, ForeignKey, Index, Text, func
+from sqlalchemy import DateTime, BigInteger, ForeignKey, Index, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -24,4 +24,4 @@ class AuditLog(Base):
     target_type: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     payload: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
-    at: Mapped[datetime] = mapped_column(server_default=func.now())
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

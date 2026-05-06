@@ -6,7 +6,7 @@ from datetime import datetime
 
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Index, Integer, Text, func
+from sqlalchemy import DateTime, Boolean, CheckConstraint, ForeignKey, Index, Integer, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -38,8 +38,8 @@ class User(Base):
     onboarding_complete: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     profile: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default="{}")
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    last_seen_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class OtpCode(Base):
@@ -49,7 +49,7 @@ class OtpCode(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     email: Mapped[str] = mapped_column(Text, nullable=False)
     code_hash: Mapped[str] = mapped_column(Text, nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(nullable=False)
-    consumed_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_session
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/waitlist", tags=["waitlist"])
 
 class WaitlistBody(BaseModel):
     name: str | None = None
-    email: EmailStr
+    email: str
     phone: str | None = None
     role: str | None = None
     neighborhood: str | None = None

@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import ForeignKey, Numeric, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, Numeric, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -31,4 +31,4 @@ class FinancierPosition(Base):
     returns_to_date_kes: Mapped[Decimal] = mapped_column(Numeric, nullable=False, server_default="0")
     irr_pct: Mapped[Decimal] = mapped_column(Numeric, nullable=False, server_default="0")
     milestones_hit: Mapped[list[Any]] = mapped_column(JSONB, nullable=False, server_default="[]")
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

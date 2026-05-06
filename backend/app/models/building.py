@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, Integer, Numeric, Text, func
+from sqlalchemy import DateTime, Boolean, CheckConstraint, Integer, Numeric, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -53,5 +53,5 @@ class Building(Base):
     roof_confidence: Mapped[Decimal | None] = mapped_column(Numeric, nullable=True)
     data_source: Mapped[str] = mapped_column(Text, nullable=False, server_default="synthetic")
     invite_code: Mapped[str | None] = mapped_column(Text, nullable=True, unique=True)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

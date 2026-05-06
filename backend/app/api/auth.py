@@ -1,12 +1,17 @@
 """Email-OTP auth endpoints. Pilot mode — see docs/PILOT_SCOPE.md §1."""
 from __future__ import annotations
 
+import re
 import secrets
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
+
+# Loose email validator that accepts dev .test TLDs which Pydantic's EmailStr
+# rejects as reserved-use. Per RFC the format check is purely structural.
+_EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 from ..db.session import get_session
 from ..middleware.jwt import get_current_user
@@ -35,12 +40,26 @@ def _serialize_user(user: User) -> dict:
 
 
 class RequestOtpBody(BaseModel):
-    email: EmailStr
+    email: str
+
+    @field_validator("email")
+    @classmethod
+    def _email(cls, v: str) -> str:
+        if not _EMAIL_RE.match(v.strip()):
+            raise ValueError("invalid email")
+        return v.strip()
 
 
 class VerifyOtpBody(BaseModel):
-    email: EmailStr
+    email: str
     code: str = Field(min_length=6, max_length=6)
+
+    @field_validator("email")
+    @classmethod
+    def _email(cls, v: str) -> str:
+        if not _EMAIL_RE.match(v.strip()):
+            raise ValueError("invalid email")
+        return v.strip()
 
 
 @router.post("/request-otp")
