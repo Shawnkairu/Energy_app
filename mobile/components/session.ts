@@ -1,13 +1,15 @@
-import type { StakeholderRole } from "@emappa/shared";
+import type { StakeholderRole, User } from "@emappa/shared";
 
 const SESSION_KEY = "emappa.mobile.session";
 
 let inMemorySession: PilotSession | null = null;
 
 export interface PilotSession {
-  phone: string;
+  email: string;
+  phone?: string | null;
   role?: StakeholderRole;
-  token?: string;
+  token: string;
+  user?: User;
   buildingId?: string | null;
   createdAt: string;
 }
@@ -18,13 +20,24 @@ export function savePilotSession(session: Omit<PilotSession, "createdAt">) {
 
 export function saveSelectedRole(role: StakeholderRole) {
   const session = readPilotSession() ?? {
-    phone: "+254 7XX XXX XXX",
+    email: "pilot@emappa.local",
+    token: "",
     createdAt: new Date().toISOString(),
   };
   writeSession({ ...session, role });
 }
 
-export function readPilotSession() {
+export function clearPilotSession() {
+  inMemorySession = null;
+
+  try {
+    globalThis.localStorage?.removeItem(SESSION_KEY);
+  } catch {
+    // Native secure storage can replace this local fallback when the dependency is available.
+  }
+}
+
+export function readPilotSession(): PilotSession | null {
   try {
     const raw = globalThis.localStorage?.getItem(SESSION_KEY);
     return raw ? (JSON.parse(raw) as PilotSession) : inMemorySession;
@@ -39,6 +52,6 @@ function writeSession(session: PilotSession) {
   try {
     globalThis.localStorage?.setItem(SESSION_KEY, JSON.stringify(session));
   } catch {
-    // Native storage can be swapped in here without changing the auth screens.
+    // Native secure storage can replace this local fallback when the dependency is available.
   }
 }

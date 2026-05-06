@@ -32,7 +32,7 @@ export function SettlementWaterfall({
   ];
 
   const highlightKey: SliceKey | null =
-    role === "owner"
+    role === "building_owner" || role === "homeowner"
       ? "owner"
       : role === "provider"
         ? "provider"

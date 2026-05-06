@@ -30,7 +30,7 @@ export function OwnerEarningsScreen() {
 
         return (
           <>
-            <SettlementWaterfall role="owner" building={building} />
+            <SettlementWaterfall role="building_owner" building={building} />
             <SoldVsWaste building={building} headline="Sold solar drives owner royalty" />
             <OwnerRoyaltyCard
               royaltyKes={view.monthlyRoyaltyKes}

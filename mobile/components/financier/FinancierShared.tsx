@@ -27,6 +27,8 @@ export type FinancierHero = {
   status?: string;
 };
 
+type LoadedRoleHome = RoleHome & { primary: ProjectedBuilding };
+
 export function FinancierScreenShell({
   section,
   title,
@@ -41,10 +43,10 @@ export function FinancierScreenShell({
   title: string;
   subtitle: string;
   actions: string[];
-  hero: (home: RoleHome) => FinancierHero;
+  hero: (home: LoadedRoleHome) => FinancierHero;
   roleLabel?: string;
   showActivity?: boolean;
-  children: (home: RoleHome) => ReactNode;
+  children: (home: LoadedRoleHome) => ReactNode;
 }) {
   const [home, setHome] = useState<RoleHome | null>(null);
 
@@ -76,7 +78,32 @@ export function FinancierScreenShell({
     );
   }
 
-  const heroMetric = hero(home);
+  if (!home.primary) {
+    return (
+      <Surface>
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <AppMark size={52} />
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: typography.title,
+              fontWeight: "700",
+              letterSpacing: -0.5,
+              marginTop: 18,
+            }}
+          >
+            No active deal room
+          </Text>
+          <Text style={{ color: colors.muted, fontSize: typography.body, marginTop: 8, lineHeight: 22 }}>
+            This financier account has no named building assigned yet.
+          </Text>
+        </View>
+      </Surface>
+    );
+  }
+
+  const loadedHome: LoadedRoleHome = { ...home, primary: home.primary };
+  const heroMetric = hero(loadedHome);
 
   return (
     <Surface>
@@ -120,7 +147,7 @@ export function FinancierScreenShell({
 
         <FinancierActionRail actions={actions} />
         <ShellHeroCard hero={heroMetric} />
-        {children(home)}
+        {children(loadedHome)}
         {showActivity ? <FinancierActivityCard activity={home.activity} /> : null}
       </ScrollView>
     </Surface>

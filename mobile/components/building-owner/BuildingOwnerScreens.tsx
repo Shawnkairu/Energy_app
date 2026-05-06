@@ -8,7 +8,7 @@ import { PilotBanner } from "../PilotBanner";
 import { ProjectHero } from "../ProjectHero";
 import { RoofMap } from "../RoofMap";
 import { readPilotSession } from "../session";
-import { configureMobileApi, mobileApiFetch } from "../../lib/api";
+import { createApiClient } from "@emappa/api-client";
 import { useApiData } from "../../lib/useApiData";
 
 type Tone = "good" | "warn" | "bad" | "neutral";
@@ -448,49 +448,40 @@ export function BuildingOwnerCompareTodayScreen() {
 }
 
 async function loadOwnerContext(): Promise<OwnerContext> {
-  const home = await apiJson<RoleHomePayload>("/roles/building_owner/home");
+  const api = mobileClient();
+  const home = (await api.roleHome("building_owner")) as unknown as RoleHomePayload;
   const project = home.primary;
 
   if (!project) {
     throw new Error("No building is assigned to this building-owner account.");
   }
 
-  const drs = await apiJson<DrsPayload>(`/drs/${project.id}`);
+  const drs = (await api.getDrsAssessment(project.id)) as DrsPayload;
   return { home, project, drs };
 }
 
 async function loadEnergyContext(): Promise<EnergyContext> {
   const context = await loadOwnerContext();
-  const today = await apiJson<EnergyTodayPayload>(`/energy/${context.project.id}/today`);
+  const today = await mobileClient().getEnergyToday(context.project.id);
   return { ...context, today };
 }
 
 async function loadWalletContext(): Promise<WalletContext> {
-  const [context, user] = await Promise.all([loadOwnerContext(), apiJson<UserPayload>("/auth/me")]);
+  const api = mobileClient();
+  const [context, user] = await Promise.all([loadOwnerContext(), api.me() as Promise<UserPayload>]);
   const [balance, transactions] = await Promise.all([
-    apiJson<WalletBalancePayload>(`/wallet/${user.id}/balance`),
-    apiJson<WalletTransaction[]>(`/wallet/${user.id}/transactions`),
+    api.getWalletBalance(user.id) as Promise<WalletBalancePayload>,
+    api.getWalletTransactions(user.id) as Promise<WalletTransaction[]>,
   ]);
 
   return { ...context, user, balance, transactions };
 }
 
-async function apiJson<T>(path: string): Promise<T> {
-  configureMobileApi({ token: readPilotSession()?.token ?? null });
-  const response = await mobileApiFetch(path);
-
-  if (!response.ok) {
-    let detail = response.statusText;
-    try {
-      const body = await response.json();
-      detail = body?.detail ?? body?.error ?? detail;
-    } catch {
-      // Keep the HTTP status text when the API does not return JSON.
-    }
-    throw new Error(`${path} failed: ${detail}`);
-  }
-
-  return (await response.json()) as T;
+function mobileClient() {
+  return createApiClient({
+    baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? null,
+    token: readPilotSession()?.token ?? null,
+  });
 }
 
 function OwnerDataFrame<T>({

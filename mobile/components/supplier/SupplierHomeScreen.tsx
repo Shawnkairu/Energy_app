@@ -13,13 +13,13 @@ export function SupplierHomeScreen() {
   const [activity, setActivity] = useState<string[]>([]);
 
   useEffect(() => {
-    getRoleHome("supplier").then((home) => setActivity(home.activity));
+    getRoleHome("provider").then((home) => setActivity(home.activity));
   }, []);
 
   return (
     <RoleDashboardScaffold
-      role="supplier"
-      cohesionRole="supplier"
+      role="provider"
+      cohesionRole="provider"
       section="Home"
       title="Supply Desk"
       subtitle="A calm operating snapshot for what needs supplier attention today."

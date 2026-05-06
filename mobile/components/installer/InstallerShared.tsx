@@ -61,12 +61,12 @@ export function InstallerScaffold({
 }) {
   return (
     <RoleDashboardScaffold
-      role="installer"
+      role="electrician"
       section={section}
       title={title}
       subtitle={subtitle}
       actions={actions}
-      cohesionRole="installer"
+      cohesionRole="electrician"
       renderHero={(building) => {
         const h = hero(building);
         return { label: h.label, value: h.value, sub: h.sub };

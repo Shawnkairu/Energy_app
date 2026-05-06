@@ -4,8 +4,8 @@ import { SupplierCard, SupplierMetricGrid, SupplierProofTable, SupplierRow, supp
 export function SupplierQuoteRequestsScreen() {
   return (
     <RoleDashboardScaffold
-      role="supplier"
-      cohesionRole="supplier"
+      role="provider"
+      cohesionRole="provider"
       section="Quote Requests"
       title="RFQ Inbox"
       subtitle="Response quality only: complete quotes, explicit assumptions, and clean proof attachments."

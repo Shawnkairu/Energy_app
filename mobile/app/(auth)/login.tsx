@@ -1,31 +1,29 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TextInput, View } from "react-native";
-import { requestOtp, verifyOtp } from "@emappa/api-client";
 import { AppMark, colors, GlassCard, Label, PrimaryButton, typography } from "@emappa/ui";
-import { savePilotSession } from "../../components/session";
+import { useApi } from "../../lib/api";
 
 export default function Login() {
   const router = useRouter();
-  const [phone, setPhone] = useState("+254700000000");
-  const [code, setCode] = useState("");
-  const [otpRequested, setOtpRequested] = useState(false);
-  const [status, setStatus] = useState("Console OTP for API mode; any 6 digits work in mock mode.");
+  const api = useApi();
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("Enter the email tied to your e.mappa invite. We will send a one-time code.");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function continueToRoleSelect() {
+  async function requestEmailOtp() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || isSubmitting) {
+      setStatus("Enter a valid email address to request a code.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      if (!otpRequested) {
-        await requestOtp(phone);
-        setOtpRequested(true);
-        setStatus("OTP requested. Check backend logs, or enter any 6 digits in mock mode.");
-        return;
-      }
-
-      const auth = await verifyOtp(phone, code || "000000");
-      savePilotSession({ phone, token: auth.token, role: auth.user.role, buildingId: auth.user.buildingId });
-      router.push("/(auth)/role-select");
+      await api.requestOtp(normalizedEmail);
+      router.push({ pathname: "/(auth)/verify-phone", params: { email: normalizedEmail } });
+    } catch {
+      setStatus("We could not send a code. Check your API connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -38,36 +36,24 @@ export default function Login() {
       </View>
       <Text style={styles.headline}>Welcome back</Text>
       <Text style={styles.lede}>
-        Pilot phone login for the e.mappa demo. This creates a local session that can be swapped for OTP/KYC when the backend is connected.
+        Email OTP keeps each stakeholder workspace tied to an invited account and named building context.
       </Text>
       <GlassCard>
-        <Label>Pilot phone</Label>
+        <Label>Email</Label>
         <TextInput
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
+          placeholder="you@example.com"
+          placeholderTextColor={colors.dim}
           style={styles.input}
-          accessibilityLabel="Pilot phone number"
+          accessibilityLabel="Email address"
         />
-        {otpRequested ? (
-          <>
-            <Label>OTP code</Label>
-            <TextInput
-              value={code}
-              onChangeText={setCode}
-              keyboardType="number-pad"
-              maxLength={6}
-              placeholder="000000"
-              placeholderTextColor={colors.dim}
-              style={styles.input}
-              accessibilityLabel="Six digit OTP code"
-            />
-          </>
-        ) : null}
         <Text style={styles.note}>{status}</Text>
       </GlassCard>
-      <PrimaryButton onPress={continueToRoleSelect}>{isSubmitting ? "Working..." : otpRequested ? "Verify and continue" : "Request OTP"}</PrimaryButton>
+      <PrimaryButton onPress={requestEmailOtp}>{isSubmitting ? "Sending..." : "Send code"}</PrimaryButton>
     </View>
   );
 }
