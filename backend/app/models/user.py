@@ -4,8 +4,10 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
+from typing import Any
+
 from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Index, Integer, Text, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db.session import Base
@@ -35,6 +37,7 @@ class User(Base):
     )
     onboarding_complete: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    profile: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default="{}")
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     last_seen_at: Mapped[datetime | None] = mapped_column(nullable=True)
 

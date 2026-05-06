@@ -36,6 +36,7 @@ def _serialize(b: Building) -> dict:
         "roofSource": b.roof_source,
         "roofConfidence": float(b.roof_confidence) if b.roof_confidence is not None else None,
         "dataSource": b.data_source,
+        "inviteCode": b.invite_code,
         "createdAt": (b.created_at or datetime.utcnow()).isoformat(),
         "updatedAt": (b.updated_at or datetime.utcnow()).isoformat(),
     }

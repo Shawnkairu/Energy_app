@@ -17,6 +17,7 @@ import {
   type BuildingRecord,
   type Certification,
   type EnergyReading,
+  type GeocodeResult,
   type FinancierPosition,
   type InventoryItem,
   type Job,
@@ -132,8 +133,19 @@ export function createApiClient(cfg: ApiClientConfig) {
     verifyOtp: (email: string, code: string) =>
       post<AuthSession>(`/auth/verify-otp`, { email, code }),
     me: () => get<User>(`/auth/me`),
-    completeOnboarding: (body: { displayName?: string; businessType?: string }) =>
-      post<{ user: User }>(`/me/onboarding-complete`, body),
+    completeOnboarding: (body: {
+      displayName?: string;
+      businessType?: "panels" | "infrastructure" | "both";
+      profile?: Record<string, unknown>;
+    }) => post<{ user: User }>(`/me/onboarding-complete`, body),
+    joinBuilding: (code: string) =>
+      post<{
+        building: { id: string; name: string; address: string; kind: string; unitCount: number };
+      }>(`/me/join-building`, { code }),
+
+    // geocoding
+    geocode: (q: string) =>
+      get<GeocodeResult>(`/geocode?q=${encodeURIComponent(q)}`),
 
     // projects
     listProjects: () => get<ProjectedBuilding[]>(`/projects`),
