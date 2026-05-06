@@ -38,6 +38,7 @@ async def _serialize_with_pledged(session: AsyncSession, building) -> dict:
         "roofSource": building.roof_source,
         "roofConfidence": float(building.roof_confidence) if building.roof_confidence is not None else None,
         "dataSource": building.data_source,
+        "inviteCode": building.invite_code,
         "prepaidCommittedKes": float(pledged),
         "createdAt": (building.created_at or datetime.utcnow()).isoformat(),
         "updatedAt": (building.updated_at or datetime.utcnow()).isoformat(),

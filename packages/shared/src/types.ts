@@ -167,8 +167,26 @@ export interface User {
   buildingId: string | null;
   onboardingComplete: boolean;
   displayName: string | null;
+  profile: Record<string, unknown>;     // role-specific onboarding bag; see SPRINT_CONTRACT §4
   createdAt: string;
   lastSeenAt: string | null;
+}
+
+export interface ElectricianProfile {
+  region?: string;
+  scope?: Array<"install" | "inspection" | "maintenance">;
+}
+
+export interface FinancierProfile {
+  investor_kind?: "individual" | "institution";
+  target_deal_size_kes?: number;
+  target_return_pct?: number;
+}
+
+export interface GeocodeResult {
+  lat: number;
+  lon: number;
+  formattedAddress: string;
 }
 
 export interface PrepaidCommitment {
@@ -323,6 +341,7 @@ export interface BuildingRecord {
   roofSource?: "microsoft_footprints" | "owner_traced" | "owner_typed";
   roofConfidence?: number;
   dataSource: "synthetic" | "measured" | "mixed";
+  inviteCode?: string | null;          // shown to building owners; consumed by residents via /me/join-building
   createdAt: string;
   updatedAt: string;
 }

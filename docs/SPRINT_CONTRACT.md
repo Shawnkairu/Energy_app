@@ -58,6 +58,7 @@ Migration `0001_pilot_baseline` creates everything below. Owned by Claude Code; 
 - `building_id uuid references buildings(id)` (nullable; admins/financiers/electricians/providers may not be tied to one). Required for `homeowner` (the building they own and live in).
 - `onboarding_complete boolean not null default false`
 - `display_name text`
+- `profile jsonb not null default '{}'::jsonb` — role-specific onboarding bag. Schema by role: electrician `{ region, scope: ['install'|'inspection'|'maintenance'][] }`; financier `{ investor_kind: 'individual'|'institution', target_deal_size_kes, target_return_pct }`; resident/homeowner/building_owner/provider may use freely. Merged (not replaced) on `POST /me/onboarding-complete`.
 - `created_at timestamptz not null default now()`
 - `last_seen_at timestamptz`
 
@@ -83,6 +84,7 @@ Migration `0001_pilot_baseline` creates everything below. Owned by Claude Code; 
 - `occupancy numeric` (0..1)
 - `kind text not null default 'apartment' check (kind in ('apartment','single_family'))` — single_family enforces unit_count=1 via `(kind <> 'single_family' OR unit_count = 1)` constraint
 - `stage text not null check (stage in ('listed','qualifying','funding','installing','live','retired'))`
+- `invite_code text` — nullable; auto-generated 6-char base32 on insert (alphabet excludes 0/O/1/I); unique partial index. Owners share with residents/homeowners to join the building.
 - `roof_area_m2 numeric`
 - `roof_polygon_geojson jsonb`
 - `roof_source text check (roof_source in ('microsoft_footprints','owner_traced','owner_typed'))`
@@ -242,9 +244,28 @@ GET  /discover?role=provider|electrician|financier&filters=...
 
 # Onboarding
 POST /me/onboarding-complete
-     body: { display_name?, business_type? }   (business_type required for provider)
+     body: { displayName?, businessType?, profile? }
+     - businessType required for provider role (or already set on user)
+     - profile is a JSON bag; merged with existing user.profile (not replaced)
+     - Suggested per-role profile shape:
+       electrician: { region, scope: ('install'|'inspection'|'maintenance')[] }
+       financier:   { investor_kind: 'individual'|'institution', target_deal_size_kes, target_return_pct }
      → 200 { user: User }
-     → 403 { error: "admin_not_publicly_assignable" } if body contains role='admin'
+     → 403 if body contains role='admin' (defense-in-depth; role isn't in the schema)
+
+POST /me/join-building                      (resident | homeowner | building_owner)
+     body: { code: string }                 (4–12 chars, case-insensitive)
+     - Looks up building by invite_code; sets users.building_id
+     - Single-family buildings only joinable by homeowner role
+     → 200 { building: { id, name, address, kind, unitCount } }
+     → 404 { error: "invite_code_not_found" }
+     → 403 { error: "single_family_homeowner_only" | "role_not_permitted" }
+
+# Geocoding (proxies Nominatim/OpenStreetMap; biased to Kenya)
+GET  /geocode?q=<address>
+     → 200 { lat, lon, formattedAddress }
+     → 400 { error: "query_too_short" }
+     → 404 { error: "no_match" }
 
 # Admin provisioning (NOT exposed via HTTP — operator-run scripts only)
 # backend/scripts/grant_admin.py <email>

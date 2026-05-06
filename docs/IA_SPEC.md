@@ -362,8 +362,8 @@ After email-OTP verification, if a user has no role-specific profile complete, t
 4. **Role pick** — only shown if account has no role yet (most pilot users will be pre-assigned)
 
 ### 7.1 Resident
-5. **Building code / QR** — enter or scan invite code
-6. **Confirm building** — show building name + address + photo, "This is my building"
+5. **Building code** — enter the 6-character invite code shared by their building owner. Resident UI calls `POST /me/join-building { code }`. 404 → friendly retry; 200 → continue.
+6. **Confirm building** — show building name + address from the join response, "This is my building"
 7. **First pledge (optional)** — "Pledge tokens now or later" — can skip
 8. → Home
 
@@ -392,13 +392,16 @@ After email-OTP verification, if a user has no role-specific profile complete, t
 7. → Discover
 
 ### 7.4 Electrician
-5. **Personal basics** — name, region of operation, scope (install / inspection / maintenance)
-6. **Certification upload (optional)** — upload current certs or "Add later"
+5. **Personal basics** — name, region of operation, scope (install / inspection / maintenance multi-select). Posts `{ profile: { region, scope } }` to `POST /me/onboarding-complete`.
+6. **Certification upload (optional)** — upload current certs via `POST /electricians/{id}/certifications` or "Add later"
 7. → Discover
 
 ### 7.5 Financier
-5. **Investor profile** — institution or individual, target deal size, target return profile
-8. → Discover
+5. **Investor profile** — institution or individual, target deal size, target return profile. Posts `{ profile: { investor_kind, target_deal_size_kes, target_return_pct } }` to `POST /me/onboarding-complete`.
+6. → Discover
+
+### 7.6 Address geocoding (used by owner + homeowner steps)
+Address inputs in onboarding call `GET /geocode?q=<address>` to resolve `{ lat, lon, formattedAddress }`. Frontend should debounce on blur (not keystroke). 404 → fall back to an interactive map for manual lat/lon, or accept the address without coords (DRS scoring will mark roof unverifiable).
 
 Onboarding lives in `mobile/app/(onboard)/[role]/...` as a separate Expo Router stack. After completion, replace the navigation stack with the role's tab layout.
 
