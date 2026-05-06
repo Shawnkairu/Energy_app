@@ -1,10 +1,3 @@
-import { RoleTabs } from "../../components/RoleTabs";
-import { RoleGuard } from "../../components/RoleGuard";
+import { BuildingOwnerLayout } from "../../components/building-owner/BuildingOwnerScreens";
 
-export default function OwnerLayout() {
-  return (
-    <RoleGuard role="owner">
-      <RoleTabs role="owner" />
-    </RoleGuard>
-  );
-}
+export default BuildingOwnerLayout;

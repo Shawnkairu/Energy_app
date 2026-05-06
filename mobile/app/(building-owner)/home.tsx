@@ -1,3 +1,3 @@
-import { OwnerHomeScreen } from "../../components/owner/OwnerScreens";
+import { BuildingOwnerHomeScreen } from "../../components/building-owner/BuildingOwnerScreens";
 
-export default OwnerHomeScreen;
+export default BuildingOwnerHomeScreen;

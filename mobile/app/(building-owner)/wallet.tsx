@@ -1,3 +1,3 @@
-import { OwnerEarningsScreen } from "../../components/owner/OwnerScreens";
+import { BuildingOwnerWalletScreen } from "../../components/building-owner/BuildingOwnerScreens";
 
-export default OwnerEarningsScreen;
+export default BuildingOwnerWalletScreen;
