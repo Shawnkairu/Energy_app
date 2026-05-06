@@ -1,6 +1,6 @@
-import type { ProjectedBuilding, StakeholderRole } from "@emappa/shared";
+import type { ProjectedBuilding, PublicRole } from "@emappa/shared";
 
-export type WebRole = Exclude<StakeholderRole, "admin">;
+export type WebRole = PublicRole;
 
 export interface StakeholderScreenProps {
   project: ProjectedBuilding;

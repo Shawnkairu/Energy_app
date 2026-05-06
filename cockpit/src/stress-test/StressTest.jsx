@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine } from "recharts";
 import { calculateEnergy, calculatePayback, calculateSettlement } from "@emappa/shared";
 
@@ -191,7 +191,7 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-export default function StressTest() {
+export default function StressTest({ initialProject }) {
   const [arrayKw, setArrayKw] = useState(5);
   const [apartments, setApartments] = useState(12);
   const [consumption, setConsumption] = useState(80);
@@ -206,6 +206,23 @@ export default function StressTest() {
   const [financierInv, setFinancierInv] = useState(235);
   const [ownerInv, setOwnerInv] = useState(100);
   const [tab, setTab] = useState("energy");
+
+  useEffect(() => {
+    if (!initialProject) return;
+    const source = initialProject.project;
+    setArrayKw(source.energy.arrayKw);
+    setApartments(source.units);
+    setConsumption(Math.round(source.energy.monthlyDemandKwh / Math.max(1, source.units)));
+    setBatteryKwh(source.energy.batteryKwh);
+    setSolarPrice(source.solarPriceKes);
+    setReserveRate(Number((source.settlementRates.reserve * source.solarPriceKes).toFixed(1)));
+    setProviderRate(Number((source.settlementRates.providers * source.solarPriceKes).toFixed(1)));
+    setFinancierRate(Number((source.settlementRates.financiers * source.solarPriceKes).toFixed(1)));
+    setOwnerRate(Number((source.settlementRates.owner * source.solarPriceKes).toFixed(1)));
+    setEmappaRate(Number((source.settlementRates.emappa * source.solarPriceKes).toFixed(1)));
+    setFinancierInv(Math.round(source.fundedKes / 1000));
+    setOwnerInv(Math.round(Math.max(50_000, source.capitalRequiredKes - source.fundedKes) / 1000));
+  }, [initialProject?.project.id]);
 
   const cfg = {
     arrayKw, apartments, consumption, batteryKwh, solarPrice,

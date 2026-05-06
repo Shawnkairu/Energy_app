@@ -1,141 +1,362 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import { getProjects } from "@emappa/api-client";
-import type { ProjectedBuilding } from "@emappa/shared";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import type { ProjectedBuilding, SettlementPeriod } from "@emappa/shared";
+import {
+  clearSession,
+  getLatestSettlement,
+  getMe,
+  getProjects,
+  loadSession,
+  requestOtp,
+  saveSession,
+  verifyOtp,
+} from "./api";
+import { PilotBanner } from "./components/PilotBanner";
+import type { SyntheticMode } from "./components/SyntheticBadge";
+import { BuildingDetail } from "./pages/BuildingDetail";
 
 const StressTest = lazy(() => import("./stress-test/StressTest.jsx"));
 
+type View = "command" | "stress";
+type StageFilter = "all" | ProjectedBuilding["project"]["stage"];
+type DecisionFilter = "all" | ProjectedBuilding["drs"]["decision"];
+type Session = ReturnType<typeof loadSession>;
+
+const navItems: Array<{ id: View; label: string }> = [
+  { id: "command", label: "Command" },
+  { id: "stress", label: "Stress Test" },
+];
+
 export function App() {
+  const [session, setSession] = useState<Session>(() => loadSession());
+  const [checkingSession, setCheckingSession] = useState(Boolean(session));
+  const [view, setView] = useState<View>("command");
   const [projects, setProjects] = useState<ProjectedBuilding[]>([]);
-  const [view, setView] = useState<"command" | "stress">("command");
+  const [settlementDates, setSettlementDates] = useState<Record<string, SettlementPeriod | null>>({});
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [stageFilter, setStageFilter] = useState<StageFilter>("all");
+  const [decisionFilter, setDecisionFilter] = useState<DecisionFilter>("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [syntheticMode, setSyntheticMode] = useState<SyntheticMode>("mixed");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getProjects().then(setProjects);
+    if (!session) {
+      setCheckingSession(false);
+      return;
+    }
+
+    getMe(session.token)
+      .then((user) => {
+        const fresh = { ...session, user };
+        saveSession(fresh);
+        setSession(fresh);
+      })
+      .catch(() => {
+        clearSession();
+        setSession(null);
+      })
+      .finally(() => setCheckingSession(false));
   }, []);
 
+  useEffect(() => {
+    if (!session || session.user.role !== "admin") return;
+    setLoading(true);
+    setError(null);
+    getProjects(session.token)
+      .then((items) => {
+        setProjects(items);
+        setSelectedProjectId((current) => current ?? items[0]?.project.id ?? null);
+        return Promise.all(
+          items.map((item) =>
+            getLatestSettlement(item.project.id, session.token)
+              .then((settlement) => [item.project.id, settlement] as const)
+              .catch(() => [item.project.id, null] as const),
+          ),
+        );
+      })
+      .then((dates) => {
+        setSettlementDates(Object.fromEntries(dates));
+      })
+      .catch((loadError: Error) => setError(loadError.message))
+      .finally(() => setLoading(false));
+  }, [session?.token, session?.user.role]);
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((item) => {
+      const settlement = settlementDates[item.project.id];
+      const createdAt = settlement?.createdAt ? new Date(settlement.createdAt) : null;
+      const afterFrom = fromDate && createdAt ? createdAt >= new Date(fromDate) : true;
+      const beforeTo = toDate && createdAt ? createdAt <= new Date(`${toDate}T23:59:59`) : true;
+      return (
+        (stageFilter === "all" || item.project.stage === stageFilter) &&
+        (decisionFilter === "all" || item.drs.decision === decisionFilter) &&
+        afterFrom &&
+        beforeTo
+      );
+    });
+  }, [decisionFilter, fromDate, projects, settlementDates, stageFilter, toDate]);
+
+  const selectedProject = projects.find((item) => item.project.id === selectedProjectId) ?? filteredProjects[0] ?? projects[0];
   const totals = projects.reduce(
     (acc, item) => ({
       revenue: acc.revenue + item.settlement.revenue,
       sold: acc.sold + item.energy.E_sold,
       alerts: acc.alerts + item.roleViews.admin.alertCount,
+      pledged: acc.pledged + item.project.prepaidCommittedKes,
       capital: acc.capital + item.project.capitalRequiredKes,
       funded: acc.funded + item.project.fundedKes,
     }),
-    { revenue: 0, sold: 0, alerts: 0, capital: 0, funded: 0 },
+    { revenue: 0, sold: 0, alerts: 0, pledged: 0, capital: 0, funded: 0 },
   );
+
+  function logout() {
+    clearSession();
+    setSession(null);
+    setProjects([]);
+    setSelectedProjectId(null);
+  }
+
+  function replaceProject(project: ProjectedBuilding) {
+    setProjects((current) => current.map((item) => (item.project.id === project.project.id ? project : item)));
+  }
+
+  if (checkingSession) {
+    return <main className="auth-shell">Checking cockpit session...</main>;
+  }
+
+  if (!session) {
+    return <LoginScreen onSession={setSession} />;
+  }
+
+  if (session.user.role !== "admin") {
+    return (
+      <main className="auth-shell">
+        <section className="auth-card">
+          <p className="eyebrow">Admins only</p>
+          <h1>Cockpit access is restricted.</h1>
+          <p className="lede">
+            {session.user.email} is signed in as {session.user.role}. Use the website portal for stakeholder screens.
+          </p>
+          <button className="primary-action" onClick={logout} type="button">
+            Sign out
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="ops-shell">
       <aside className="sidebar">
         <div className="logo">e</div>
-        <strong>e.mappa internal</strong>
+        <strong>e.mappa cockpit</strong>
+        <span className="session-meta">{session.user.email}</span>
         <nav>
-          <button className={view === "command" ? "active" : ""} onClick={() => setView("command")}>
-            Command
-          </button>
-          <button className={view === "stress" ? "active" : ""} onClick={() => setView("stress")}>
-            Stress Test
-          </button>
+          {navItems.map((item) => (
+            <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => setView(item.id)}>
+              {item.label}
+            </button>
+          ))}
           <span>DRS Queue</span>
           <span>Settlement</span>
           <span>Counterparties</span>
           <span>Alerts</span>
         </nav>
+        <button className="ghost-action" onClick={logout} type="button">
+          Logout
+        </button>
       </aside>
 
       <section className="workspace">
-        {view === "stress" ? (
-          <Suspense fallback={<div className="panel loading-panel">Loading stress-test cockpit...</div>}>
-            <StressTest />
-          </Suspense>
-        ) : (
-          <>
-        <section className="hero">
+        <PilotBanner />
+        <div className="topbar">
           <div>
             <p className="eyebrow">Internal ops cockpit</p>
             <h1>Gate deployments before trust breaks.</h1>
-            <p className="lede">
-              This cockpit is only for e.mappa operators: DRS controls, settlement integrity,
-              deployment blockers, and stakeholder health.
-            </p>
           </div>
-          <div className="hero-card">
-            <span>Governance action</span>
-            <strong>Pause go-live if settlement data is untrusted</strong>
-            <small>No hidden overrides. No payout from unused energy.</small>
-          </div>
-        </section>
+          <label className="source-toggle">
+            <span>Synthetic</span>
+            <select value={syntheticMode} onChange={(event) => setSyntheticMode(event.target.value as SyntheticMode)}>
+              <option value="show">Show synthetic</option>
+              <option value="hide">Hide synthetic</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </label>
+        </div>
 
-        <section className="command-strip">
-          <Metric label="Monetized solar" value={`${Math.round(totals.sold).toLocaleString()} kWh`} />
-          <Metric label="Monthly revenue" value={`KSh ${Math.round(totals.revenue).toLocaleString()}`} />
-          <Metric label="Funding progress" value={`${Math.round((totals.funded / Math.max(1, totals.capital)) * 100)}%`} />
-          <Metric label="Active alerts" value={totals.alerts.toString()} />
-        </section>
+        {view === "stress" ? (
+          <Suspense fallback={<div className="panel loading-panel">Loading stress-test cockpit...</div>}>
+            <StressTest initialProject={projects[0]} />
+          </Suspense>
+        ) : (
+          <>
+            <section className="command-strip">
+              <Metric label="Monetized solar" value={`${Math.round(totals.sold).toLocaleString()} kWh`} />
+              <Metric label="Monthly revenue" value={`KSh ${Math.round(totals.revenue).toLocaleString()}`} />
+              <Metric label="Pledged demand" value={`KSh ${Math.round(totals.pledged).toLocaleString()}`} />
+              <Metric label="Active alerts" value={totals.alerts.toString()} />
+            </section>
 
-        <section className="ops-board">
-          <article className="panel wide">
-            <p className="eyebrow">Pipeline command</p>
-            <h2>Buildings by deployment risk</h2>
-            <div className="project-list">
-              {projects.map((item) => (
-                <div className="project-row" key={item.project.id}>
+            {error && <div className="notice error">{error}</div>}
+            {loading && <div className="notice">Loading real cockpit data...</div>}
+
+            <section className="ops-board">
+              <article className="panel wide">
+                <div className="row">
                   <div>
-                    <strong>{item.project.name}</strong>
-                    <span>{item.project.stage} · {item.project.locationBand}</span>
+                    <p className="eyebrow">Portfolio</p>
+                    <h2>Buildings by deployment risk</h2>
                   </div>
-                  <div className="score-ring">{item.drs.score}</div>
-                  <span className={`pill ${item.drs.decision}`}>{item.drs.decision}</span>
+                  <span className="note">{filteredProjects.length} visible</span>
                 </div>
-              ))}
-            </div>
-          </article>
 
-          <article className="panel">
-            <p className="eyebrow">Alert inbox</p>
-            <h2>Blockers</h2>
-            {projects.flatMap((item) =>
-              item.drs.reasons.length
-                ? item.drs.reasons.map((reason) => ({ project: item.project.name, reason }))
-                : [{ project: item.project.name, reason: "No active DRS blocker." }],
-            ).map((alert) => (
-              <div className="alert" key={`${alert.project}-${alert.reason}`}>
-                <strong>{alert.project}</strong>
-                <span>{alert.reason}</span>
-              </div>
-            ))}
-          </article>
-        </section>
+                <div className="filter-bar">
+                  <select value={stageFilter} onChange={(event) => setStageFilter(event.target.value as StageFilter)}>
+                    <option value="all">All stages</option>
+                    {[...new Set(projects.map((item) => item.project.stage))].map((stage) => (
+                      <option key={stage} value={stage}>
+                        {stage}
+                      </option>
+                    ))}
+                  </select>
+                  <select value={decisionFilter} onChange={(event) => setDecisionFilter(event.target.value as DecisionFilter)}>
+                    <option value="all">All decisions</option>
+                    <option value="approve">Approve</option>
+                    <option value="review">Review</option>
+                    <option value="block">Block</option>
+                  </select>
+                  <input aria-label="Settlement from date" type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
+                  <input aria-label="Settlement to date" type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+                </div>
 
-        <section className="ops-grid">
-          <article className="panel">
-            <p className="eyebrow">Settlement Monitor</p>
-            <h2>Waterfall integrity</h2>
-            {projects.map((item) => (
-              <div className="settlement-row" key={item.project.id}>
-                <span>{item.project.name}</span>
-                <strong>KSh {item.settlement.revenue.toLocaleString()}</strong>
-                <small>{item.roleViews.admin.settlementHealth}</small>
-              </div>
-            ))}
-          </article>
+                <div className="portfolio-table">
+                  <div className="portfolio-head">
+                    <strong>Name</strong>
+                    <strong>Stage</strong>
+                    <strong>DRS</strong>
+                    <strong>Pledged</strong>
+                    <strong>Last settlement</strong>
+                  </div>
+                  {filteredProjects.map((item) => {
+                    const settlement = settlementDates[item.project.id];
+                    return (
+                      <button
+                        key={item.project.id}
+                        className={`portfolio-row ${selectedProject?.project.id === item.project.id ? "active" : ""}`}
+                        onClick={() => setSelectedProjectId(item.project.id)}
+                        type="button"
+                      >
+                        <span>
+                          <strong>{item.project.name}</strong>
+                          <small>{item.project.locationBand}</small>
+                        </span>
+                        <span>{item.project.stage}</span>
+                        <span>
+                          <b>{item.drs.score}</b>
+                          <em className={`pill ${item.drs.decision}`}>{item.drs.decision}</em>
+                        </span>
+                        <span>KSh {Math.round(item.project.prepaidCommittedKes).toLocaleString()}</span>
+                        <span>{settlement?.createdAt ? formatDate(settlement.createdAt) : "—"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </article>
 
-          <article className="panel">
-            <p className="eyebrow">Deployment Gates</p>
-            <h2>Do not release capital early.</h2>
-            {projects.map((item) => (
-              <div className="gate-list" key={item.project.id}>
-                <strong>{item.project.name}</strong>
-                {item.roleViews.admin.gates.map((gate) => (
-                  <span key={gate.label} className={gate.complete ? "gate ready" : "gate blocked"}>
-                    {gate.label}
-                  </span>
-                ))}
-              </div>
-            ))}
-          </article>
-        </section>
+              <article className="panel">
+                <p className="eyebrow">Alert inbox</p>
+                <h2>Blockers</h2>
+                {projects
+                  .flatMap((item) =>
+                    item.drs.reasons.length
+                      ? item.drs.reasons.map((reason) => ({ project: item.project.name, reason }))
+                      : [{ project: item.project.name, reason: "No active DRS blocker." }],
+                  )
+                  .map((alert) => (
+                    <div className="alert" key={`${alert.project}-${alert.reason}`}>
+                      <strong>{alert.project}</strong>
+                      <span>{alert.reason}</span>
+                    </div>
+                  ))}
+              </article>
+            </section>
+
+            {selectedProject && (
+              <BuildingDetail
+                project={selectedProject}
+                token={session.token}
+                syntheticMode={syntheticMode}
+                onProjectChange={replaceProject}
+              />
+            )}
           </>
         )}
+      </section>
+    </main>
+  );
+}
+
+function LoginScreen({ onSession }: { onSession: (session: NonNullable<Session>) => void }) {
+  const [email, setEmail] = useState("admin@emappa.test");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleRequest(event: FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await requestOtp(email);
+      setStep("code");
+    } catch (requestError) {
+      setError((requestError as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerify(event: FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const session = await verifyOtp(email, code);
+      saveSession(session);
+      onSession(session);
+    } catch (verifyError) {
+      setError((verifyError as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="auth-shell">
+      <section className="auth-card">
+        <p className="eyebrow">Cockpit login</p>
+        <h1>Admin OTP</h1>
+        <p className="lede">Sign in with an admin seed account. Non-admin roles are rejected after verification.</p>
+        <form onSubmit={step === "email" ? handleRequest : handleVerify}>
+          <label>
+            Email
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          </label>
+          {step === "code" && (
+            <label>
+              OTP code
+              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" required />
+            </label>
+          )}
+          {error && <div className="notice error">{error}</div>}
+          <button className="primary-action" disabled={loading} type="submit">
+            {step === "email" ? "Request OTP" : "Verify OTP"}
+          </button>
+        </form>
       </section>
     </main>
   );
@@ -148,4 +369,8 @@ function Metric({ label, value }: { label: string; value: string }) {
       <strong>{value}</strong>
     </div>
   );
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(value));
 }

@@ -1,6 +1,6 @@
-export { default as ResidentPortal } from "./resident/ResidentPortal";
-export { default as OwnerPortal } from "./owner/OwnerPortal";
-export { default as ProviderPortal } from "./provider/ProviderPortal";
-export { default as FinancierPortal } from "./financier/FinancierPortal";
-export { default as InstallerPortal } from "./installer/InstallerPortal";
-export { default as SupplierPortal } from "./supplier/SupplierPortal";
+export { default as ResidentHome } from "./resident/home";
+export { default as HomeownerHome } from "./homeowner/home";
+export { default as BuildingOwnerHome } from "./building-owner/home";
+export { default as ProviderDiscover } from "./provider/discover";
+export { default as ElectricianDiscover } from "./electrician/discover";
+export { default as FinancierDiscover } from "./financier/discover";

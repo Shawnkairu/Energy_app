@@ -1,27 +1,41 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: emappa
-      POSTGRES_USER: emappa
-      POSTGRES_PASSWORD: emappa
+      POSTGRES_DB: ${POSTGRES_DB:-emappa}
+      POSTGRES_USER: ${POSTGRES_USER:-emappa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-emappa}
     ports:
       - "5432:5432"
     volumes:
       - emappa_postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U emappa -d emappa"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-emappa} -d ${POSTGRES_DB:-emappa}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   backend:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: backend/Dockerfile
     environment:
-      EMAPPA_DATABASE_URL: postgresql+asyncpg://emappa:emappa@postgres:5432/emappa
-      EMAPPA_JWT_SECRET: dev-only-change-me
+      EMAPPA_DATABASE_URL: ${EMAPPA_DATABASE_URL:-postgresql+asyncpg://emappa:emappa@postgres:5432/emappa}
+      EMAPPA_JWT_SECRET: ${EMAPPA_JWT_SECRET:-dev-only-change-me}
+      EMAPPA_JWT_TTL_HOURS: ${EMAPPA_JWT_TTL_HOURS:-24}
+      EMAPPA_RESEND_API_KEY: ${EMAPPA_RESEND_API_KEY:-}
+      EMAPPA_RESEND_FROM: ${EMAPPA_RESEND_FROM:-auth@emappa.test}
+      EMAPPA_ADMIN_EMAILS: ${EMAPPA_ADMIN_EMAILS:-admin@emappa.test}
+      EMAPPA_ALLOW_DEV_OTP_CONSOLE: ${EMAPPA_ALLOW_DEV_OTP_CONSOLE:-true}
+      EMAPPA_NREL_PVWATTS_BASE: ${EMAPPA_NREL_PVWATTS_BASE:-https://developer.nrel.gov/api/pvwatts/v8.json}
+      EMAPPA_NREL_API_KEY: ${EMAPPA_NREL_API_KEY:-DEMO_KEY}
+      EMAPPA_NASA_POWER_BASE: ${EMAPPA_NASA_POWER_BASE:-https://power.larc.nasa.gov/api/temporal/hourly/point}
+      EMAPPA_OPEN_METEO_BASE: ${EMAPPA_OPEN_METEO_BASE:-https://api.open-meteo.com/v1/forecast}
+      EMAPPA_MS_FOOTPRINTS_BASE: ${EMAPPA_MS_FOOTPRINTS_BASE:-https://minedbuildings.z5.web.core.windows.net}
+      EMAPPA_GOOGLE_MAPS_STATIC_KEY: ${EMAPPA_GOOGLE_MAPS_STATIC_KEY:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
       - "8000:8000"
     depends_on:

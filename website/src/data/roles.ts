@@ -10,7 +10,15 @@ export const webRoles: RoleConfig[] = [
     unlockCopy: "See solar balance, usage, savings, fallback, and owned shares.",
   },
   {
-    id: "owner",
+    id: "homeowner",
+    label: "Homeowner",
+    shortLabel: "Homeowner",
+    accessLabel: "I own and live in my home",
+    promise: "Track your home solar project, then manage tokens, energy, and rooftop earnings.",
+    unlockCopy: "See adaptive project/token home, energy, three-stream wallet, and roof profile.",
+  },
+  {
+    id: "building_owner",
     label: "Building Owner",
     shortLabel: "Owner",
     accessLabel: "I own or manage a building",
@@ -34,20 +42,12 @@ export const webRoles: RoleConfig[] = [
     unlockCopy: "See deal room, capital progress, recovery curve, and risk bands.",
   },
   {
-    id: "installer",
+    id: "electrician",
     label: "Electrician",
     shortLabel: "Electrician",
     accessLabel: "I install systems",
     promise: "Certified deployment workflows with proof, readings, and go-live verification.",
     unlockCopy: "See checklist gates, site proof, install quality, and maintenance work.",
-  },
-  {
-    id: "supplier",
-    label: "Supplier",
-    shortLabel: "Supplier",
-    accessLabel: "I supply hardware",
-    promise: "Standardized BOM requests, quote workflows, fulfillment proof, and reliability history.",
-    unlockCopy: "See RFQs, orders, lead times, delivery proof, and warranty flows.",
   },
 ];
 

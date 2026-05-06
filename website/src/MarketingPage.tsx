@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { submitWaitlistLead, type WaitlistSubmission } from '@emappa/api-client'
+import { submitWaitlistLead, type WaitlistSubmission, type WaitlistLead } from './lib/api'
 import './marketing.css'
 
 export default function App() {
@@ -8,6 +8,7 @@ export default function App() {
       <Navbar />
       <main>
         <Hero />
+        <PilotSection />
         <ProblemSection />
         <WhatIsEmappa />
         <SolarTokens />
@@ -182,7 +183,7 @@ function IconBadge({ name }: { name: IconName }) {
 function ProductSuite() {
   const cards = [
     {
-      title: 'Accept prepaid solar demand',
+      title: 'Accept pledged solar demand',
       body: 'Residents load balances through familiar payment behavior before allocation.',
       className: 'suite-card tall wallet',
       metric: 'KSh 7,667',
@@ -197,7 +198,7 @@ function ProductSuite() {
     },
     {
       title: 'Control deployment gates',
-      body: 'Owners, installers, and suppliers move through readiness checks before go-live.',
+      body: 'Owners, electricians, and providers move through readiness checks before go-live.',
       className: 'suite-card gates',
       metric: '83.9',
       label: 'DRS score',
@@ -211,7 +212,7 @@ function ProductSuite() {
     },
     {
       title: 'Keep every role isolated',
-      body: 'Residents, providers, owners, financiers, installers, and suppliers each get their own operating room.',
+      body: 'Residents, providers, owners, financiers, electricians, and providers each get their own operating room.',
       className: 'suite-card wide roles',
       metric: '6',
       label: 'stakeholder portals',
@@ -224,7 +225,7 @@ function ProductSuite() {
         <div className="suite-heading">
           <h2>Flexible operating rooms for every building energy model.</h2>
           <p>
-            Start with prepaid solar for apartments. Grow into financing, fulfillment, ownership,
+            Start with pledged solar for apartments. Grow into financing, fulfillment, ownership,
             maintenance, and settlement, all on one orange-and-white truth layer.
           </p>
         </div>
@@ -250,6 +251,39 @@ function ProductSuite() {
   )
 }
 
+function PilotSection() {
+  return (
+    <section id="pilot" style={s.section('var(--surface)')}>
+      <div style={s.container} className="pilot-scope-grid">
+        <div>
+          <div style={{ ...s.badge, background: 'rgba(224,120,86,0.12)', color: 'var(--peach-dark)', borderColor: 'rgba(224,120,86,0.2)' }}>
+            Pilot scope
+          </div>
+          <h2 style={s.h2}>The pilot proves demand, readiness, and trust before rollout.</h2>
+          <p style={s.body}>
+            The June 2026 pilot uses email signup, non-binding pledges, synthesized energy data, and simulated settlement.
+            It exits pilot only when a building has verified roof data, clear demand, partner readiness, and stakeholder screens
+            that explain the economics without hidden assumptions.
+          </p>
+        </div>
+        <div className="pilot-scope-list">
+          {[
+            ['Email signup', 'Stakeholders join and log in with email OTP.'],
+            ['Non-binding pledges', 'Residents express demand without being charged.'],
+            ['Synthesized data', 'Energy charts are clearly marked until measured data is live.'],
+            ['Exit criteria', 'Readiness, proof, partner workflow, and user clarity all have to hold.'],
+          ].map(([title, body]) => (
+            <article key={title}>
+              <strong>{title}</strong>
+              <span>{body}</span>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function RadicalHero() {
   return (
     <section className="radical-hero">
@@ -262,7 +296,7 @@ function RadicalHero() {
           <p className="hero-line">Map. Build. Empower.</p>
           <p>
             e.mappa turns a building into a measured energy economy: solar production, resident demand,
-            prepaid tokens, deployment readiness, ownership, compliance, and settlement all move through
+            pledged tokens, deployment readiness, ownership, compliance, and settlement all move through
             one truth layer.
           </p>
           <div className="radical-hero-actions">
@@ -270,7 +304,7 @@ function RadicalHero() {
             <a href="#how-it-works" style={btnSecondary}>See the system</a>
           </div>
           <div className="hero-proof-strip" aria-label="e.mappa stakeholder surfaces">
-            {['Residents', 'Providers', 'Owners', 'Financiers', 'Installers', 'Suppliers'].map((label) => (
+            {['Residents', 'Providers', 'Owners', 'Financiers', 'Installers', 'Providers'].map((label) => (
               <span key={label}>{label}</span>
             ))}
           </div>
@@ -286,7 +320,7 @@ function OperatingSystemScene() {
     ['Physical layer', 'Rooftop access, panels, meters, inverter, battery, DB, and gateway.'],
     ['Data layer', 'Production, apartment load, battery state, certification proof, and audit trail.'],
     ['Economic layer', 'Prepaid tokens, monetized kWh, payout waterfall, ownership, and margins.'],
-    ['Role layer', 'Residents, providers, owners, financiers, installers, and suppliers see only their truth.'],
+    ['Role layer', 'Residents, providers, owners, financiers, electricians, and providers see only their truth.'],
   ];
 
   return (
@@ -335,7 +369,7 @@ function BuildingEconomyScene() {
               <div className="wallet-bars"><i /><i /><i /></div>
             </div>
             <div className="ledger-rail">
-              {['M-Pesa', 'Tokens', 'Allocation', 'Savings'].map((item) => <span key={item}>{item}</span>)}
+              {['payment rail', 'Tokens', 'Allocation', 'Savings'].map((item) => <span key={item}>{item}</span>)}
             </div>
             <div className="ledger-card">
               <span>Monthly result</span>
@@ -356,7 +390,7 @@ function StakeholderMarketScene() {
     ['Owners', 'Host rooftops and track readiness.'],
     ['Financiers', 'Fund named building deals.'],
     ['Installers', 'Certify proof before go-live.'],
-    ['Suppliers', 'Fulfill BOMs with warranty proof.'],
+    ['Providers', 'Fulfill BOMs with warranty proof.'],
   ];
 
   return (
@@ -390,7 +424,7 @@ function StakeholderMarketScene() {
 function DeploymentProofScene() {
   const gates = [
     ['Demand', 'Resident prepayment is visible before deployment.'],
-    ['Readiness', 'DRS gates supplier lock, install scheduling, and go-live.'],
+    ['Readiness', 'DRS gates provider lock, install scheduling, and go-live.'],
     ['Settlement', 'Only monetized solar creates payout.'],
   ];
 
@@ -427,14 +461,14 @@ function NetworkScene() {
           <div style={s.badge}>Local network</div>
           <h2>Clean energy infrastructure becomes local industry.</h2>
           <p>
-            Electricians, fabricators, suppliers, and providers are not side notes. They are the buildout engine.
+            Electricians, fabricators, providers, and providers are not side notes. They are the buildout engine.
           </p>
         </div>
         <div className="network-table">
           {[
             ['Electricians', 'Certification', 'Install proof and maintenance'],
             ['Fabricators', 'Build-to-spec', 'Racks, enclosures, brackets'],
-            ['Suppliers', 'BOM fulfillment', 'Warranty, dispatch, delivery'],
+            ['Providers', 'BOM fulfillment', 'Warranty, dispatch, delivery'],
             ['Providers', 'Panel capacity', 'Measured output and payout'],
           ].map(([role, status, detail]) => (
             <article key={role}>
@@ -506,7 +540,7 @@ const navGroups: NavDropdownGroup[] = [
         heading: 'Expansion',
         items: [
           { label: 'Roadmap', href: '#coming-soon', description: 'Fractional ownership, peer-to-peer trading, and balcony solar.' },
-          { label: 'The network', href: '#network', description: 'Electricians, providers, fabricators, and suppliers around each building.' },
+          { label: 'The network', href: '#network', description: 'Electricians, providers, fabricators, and providers around each building.' },
         ],
       },
       {
@@ -707,7 +741,7 @@ function Hero() {
         <span className="system-thread one" />
         <span className="system-thread two" />
         <span className="system-thread three" />
-        <span className="system-node-label top">prepaid demand</span>
+        <span className="system-node-label top">pledged demand</span>
         <span className="system-node-label middle">verified solar</span>
         <span className="system-node-label bottom">clear settlement</span>
       </div>
@@ -737,7 +771,7 @@ function Hero() {
 
             <p style={{ fontSize: '1rem', lineHeight: 1.68, color: 'var(--text-soft)', maxWidth: '640px', marginBottom: '32px' }}>
               Solar energy for apartment buildings, made accessible, affordable, and transparent. e.mappa will connect residents, energy providers,
-              and building owners in one marketplace, supported by the electricians, fabricators, and suppliers who help the network come to life.
+              and building owners in one marketplace, supported by the electricians, fabricators, and providers who help the network come to life.
             </p>
 
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
@@ -752,7 +786,7 @@ function Hero() {
             <div className="hero-stats" style={{ display: 'grid', gap: '16px', marginTop: '46px', paddingTop: '24px', borderTop: '1px solid rgba(74,92,122,0.12)', maxWidth: '720px' }}>
               {[
                 { stat: '30–40%', label: 'target savings vs grid prices' },
-                { stat: 'M-Pesa', label: 'native payment rail for token purchases' },
+                { stat: 'payment rail', label: 'native payment rail for token purchases' },
                 { stat: 'Battery-backed', label: 'shared resilience at the building level' },
               ].map(({ stat, label }) => (
                 <div key={stat}>
@@ -825,9 +859,9 @@ function WhatIsEmappa() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
               { icon: 'hardware' as IconName, title: 'The physical layer', body: "Weatherproof rooftop infrastructure with modular panel mounts, a junction box, microinverters, battery storage, production meters, and a data gateway will be owned and maintained by e.mappa. That junction box is what makes plug-in solar possible. Providers will bring their panels, connect into the shared rooftop system, and plug in." },
-              { icon: 'app' as IconName, title: 'The software layer', body: "A virtual allocation engine will track every kWh, who generated it, who consumed it, and what it is worth. On top of that, e.mappa will provide dedicated interfaces for residents, providers, building owners, electricians, fabricators, and component suppliers, so every participant in the network can manage work, see performance, and track earnings." },
+              { icon: 'app' as IconName, title: 'The software layer', body: "A virtual allocation engine will track every kWh, who generated it, who consumed it, and what it is worth. On top of that, e.mappa will provide dedicated interfaces for residents, providers, building owners, electricians, fabricators, and component providers, so every participant in the network can manage work, see performance, and track earnings." },
               { icon: 'battery' as IconName, title: 'The battery layer', body: "Integrated battery storage at each building will store excess solar for evenings, cloudy periods, and grid outages. When the grid goes down, buildings will be able to keep running on stored solar." },
-              { icon: 'payments' as IconName, title: 'The payments layer', body: "Everything will run through M-Pesa, the payment rail Kenyans already trust. Residents will use it to buy solar tokens, and everyone else in the network will use it to get paid through e.mappa, from providers earning on generation to electricians, fabricators, and suppliers earning on the work and components that keep each building running." },
+              { icon: 'payments' as IconName, title: 'The payments layer', body: "Everything will run through email-led pilot pledge flow. Residents will use it to make solar pledges, and everyone else in the network will use it to get paid through e.mappa, from providers earning on generation to electricians, fabricators, and providers earning on the work and components that keep each building running." },
             ].map(({ icon, title, body }) => (
               <div key={title} style={{ display: 'flex', gap: '16px', padding: '20px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--surface)' }}>
                 <div style={{ flexShrink: 0 }}><IconBadge name={icon} /></div>
@@ -853,7 +887,7 @@ function SolarTokens() {
           <div style={{ ...s.badge, display: 'inline-flex' }}>Solar Tokens</div>
           <h2 style={s.h2}>If you've lived in Kenya, you know the token.</h2>
           <p style={s.body}>
-            Kenya uses a prepaid STS system for electricity. You buy a token via M-Pesa, enter it into your meter,
+            Kenya uses a electricity token system for electricity. You buy a token through existing utility channels, enter it into your meter,
             and your power comes on. e.mappa will introduce <strong>solar tokens</strong>, a parallel token system powered by the sun.
           </p>
         </div>
@@ -862,7 +896,7 @@ function SolarTokens() {
           {[
             { title: 'Solar first', body: "When your building's solar panels are generating, you will consume solar energy first. The app will show your balance in real time: kWh available, savings versus grid, and when you are running low." },
             { title: 'Seamless fallback', body: "When solar runs out, at night or on heavy-demand days, your grid connection will take over seamlessly. No interruption. No confusion. Just electricity." },
-            { title: 'Your choice, always', body: "Buy tokens on demand via M-Pesa, subscribe monthly for a fixed allocation with rollover, or combine both as a safety net. The choice is yours, and that choice is the point." },
+            { title: 'Your choice, always', body: "Buy tokens on demand via payment rail, subscribe monthly for a fixed allocation with rollover, or combine both as a safety net. The choice is yours, and that choice is the point." },
           ].map(({ title, body }) => (
             <div key={title} style={s.card} className="card-hover">
               <div style={{ width: '4px', height: '32px', borderRadius: '4px', background: 'linear-gradient(to bottom, var(--teal-darker), var(--teal))', marginBottom: '20px' }} />
@@ -942,7 +976,7 @@ function WhoWeServe() {
           <div style={{ ...s.badge, display: 'inline-flex' }}>Who We Serve</div>
           <h2 style={{ ...s.h2, marginBottom: '8px' }}>Three core stakeholders. Three network enablers.</h2>
           <p style={{ ...s.body, fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto' }}>
-            The marketplace itself centers on residents, energy providers, and building owners. Around that core, electricians, fabricators, and component suppliers help make each building possible.
+            The marketplace itself centers on residents, energy providers, and building owners. Around that core, electricians, fabricators, and component providers help make each building possible.
           </p>
         </div>
 
@@ -955,13 +989,13 @@ function WhoWeServe() {
             {[
               {
                 icon: 'home' as IconName, role: 'Residents', tagline: 'Buy tokens. Save money. Done.',
-                body: "Residents will open the app, buy solar tokens or subscribe monthly, and start consuming cheaper, cleaner electricity once their building is on the network. They will be able to see solar consumed, token balance, and savings versus grid in real time.",
-                highlights: ['30–40% cheaper electricity', 'Real-time consumption dashboard', 'M-Pesa payments', 'Battery backup included'],
+                body: "Residents will open the app, make solar pledges or subscribe monthly, and start consuming cheaper, cleaner electricity once their building is on the network. They will be able to see solar consumed, token balance, and savings versus grid in real time.",
+                highlights: ['30–40% cheaper electricity', 'Real-time consumption dashboard', 'payment rail payments', 'Battery backup included'],
               },
               {
                 icon: 'provider' as IconName, role: 'Energy Providers', tagline: 'You do not have to be a company.',
                 body: "A provider on e.mappa will be able to be a business, but it could also be an individual. A teacher, a shopkeeper, a retiree, anyone who buys a small number of panels and plugs into a partner building could earn from generation on the platform.",
-                highlights: ['Open to individuals and small businesses', 'Ready infrastructure on arrival', 'Automated M-Pesa payouts', 'One installation, many customers'],
+                highlights: ['Open to individuals and small businesses', 'Ready infrastructure on arrival', 'Automated payment rail payouts', 'One installation, many customers'],
               },
               {
                 icon: 'building' as IconName, role: 'Building Owners', tagline: 'One investment. Ongoing returns.',
@@ -995,7 +1029,7 @@ function WhoWeServe() {
             {[
               {
                 icon: 'wrench' as IconName, role: 'Electricians', tagline: 'Local expertise becomes part of the platform.',
-                body: "Every e.mappa building will need trusted installers and maintenance partners. Neighborhood electricians will become integral to rooftop setup, battery integration, safety testing, and long-term maintenance across the network.",
+                body: "Every e.mappa building will need trusted electricians and maintenance partners. Neighborhood electricians will become integral to rooftop setup, battery integration, safety testing, and long-term maintenance across the network.",
                 highlights: ['Training and certification pathway', 'Installation income', 'Maintenance income', 'Trusted local relationships'],
               },
               {
@@ -1004,8 +1038,8 @@ function WhoWeServe() {
                 highlights: ['Recurring fabrication demand', 'Clear technical specs', 'Build-to-spec opportunities', 'Growth with each new building'],
               },
               {
-                icon: 'plug' as IconName, role: 'Component Suppliers', tagline: 'The parts pipeline becomes part of the platform.',
-                body: "Microinverters, batteries, smart meters, protection hardware, and other electrical components will be sourced through local suppliers and distributors. Their inventory and relationships will help the network scale building by building.",
+                icon: 'plug' as IconName, role: 'Component Providers', tagline: 'The parts pipeline becomes part of the platform.',
+                body: "Microinverters, batteries, smart meters, protection hardware, and other electrical components will be sourced through local providers and distributors. Their inventory and relationships will help the network scale building by building.",
                 highlights: ['Recurring component demand', 'Local procurement channels', 'Trusted electrical supply relationships', 'Supply chain visibility as the network grows'],
               },
             ].map(({ icon, role, tagline, body, highlights }) => (
@@ -1048,7 +1082,7 @@ function HowItWorks() {
     ['Building owners', 'Provide rooftop access, view demand, receive royalty', 'building' as IconName],
   ];
   const rightActors = [
-    ['Suppliers', 'Supply panels, batteries, inverters, receive payments', 'plug' as IconName],
+    ['Providers', 'Supply panels, batteries, inverters, receive payments', 'plug' as IconName],
     ['Electricians', 'Install, route, meter, maintain, certify workflow', 'wrench' as IconName],
     ['Fabricators', 'Build mounts, rails, brackets, follow fabrication specs', 'hardware' as IconName],
   ];
@@ -1086,7 +1120,7 @@ function HowItWorks() {
             <h2 style={s.h2}>A building-level energy economy, mapped end to end.</h2>
           </div>
           <p style={s.body}>
-            Hardware, measured data, prepaid demand, stakeholder portals, and settlement move through one operating workflow. The graph below is modeled as a live system map: structured for clarity, not pasted as an image.
+            Hardware, measured data, pledged demand, stakeholder portals, and settlement move through one operating workflow. The graph below is modeled as a live system map: structured for clarity, not pasted as an image.
           </p>
         </div>
 
@@ -1326,7 +1360,7 @@ function NetworkSection() {
     {
       number: '1,000',
       label: 'buildings',
-      body: 'A regional workforce of certified installers, a local manufacturing supply chain, and hundreds of micro-entrepreneur providers whose livelihoods grow with the platform.',
+      body: 'A regional workforce of certified electricians, a local manufacturing supply chain, and hundreds of micro-entrepreneur providers whose livelihoods grow with the platform.',
     },
     {
       number: '10,000',
@@ -1348,7 +1382,7 @@ function NetworkSection() {
     },
     {
       icon: 'plug' as IconName,
-      title: 'Component suppliers',
+      title: 'Component providers',
       body: 'If you supply batteries, microinverters, smart meters, breakers, or related electrical components, we want to talk.',
     },
     {
@@ -1359,7 +1393,7 @@ function NetworkSection() {
     {
       icon: 'phone' as IconName,
       title: 'Partners and referrals',
-      body: 'Know a building, a neighborhood electrician, or a local supplier who should be part of the network? Send them our way.',
+      body: 'Know a building, a neighborhood electrician, or a local provider who should be part of the network? Send them our way.',
     },
   ]
 
@@ -1376,7 +1410,7 @@ function NetworkSection() {
             The money residents spend on solar tokens will circulate through their own community before it goes anywhere else. This is not a side effect. It is the design.
           </p>
           <p style={{ ...s.body, marginTop: '18px' }}>
-            The marketplace will center on residents, providers, and building owners, while electricians, fabricators, and suppliers make that marketplace possible on the ground.
+            The marketplace will center on residents, providers, and building owners, while electricians, fabricators, and providers make that marketplace possible on the ground.
           </p>
         </div>
 
@@ -1392,7 +1426,7 @@ function NetworkSection() {
               icon: 'provider' as IconName,
               title: 'Local providers',
               body: "A solar provider on e.mappa will not have to be a company. It could be anyone, a teacher, a shopkeeper, a retiree, who buys two panels, mounts them on a partner building's rooftop, and begins earning monthly income from their generation.",
-              detail: "That could make solar a side hustle, a retirement plan, and a way to build wealth from an asset that produces value every day the sun rises. The barrier to entry will be the cost of two panels. The return would be automated M-Pesa deposits every month for 20 or more years.",
+              detail: "That could make solar a side hustle, a retirement plan, and a way to build wealth from an asset that produces value every day the sun rises. The barrier to entry will be the cost of two panels. The return would be automated payment rail deposits every month for 20 or more years.",
             },
             {
               icon: 'hardware' as IconName,
@@ -1402,9 +1436,9 @@ function NetworkSection() {
             },
             {
               icon: 'plug' as IconName,
-              title: 'Local suppliers',
-              body: "Microinverters, batteries, smart meters, breakers, and protection hardware would be sourced through Kenyan electrical distributors and solar suppliers already serving the market.",
-              detail: "Our certified electricians would source these locally as part of each installation using clear specifications and quality standards. That means every shilling of component spend would move through local suppliers rather than overseas procurement.",
+              title: 'Local providers',
+              body: "Microinverters, batteries, smart meters, breakers, and protection hardware would be sourced through Kenyan electrical distributors and solar providers already serving the market.",
+              detail: "Our certified electricians would source these locally as part of each installation using clear specifications and quality standards. That means every shilling of component spend would move through local providers rather than overseas procurement.",
             },
           ].map(({ icon, title, body, detail }) => (
             <div key={title} style={{ ...s.card, padding: '28px' }} className="card-hover">
@@ -1453,7 +1487,7 @@ function NetworkSection() {
               The network only works if every part of it has a place to plug in.
             </h3>
             <p style={s.body}>
-              We are planning this with electricians, fabricators, suppliers, local providers, and building partners from the start. If you want to be part of the network, reach out.
+              We are planning this with electricians, fabricators, providers, local providers, and building partners from the start. If you want to be part of the network, reach out.
             </p>
           </div>
 
@@ -1469,7 +1503,7 @@ function NetworkSection() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <p style={{ ...s.body, fontSize: '0.95rem', maxWidth: '560px' }}>
-              Licensed electrician. Local fabricator. Supplier. Aspiring provider. If you can help build the network, we want to talk.
+              Licensed electrician. Local fabricator. Provider. Aspiring provider. If you can help build the network, we want to talk.
             </p>
             <a href="mailto:shawn.kairu@duke.edu?subject=Join%20the%20e.mappa%20network" style={{ ...btnPrimary, padding: '14px 28px', fontSize: '1rem' }}>
               Join the e.mappa network
@@ -1485,7 +1519,7 @@ function NetworkSection() {
 function WhyKenya() {
   const reasons = [
     { icon: 'sun' as IconName, title: 'Exceptional solar irradiance', body: 'Kenya sits on the equator with among the best solar irradiance in the world.' },
-    { icon: 'phone' as IconName, title: 'M-Pesa penetration', body: 'Payments work from day one, with no new financial infrastructure to build.' },
+    { icon: 'phone' as IconName, title: 'payment rail penetration', body: 'Payments work from day one, with no new financial infrastructure to build.' },
     { icon: 'document' as IconName, title: 'Open Access Regulations 2024', body: 'Explicitly permit third-party energy distribution and peer-to-peer wheeling.' },
     { icon: 'wrench' as IconName, title: 'Mature solar market', body: 'Providers, electricians, and equipment are already here.' },
     { icon: 'city' as IconName, title: 'Growing urban apartments', body: 'Rapidly expanding urban population living in the exact buildings we serve.' },
@@ -1585,9 +1619,11 @@ function Team() {
 
 /* ─── WAITLIST ─── */
 function WaitlistSection() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [neighborhood, setNeighborhood] = useState('')
-  const [role, setRole] = useState('resident')
+  const [role, setRole] = useState<WaitlistLead['role']>('resident')
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submission, setSubmission] = useState<WaitlistSubmission | null>(null)
@@ -1599,7 +1635,7 @@ function WaitlistSection() {
     setError(null)
 
     try {
-      const result = await submitWaitlistLead({ role, phone, neighborhood })
+      const result = await submitWaitlistLead({ name, email, role, phone, neighborhood })
       setSubmission(result)
       setSubmitted(true)
     } catch {
@@ -1645,7 +1681,7 @@ function WaitlistSection() {
                 <p style={s.body}>We'll reach out if e.mappa expands to your neighborhood after the June 2026 pilot.</p>
                 {submission?.source === 'local' ? (
                   <p style={{ ...s.body, fontSize: '0.82rem', marginTop: '12px' }}>
-                    Saved locally for this demo. Connect `window.__EMAPPA_API_BASE_URL__` to persist signups server-side.
+                    Saved locally because the API was unavailable. We will retry from the stored pilot lead.
                   </p>
                 ) : null}
               </div>
@@ -1658,7 +1694,7 @@ function WaitlistSection() {
                   padding: '16px 18px',
                 }}>
                   <p style={{ ...s.body, fontSize: '0.88rem', margin: 0 }}>
-                    <strong style={{ color: 'var(--navy)' }}>Electrician, fabricator, supplier, or future energy provider?</strong>{' '}
+                    <strong style={{ color: 'var(--navy)' }}>Electrician, fabricator, provider, or future energy provider?</strong>{' '}
                     This form is for residents and building owners.{' '}
                     <a href="#network" style={{ color: 'var(--teal-darker)', fontWeight: 700 }}>
                       Join the network instead.
@@ -1669,8 +1705,8 @@ function WaitlistSection() {
                 <div>
                   <label style={{ display: 'block', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', marginBottom: '10px' }}>I am a…</label>
                   <div style={{ display: 'grid', gap: '8px' }} className="role-grid">
-                    {[{ val: 'resident', label: 'Resident' }, { val: 'provider', label: 'Provider' }, { val: 'building_owner', label: 'Building Owner' }].map(({ val, label }) => (
-                      <button key={val} type="button" onClick={() => setRole(val)} style={{
+                    {[{ val: 'resident', label: 'Resident' }, { val: 'homeowner', label: 'Homeowner' }, { val: 'building_owner', label: 'Building Owner' }, { val: 'provider', label: 'Provider' }, { val: 'electrician', label: 'Electrician' }, { val: 'financier', label: 'Financier' }].map(({ val, label }) => (
+                      <button key={val} type="button" onClick={() => setRole(val as WaitlistLead['role'])} style={{
                         padding: '8px 4px', borderRadius: '8px', fontSize: '0.825rem', fontWeight: 600,
                         border: `1.5px solid ${role === val ? 'var(--teal-dark)' : 'var(--border)'}`,
                         background: role === val ? 'rgba(162,191,217,0.18)' : 'transparent',
@@ -1682,8 +1718,18 @@ function WaitlistSection() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', marginBottom: '8px' }}>Phone number (M-Pesa)</label>
-                  <input type="tel" placeholder="0712 345 678" value={phone} onChange={e => setPhone(e.target.value)} required style={inputStyle} />
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', marginBottom: '8px' }}>Name</label>
+                  <input type="text" placeholder="Grace Wanjiru" value={name} onChange={e => setName(e.target.value)} required style={inputStyle} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', marginBottom: '8px' }}>Email</label>
+                  <input type="email" placeholder="grace@example.com" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: '0.875rem', color: 'var(--navy)', marginBottom: '8px' }}>Phone number (optional)</label>
+                  <input type="tel" placeholder="0712 345 678" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />
                 </div>
 
                 <div>

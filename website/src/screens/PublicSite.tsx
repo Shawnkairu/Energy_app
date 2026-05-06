@@ -29,7 +29,7 @@ export function PublicSite({
           <p className="eyebrow">Prepaid solar for apartment buildings</p>
           <h1>Turn buildings into cleaner, cheaper energy economies.</h1>
           <p>
-            e.mappa helps residents buy prepaid solar, building owners host productive assets, and capital partners
+            e.mappa helps residents buy pledged solar, building owners host productive assets, and capital partners
             fund named projects with visible demand before a single panel goes live.
           </p>
           <div className="hero-actions">
@@ -59,7 +59,7 @@ export function PublicSite({
 
       <section className="public-strip" aria-label="e.mappa product highlights">
         {[
-          ["For residents", "Buy cleaner prepaid energy without guessing what is available."],
+          ["For residents", "Buy cleaner pledged energy without guessing what is available."],
           ["For owners", "Host solar infrastructure with transparent readiness and revenue logic."],
           ["For capital", "Back named buildings where demand, supply, and verification are visible."],
         ].map(([title, body]) => (
@@ -73,16 +73,16 @@ export function PublicSite({
       <section className="marketing-block" id="product">
         <div className="section-copy">
           <p className="eyebrow">What e.mappa sells</p>
-          <h2>Solar that behaves like prepaid airtime for buildings.</h2>
+          <h2>Solar that behaves like a pledged building service.</h2>
           <p>
-            Residents load energy credit, the building consumes verified solar first, and grid fallback remains there
+            Residents make non-binding pledges, the building consumes verified solar first, and grid fallback remains there
             when solar is unavailable. The experience is simple on the surface because the messy parts are handled
             underneath: readiness, procurement, installation, monitoring, settlement, and ownership attribution.
           </p>
         </div>
         <div className="product-stack">
           {[
-            ["Preload", "Residents commit real demand before deployment."],
+            ["Pledge", "Residents commit real demand before deployment."],
             ["Generate", "Panels and batteries serve building load first."],
             ["Settle", "Only sold solar creates payouts and ownership value."],
           ].map(([title, body]) => (
@@ -106,11 +106,11 @@ export function PublicSite({
           <h2>Deployment waits for proof, not optimism.</h2>
           <p>
             e.mappa does not treat solar deployment as a pitch deck promise. Every project moves through a readiness
-            score, named capital, supplier lock, installation proof, and live metering before the economy opens.
+            score, named capital, provider lock, installation proof, and live metering before the economy opens.
           </p>
         </div>
         <div className="model-quote">
-          <strong>No prepaid cash means no solar allocation and no payout.</strong>
+          <strong>No confirmed pledge means no solar allocation and no payout.</strong>
           <span>
             That one rule keeps the system honest: generated energy is not value until a building actually buys and
             uses it.
@@ -135,9 +135,9 @@ export function PublicSite({
 
       <section className="customer-band">
         {[
-          ["Residents get", "Lower-cost prepaid solar, usage clarity, fallback confidence, and optional ownership once trust is earned."],
+          ["Residents get", "Lower-cost pledged solar, usage clarity, fallback confidence, and optional ownership once trust is earned."],
           ["Owners get", "A stronger building utility story, host economics, resident readiness tools, and live deployment visibility."],
-          ["Partners get", "A measurable project pipeline where suppliers, installers, providers, and financiers work from the same truth."],
+          ["Partners get", "A measurable project pipeline where providers, electricians, and financiers work from the same truth."],
         ].map(([title, body]) => (
           <article key={title}>
             <h3>{title}</h3>
@@ -163,7 +163,7 @@ export function PublicSite({
             <span>Resident energy wallet</span>
             <strong>Prepaid solar, savings, fallback, and ownership.</strong>
           </button>
-          <button onClick={() => onPreviewRole("owner")}>
+          <button onClick={() => onPreviewRole("building_owner")}>
             <span>Owner readiness room</span>
             <strong>Building fit, resident demand, deployment gates.</strong>
           </button>

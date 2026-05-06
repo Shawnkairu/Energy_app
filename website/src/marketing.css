@@ -681,6 +681,40 @@ a:hover {
 .wallet-bars i:nth-child(2) { width: 72%; }
 .wallet-bars i:nth-child(3) { width: 46%; }
 
+.pilot-scope-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.86fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.pilot-scope-list {
+  display: grid;
+  gap: 12px;
+}
+
+.pilot-scope-list article {
+  border: 1px solid rgba(224, 120, 86, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 16px 18px;
+}
+
+.pilot-scope-list strong,
+.pilot-scope-list span {
+  display: block;
+}
+
+.pilot-scope-list strong {
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.pilot-scope-list span {
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
 .ledger-rail {
   position: relative;
   z-index: 1;

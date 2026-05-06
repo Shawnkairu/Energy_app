@@ -1,0 +1,14 @@
+# Sprint ownership map. Keep the public sprint lanes explicit so parallel
+# agents can see who owns each surface during review.
+
+/backend/ @claude-code
+/packages/shared/ @claude-code
+/packages/api-client/ @claude-code
+/mobile/ @cursor
+/cockpit/ @openai-codex
+/website/ @openai-codex
+/.github/ @openai-codex
+/package.json @openai-codex
+/docker-compose.yml @openai-codex
+/vercel.json @openai-codex
+/.env.example @openai-codex
