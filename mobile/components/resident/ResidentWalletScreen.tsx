@@ -1,120 +1,149 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Text, View } from "react-native";
-import { commitPrepaid, confirmPrepaid } from "@emappa/api-client";
-import { GlassCard, Label, Pill, PrimaryButton, colors, typography } from "@emappa/ui";
-import { RoleDashboardScaffold } from "../roles/RoleDashboardScaffold";
-import {
-  ResidentRuleCard,
-  ResidentTokenArtifact,
-  formatKes,
-  residentView,
-} from "./ResidentShared";
+import type { ProjectedBuilding } from "@emappa/shared";
+import { GlassCard, Pill, PrimaryButton, colors, spacing, typography } from "@emappa/ui";
+import { TokenHero } from "../TokenHero";
+import { useApi } from "../../lib/api";
+import { useApiData } from "../../lib/useApiData";
+import { commitResidentPrepaid, getResidentPrepaidBalance, getResidentPrepaidHistory } from "./ResidentApi";
+import { CenteredState, ResidentInfoCard, ResidentMetricGrid, ResidentScreenFrame } from "./ResidentScaffold";
+import { formatKes, residentView } from "./residentUtils";
 
 export function ResidentWalletScreen() {
-  const [checkoutStatus, setCheckoutStatus] = useState("Ready for a KSh 1,000 pilot commitment.");
-  const [isCommitting, setIsCommitting] = useState(false);
+  return (
+    <ResidentScreenFrame
+      section="Wallet"
+      title="Token wallet"
+      subtitle="Prepaid pledges, resident share earnings, and savings without hidden debt."
+    >
+      {(building, refetchHome) => <ResidentWalletPanels building={building} refetchHome={refetchHome} />}
+    </ResidentScreenFrame>
+  );
+}
 
-  async function topUp(buildingId: string) {
-    setIsCommitting(true);
+function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBuilding; refetchHome: () => void }) {
+  const api = useApi();
+  const apiRef = useRef(api);
+  apiRef.current = api;
+  const [pledgeError, setPledgeError] = useState<string | null>(null);
+  const [pledgeStatus, setPledgeStatus] = useState<string | null>(null);
+  const [isPledging, setIsPledging] = useState(false);
+  const load = useCallback(async () => {
+    const [balance, history] = await Promise.all([
+      getResidentPrepaidBalance(apiRef.current, building.project.id),
+      getResidentPrepaidHistory(apiRef.current, building.project.id),
+    ]);
+    return { balance, history };
+  }, [building.project.id]);
+  const { data, error, isLoading, refetch } = useApiData(load, [building.project.id]);
+  const view = residentView(building);
+  const residentPayout = building.providerPayouts
+    .filter((payout) => payout.ownerRole === "resident")
+    .reduce((sum, payout) => sum + payout.payout, 0);
+  const confirmedKes = data?.balance.confirmedTotalKes ?? view.prepaidBalanceKes;
+
+  async function pledge() {
+    setIsPledging(true);
+    setPledgeError(null);
+    setPledgeStatus(null);
     try {
-      const commitment = await commitPrepaid(buildingId, 1000);
-      const confirmed = await confirmPrepaid(commitment.id);
-      setCheckoutStatus(
-        confirmed
-          ? `KSh ${confirmed.amountKes.toLocaleString()} confirmed. Reopen home to refresh projected DRS and balance.`
-          : `KSh ${commitment.amountKes.toLocaleString()} commitment saved locally.`,
-      );
+      const result = await commitResidentPrepaid(apiRef.current, building.project.id, 1000);
+      setPledgeStatus(`${formatKes(result.commitment.amountKes)} pledge ${result.commitment.status}.`);
+      refetch();
+      refetchHome();
+    } catch (cause) {
+      setPledgeError(cause instanceof Error ? cause.message : String(cause));
     } finally {
-      setIsCommitting(false);
+      setIsPledging(false);
     }
   }
 
+  if (isLoading) {
+    return <CenteredState title="Loading wallet" detail="Fetching prepaid balance and pledge history." />;
+  }
+
+  if (error) {
+    return <CenteredState title="Wallet unavailable" detail={error.message} actionLabel="Retry" onAction={refetch} />;
+  }
+
   return (
-    <RoleDashboardScaffold
-      role="resident"
-      cohesionRole="resident"
-      section="Wallet"
-      title="Token Wallet"
-      subtitle="A prepaid token artefact for top-ups and allocation guardrails. No credit, no hidden debt."
-      actions={["Top up tokens", "See guard", "History"]}
-      renderHero={(building) => {
-        const view = residentView(building);
+    <>
+      <TokenHero
+        eyebrow="Prepaid wallet"
+        title="Cash-cleared tokens gate solar"
+        subtitle="The contract pledge endpoint confirms resident prepaid cash before allocation can open."
+        tokenLabel="Confirmed balance"
+        tokenValue={formatKes(confirmedKes)}
+      />
 
-        return {
-          label: "Available tokens",
-          value: formatKes(view.prepaidBalanceKes),
-          sub: "Cash-cleared tokens are the only way this resident session can receive sold solar.",
-        };
-      }}
-      renderPanels={(building) => {
-        const view = residentView(building);
-        const expectedTopUp = Math.max(500, Math.round(view.savingsKes * 1.4));
-        const fundedRatio = Math.min(1, view.prepaidBalanceKes / Math.max(1, view.averagePrepaidBalanceKes + expectedTopUp));
+      <ResidentMetricGrid
+        items={[
+          {
+            label: "Pledged",
+            value: formatKes(confirmedKes),
+            detail: "Confirmed prepaid total returned by the wallet API.",
+            tone: confirmedKes > 0 ? "good" : "warn",
+          },
+          {
+            label: "Savings",
+            value: formatKes(view.savingsKes),
+            detail: "Resident savings from monetized solar versus grid-only energy.",
+            tone: view.savingsKes > 0 ? "good" : "neutral",
+          },
+          {
+            label: "Earnings",
+            value: formatKes(residentPayout),
+            detail: "Resident-owned provider share payout, only from sold prepaid solar.",
+            tone: residentPayout > 0 ? "good" : "neutral",
+          },
+          {
+            label: "History",
+            value: `${data?.history.length ?? 0}`,
+            detail: "Pledge records returned by the prepaid history endpoint.",
+          },
+        ]}
+      />
 
-        return (
-          <>
-            <ResidentTokenArtifact
-              balance={formatKes(view.prepaidBalanceKes)}
-              topUp={formatKes(expectedTopUp)}
-              fundedRatio={fundedRatio}
-            />
+      <ResidentInfoCard
+        eyebrow="Pledge"
+        title="Add KSh 1,000 prepaid solar tokens"
+        detail="This posts to /prepaid/commit. Failed pledges stay visible here so the resident can retry."
+      >
+        <View style={{ gap: spacing.sm }}>
+          <PrimaryButton onPress={pledge}>{isPledging ? "Pledging KSh 1,000..." : "Pledge KSh 1,000"}</PrimaryButton>
+          {pledgeStatus ? <Text style={{ color: colors.green, fontSize: typography.small, lineHeight: 19 }}>{pledgeStatus}</Text> : null}
+          {pledgeError ? (
+            <>
+              <Text style={{ color: colors.red, fontSize: typography.small, lineHeight: 19 }}>{pledgeError}</Text>
+              <PrimaryButton onPress={pledge}>Retry pledge</PrimaryButton>
+            </>
+          ) : null}
+        </View>
+      </ResidentInfoCard>
 
-            <GlassCard>
-              <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Label>Token checkout</Label>
-                  <Text
-                    style={{
-                      color: colors.text,
-                      fontSize: typography.heading,
-                      fontWeight: "600",
-                      letterSpacing: -0.35,
-                      marginTop: 5,
-                      lineHeight: typography.heading + 4,
-                    }}
-                  >
-                    Add prepaid solar tokens
-                  </Text>
-                  <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 17, marginTop: 6 }}>
-                    {checkoutStatus}
-                  </Text>
-                </View>
-                <Pill tone="good">prepaid</Pill>
-              </View>
-              <View style={{ marginTop: 16 }}>
-                <PrimaryButton onPress={() => topUp(building.project.id)}>
-                  {isCommitting ? "Confirming..." : "Top up KSh 1,000"}
-                </PrimaryButton>
-              </View>
-            </GlassCard>
-
-            <ResidentRuleCard
-              eyebrow="Prepaid-only rule"
-              title="No prepaid cash, no solar allocation."
-              body="The wallet protects the resident from hidden debt and protects the building economy from unpaid solar claims."
-              rows={[
-                {
-                  label: "Cash clears first",
-                  value: "required",
-                  note: "Tokens are usable only after top-up confirmation.",
-                  tone: "good",
-                },
-                {
-                  label: "Solar must be sold",
-                  value: "required",
-                  note: "Unused, curtailed, or free-exported energy creates no claim.",
-                },
-                {
-                  label: "Zero balance behavior",
-                  value: "blocked",
-                  note: "The app should show grid fallback instead of allocating unpaid solar.",
-                  tone: "warn",
-                },
-              ]}
-            />
-          </>
-        );
-      }}
-    />
+      <GlassCard>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", gap: spacing.md }}>
+          <Text style={{ color: colors.text, flex: 1, fontSize: typography.title, fontWeight: "700", letterSpacing: -0.45 }}>
+            Recent prepaid history
+          </Text>
+          <Pill tone="good">prepaid</Pill>
+        </View>
+        <View style={{ marginTop: spacing.sm }}>
+          {(data?.history ?? []).map((item) => (
+            <View key={item.id} style={{ borderTopColor: colors.border, borderTopWidth: 1, paddingVertical: 10 }}>
+              <Text style={{ color: colors.text, fontSize: typography.small, fontWeight: "700" }}>{formatKes(item.amountKes)}</Text>
+              <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 16, marginTop: 3 }}>
+                {item.status} pledge - {new Date(item.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
+          ))}
+          {data?.history.length === 0 ? (
+            <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 20 }}>
+              No pledges returned yet. Use the pledge button above to create the first prepaid commitment.
+            </Text>
+          ) : null}
+        </View>
+      </GlassCard>
+    </>
   );
 }
