@@ -1,6 +1,9 @@
-import type { StakeholderRole } from "./types";
+import type { Role, PublicRole } from "./types";
 
-export type StakeholderSectionRole = StakeholderRole;
+// Canonical section registry. Matches docs/IA_SPEC.md §1–6 exactly.
+// Mobile and website portals must render these sections in this order.
+
+export type StakeholderSectionRole = Role;
 
 export interface StakeholderSection {
   id: string;
@@ -14,63 +17,54 @@ export interface StakeholderSection {
 
 export const stakeholderSections = {
   resident: [
-    section("home", "Home", "Balance, coverage, and savings", "/(resident)/home"),
-    section("wallet", "Wallet", "Prepaid solar balance and top-ups", "/(resident)/wallet"),
-    section("usage", "Usage", "Solar, battery, and grid fallback", "/(resident)/usage"),
-    section("ownership", "Ownership", "Optional share upside", "/(resident)/ownership"),
-    section("profile", "Profile", "Building membership and trust", "/(resident)/profile"),
-    section("support", "Support", "Help, tickets, and service status", "/(resident)/support"),
+    section("home", "Home", "Token balance and pledge CTA", "/(resident)/home", { webRoute: "/portal/resident/home" }),
+    section("energy", "Energy", "Usage and (when shares > 0) generation", "/(resident)/energy", { webRoute: "/portal/resident/energy" }),
+    section("wallet", "Wallet", "Pledged total, ownership earnings, savings", "/(resident)/wallet", { webRoute: "/portal/resident/wallet" }),
+    section("profile", "Profile", "Account, settings, support, logout", "/(resident)/profile", { webRoute: "/portal/resident/profile" }),
   ],
-  owner: [
-    section("home", "Home", "DRS, royalty, and prepaid demand", "/(owner)/home"),
-    section("drs", "DRS", "Readiness score and blockers", "/(owner)/drs"),
-    section("deployment", "Deployment", "Readiness gates and obligations", "/(owner)/deployment"),
-    section("earnings", "Earnings", "Host royalty and benchmarks", "/(owner)/earnings"),
+  building_owner: [
+    section("home", "Home", "Project status, DRS, blockers, deployment progress", "/(building-owner)/home", { webRoute: "/portal/building-owner/home" }),
+    section("energy", "Energy", "Generation and usage on owned building", "/(building-owner)/energy", { webRoute: "/portal/building-owner/energy" }),
+    section("wallet", "Wallet", "Royalty cashflow", "/(building-owner)/wallet", { webRoute: "/portal/building-owner/wallet" }),
+    section("profile", "Profile", "Account, settings, support, logout", "/(building-owner)/profile", { webRoute: "/portal/building-owner/profile" }),
   ],
   provider: [
-    section("home", "Home", "Payout, output, and ownership", "/(provider)/home"),
-    section("assets", "Assets", "Generated versus monetized kWh", "/(provider)/assets"),
-    section("performance", "Performance", "Utilization, waste, and grid fallback", "/(provider)/performance"),
-    section("shares", "Shares", "Ownership ledger and retained yield", "/(provider)/shares"),
-    section("earnings", "Earnings", "Monetized-kWh payout tracking", "/(provider)/earnings"),
-    section("maintenance", "Maintenance", "Support, warranty, and monitoring status", "/(provider)/maintenance"),
-    section("deployment", "Deployment", "DRS gates and installation coordination", "/(provider)/deployment"),
+    section("discover", "Discover", "Airbnb-style project cards needing equipment", "/(provider)/discover", { webRoute: "/portal/provider/discover" }),
+    section("inventory", "Inventory", "SKUs, orders, quote requests, reliability", "/(provider)/inventory", { webRoute: "/portal/provider/inventory" }),
+    section("generation", "Generation", "Live performance of arrays where shares are retained", "/(provider)/generation", { webRoute: "/portal/provider/generation" }),
+    section("wallet", "Wallet", "Equipment sales + share royalties", "/(provider)/wallet", { webRoute: "/portal/provider/wallet" }),
+    section("profile", "Profile", "Business profile, settings, support, logout", "/(provider)/profile", { webRoute: "/portal/provider/profile" }),
+  ],
+  electrician: [
+    section("discover", "Discover", "Projects needing electrician work", "/(electrician)/discover", { webRoute: "/portal/electrician/discover" }),
+    section("jobs", "Jobs", "Active, completed, maintenance", "/(electrician)/jobs", { webRoute: "/portal/electrician/jobs" }),
+    section("wallet", "Wallet", "Job earnings and payouts", "/(electrician)/wallet", { webRoute: "/portal/electrician/wallet" }),
+    section("compliance", "Compliance", "Certifications and training", "/(electrician)/compliance", { webRoute: "/portal/electrician/compliance" }),
+    section("profile", "Profile", "Account, settings, support, logout", "/(electrician)/profile", { webRoute: "/portal/electrician/profile" }),
   ],
   financier: [
-    section("home", "Home", "Capital, recovery, and risk", "/(financier)/home"),
-    section("deals", "Deals", "Named building pipeline", "/(financier)/deals"),
-    section("deal-detail", "Deal Detail", "DRS, milestones, and diligence", "/(financier)/deal-detail"),
-    section("portfolio", "Portfolio", "Recovery curve and exposure", "/(financier)/portfolio"),
+    section("discover", "Discover", "Airbnb-style deal cards", "/(financier)/discover", { webRoute: "/portal/financier/discover" }),
+    section("portfolio", "Portfolio", "Robinhood-style positions and compounding", "/(financier)/portfolio", { webRoute: "/portal/financier/portfolio" }),
+    section("wallet", "Wallet", "Cash, deployed capital, returns", "/(financier)/wallet", { webRoute: "/portal/financier/wallet" }),
+    section("profile", "Profile", "Investor profile, settings, support, logout", "/(financier)/profile", { webRoute: "/portal/financier/profile" }),
   ],
-  installer: [
-    section("home", "Home", "Checklist and readiness", "/(installer)/home"),
-    section("certification", "Certification", "Lead electrician eligibility", "/(installer)/certification"),
-    section("checklist", "Checklist", "Proof before go-live", "/(installer)/checklist"),
-    section("job-detail", "Job Detail", "Photos, readings, and connectivity", "/(installer)/job-detail"),
-    section("maintenance", "Maintenance", "Post-live service tickets", "/(installer)/maintenance"),
-  ],
-  supplier: [
-    section("home", "Home", "RFQs, BOM, and lead times", "/(supplier)/home"),
-    section("catalog", "Catalog", "Available components and warranty docs", "/(supplier)/catalog"),
-    section("quote-requests", "Quote Requests", "Award and dispatch status", "/(supplier)/quote-requests"),
-    section("orders", "Orders", "Delivery proof and warranty flow", "/(supplier)/orders"),
-    section("reliability", "Reliability", "Fulfillment history and lead-time trust", "/(supplier)/reliability"),
-  ],
+  // Admin lives primarily in cockpit. Mobile admin is a thin read-only surface.
+  // Per docs/IA_SPEC.md §8.5, admin is never publicly selectable.
   admin: [
-    section("home", "Home", "Internal command center", "/(admin)/home"),
-    section("projects", "Projects", "Pipeline and DRS distribution", "/(admin)/projects"),
-    section("alerts", "Alerts", "Settlement integrity and governance", "/(admin)/alerts"),
+    section("alerts", "Alerts", "Operational alerts feed", "/(admin)/alerts"),
+    section("projects", "Projects", "Read-only portfolio scan", "/(admin)/projects"),
+    section("profile", "Profile", "Account, settings, support, logout", "/(admin)/profile"),
   ],
 } as const satisfies Record<StakeholderSectionRole, readonly StakeholderSection[]>;
 
+// Public roles only — admin excluded by design (see IA_SPEC §8.5).
 export const stakeholderPortalRoles = [
   "resident",
-  "owner",
+  "building_owner",
   "provider",
   "financier",
-  "installer",
-  "supplier",
-] as const satisfies readonly StakeholderRole[];
+  "electrician",
+] as const satisfies readonly PublicRole[];
 
 export type StakeholderPortalRole = (typeof stakeholderPortalRoles)[number];
 
@@ -96,6 +90,10 @@ export function auditStakeholderSectionParity(): StakeholderSectionAuditResult {
 
   for (const [role, sections] of Object.entries(stakeholderSections) as [StakeholderSectionRole, readonly StakeholderSection[]][]) {
     const ids = new Set<string>();
+
+    if (role !== "admin" && sections.length > 5) {
+      issues.push(`${role}: ${sections.length} tabs exceeds the 5-tab cap from IA_SPEC §1`);
+    }
 
     for (const item of sections) {
       if (ids.has(item.id)) {

@@ -1,11 +1,22 @@
-export type StakeholderRole =
+// Per docs/SPRINT_CONTRACT.md §4 and docs/IA_SPEC.md §1
+// - 'supplier' merged into 'provider' (with BusinessType for differentiation)
+// - 'installer' renamed to 'electrician'
+// - 'owner' renamed to 'building_owner'
+// Admin is intentionally last; role-select UI must filter to PublicRole only.
+export type Role =
   | "resident"
-  | "owner"
+  | "building_owner"
   | "provider"
   | "financier"
-  | "installer"
-  | "supplier"
+  | "electrician"
   | "admin";
+
+export type PublicRole = Exclude<Role, "admin">;
+
+export type BusinessType = "panels" | "infrastructure" | "both";
+
+// Back-compat alias. New code should prefer Role.
+export type StakeholderRole = Role;
 
 export type DeploymentDecision = "approve" | "review" | "block";
 export type ProjectStage =
@@ -134,4 +145,177 @@ export interface BuildingProject {
   capitalRequiredKes: number;
   fundedKes: number;
   prepaidCommittedKes: number;
+}
+
+// =============================================================================
+// SPRINT_CONTRACT additions — per docs/SPRINT_CONTRACT.md §4
+// These are the locked types all three sprint agents code against.
+// =============================================================================
+
+export interface User {
+  id: string;
+  email: string;
+  phone: string | null;
+  role: Role;
+  businessType: BusinessType | null;   // only meaningful when role === 'provider'
+  buildingId: string | null;
+  onboardingComplete: boolean;
+  displayName: string | null;
+  createdAt: string;
+  lastSeenAt: string | null;
+}
+
+export interface PrepaidCommitment {
+  id: string;
+  buildingId: string;
+  userId: string;
+  amountKes: number;
+  paymentMethod: "pledge" | "mpesa";
+  status: "pending" | "confirmed" | "failed";
+  createdAt: string;
+  confirmedAt: string | null;
+}
+
+export interface EnergyReading {
+  buildingId: string;
+  timestamp: string;
+  kind: "generation" | "load" | "irradiance";
+  value: number;
+  unit: string;
+  source: "synthetic" | "measured";
+  provenance: string;
+}
+
+// Geo polygon. Loosely typed as GeoJSON-like; full GeoJSON typing not pulled in to avoid a dep.
+export interface PolygonCoord {
+  lat: number;
+  lon: number;
+}
+
+export interface RoofPolygon {
+  geojson: { type: "Polygon"; coordinates: number[][][] };
+  areaM2: number;
+  source: "microsoft_footprints" | "owner_traced" | "owner_typed";
+  confidence: number;
+}
+
+export interface AuthSession {
+  token: string;
+  user: User;
+}
+
+export interface ProjectCard {
+  buildingId: string;
+  name: string;
+  address: string;
+  photoUrl: string | null;
+  drsScore: number;
+  drsDecision: DeploymentDecision;
+  stage: "listed" | "qualifying" | "funding" | "installing" | "live" | "retired";
+  gapSummary: string;
+  capitalAskKes?: number;
+  equipmentAsk?: { panels?: number; infrastructure?: string[] };
+  electricianAsk?: { scope: "install" | "inspection" | "maintenance"; payEstimateKes: number };
+}
+
+export interface InventoryItem {
+  id: string;
+  providerUserId: string;
+  sku: string;
+  kind: "panel" | "infra";
+  stock: number;
+  unitPriceKes: number;
+  reliabilityScore: number;
+}
+
+export interface Certification {
+  id: string;
+  electricianUserId: string;
+  name: string;
+  issuer: string;
+  docUrl: string;
+  issuedAt: string;
+  expiresAt: string;
+  status: "valid" | "expiring" | "expired";
+}
+
+export interface JobChecklistItem {
+  id: string;
+  label: string;
+  status: "pending" | "done" | "failed";
+  photoUrl?: string;
+  reading?: string;
+}
+
+export interface Job {
+  id: string;
+  electricianUserId: string;
+  buildingId: string;
+  scope: "install" | "inspection" | "maintenance";
+  status: "active" | "completed";
+  checklist: JobChecklistItem[];
+  payEstimateKes: number;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export interface FinancierPosition {
+  buildingId: string;
+  committedKes: number;
+  deployedKes: number;
+  returnsToDateKes: number;
+  irrPct: number;
+  milestonesHit: string[];
+}
+
+export interface WalletTransaction {
+  id: string;
+  userId: string;
+  at: string;
+  kind: "pledge" | "royalty" | "equipment_sale" | "job_payment" | "capital_deploy" | "capital_return";
+  amountKes: number;       // signed: negative = out, positive = in
+  reference: string;
+}
+
+// Persisted settlement record (distinct from SettlementOutputs which is computed/projected).
+export interface SettlementPeriod {
+  id: string;
+  buildingId: string;
+  periodStart: string;
+  periodEnd: string;
+  eGen: number;
+  eSold: number;
+  eWaste: number;
+  revenueKes: number;
+  payouts: {
+    provider: number;
+    financier: number;
+    owner: number;
+    emappa: number;
+    reserve: number;
+  };
+  simulation: boolean;        // pilot: always true
+  dataSource: "synthetic" | "measured" | "mixed";
+  createdAt: string;
+}
+
+// Building extension fields per IA + roof capture flow.
+// Existing BuildingProject is the projector domain object; this is the persisted-record shape
+// used by /buildings endpoints.
+export interface BuildingRecord {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lon: number;
+  unitCount: number;
+  occupancy: number | null;
+  stage: "listed" | "qualifying" | "funding" | "installing" | "live" | "retired";
+  roofAreaM2?: number;
+  roofPolygonGeojson?: { type: "Polygon"; coordinates: number[][][] };
+  roofSource?: "microsoft_footprints" | "owner_traced" | "owner_typed";
+  roofConfidence?: number;
+  dataSource: "synthetic" | "measured" | "mixed";
+  createdAt: string;
+  updatedAt: string;
 }
