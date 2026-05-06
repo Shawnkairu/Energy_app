@@ -1,63 +1,75 @@
-import { RoleDashboardScaffold } from "../roles/RoleDashboardScaffold";
-import {
-  ResidentIdentityCard,
-  ResidentTrustList,
-} from "./ResidentShared";
+import { Linking, Text, View } from "react-native";
+import { GlassCard, Pill, PrimaryButton, colors, spacing, typography } from "@emappa/ui";
+import { ResidentInfoCard, ResidentMetricGrid, ResidentScreenFrame } from "./ResidentScaffold";
 
 export function ResidentProfileScreen() {
   return (
-    <RoleDashboardScaffold
-      role="resident"
-      cohesionRole="resident"
+    <ResidentScreenFrame
       section="Profile"
-      title="Resident Pass"
-      subtitle="A trust card for building membership, privacy boundaries, and resident-only access."
-      actions={["Verify building", "Read privacy", "Trust status"]}
-      renderHero={(building) => {
-        return {
-          label: "Verified building",
-          value: building.project.name,
-          sub: `${building.project.units} homes in ${building.project.locationBand}. Resident-only session.`,
-        };
-      }}
-      renderPanels={(building) => {
+      title="Resident profile"
+      subtitle="Building membership, privacy boundaries, support, and resident-only trust state."
+    >
+      {(building, refetch) => {
         const trustReady = building.project.prepaidCommittedKes > 0 && building.drs.reasons.length === 0;
 
         return (
           <>
-            <ResidentIdentityCard
-              buildingName={building.project.name}
-              location={building.project.locationBand}
-              units={building.project.units}
-              trustReady={trustReady}
-              privacyNote={building.transparency.privacyNote}
-            />
+            <ResidentInfoCard
+              eyebrow="Resident membership"
+              title={building.project.name}
+              detail={`${building.project.units} homes in ${building.project.locationBand}. This session is scoped to resident access only.`}
+            >
+              <View style={{ flexDirection: "row", gap: spacing.sm }}>
+                <Pill tone={trustReady ? "good" : "warn"}>{trustReady ? "verified" : "review"}</Pill>
+                <Pill>{building.project.stage}</Pill>
+              </View>
+            </ResidentInfoCard>
 
-            <ResidentTrustList
-              title="What is verified"
+            <ResidentMetricGrid
               items={[
                 {
-                  label: "Building access",
-                  detail: "Access is scoped to this building and this resident session.",
-                  status: "scoped",
+                  label: "Access",
+                  value: "Scoped",
+                  detail: "Resident views show household outcomes without exposing counterparty finances.",
                   tone: "good",
                 },
                 {
-                  label: "Privacy averaging",
-                  detail: `Resident benchmarks are described across ${building.project.units} homes without exposing neighbors.`,
-                  status: "private",
+                  label: "Privacy",
+                  value: "Averaged",
+                  detail: building.transparency.privacyNote,
+                  tone: "good",
                 },
                 {
-                  label: "Settlement data",
-                  detail: "Residents see household outcomes and benchmarks, not private counterparty finances.",
-                  status: building.drs.reasons.length === 0 ? "trusted" : "review",
+                  label: "Settlement",
+                  value: building.drs.reasons.length === 0 ? "Trusted" : "Review",
+                  detail: building.drs.reasons[0] ?? "No resident-visible settlement blocker.",
                   tone: building.drs.reasons.length === 0 ? "good" : "warn",
+                },
+                {
+                  label: "Building",
+                  value: `${building.project.units}`,
+                  detail: "Homes attached to this resident building.",
                 },
               ]}
             />
+
+            <GlassCard>
+              <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "700", letterSpacing: -0.45 }}>
+                Support and account actions
+              </Text>
+              <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8 }}>
+                Support requests include this building name and resident role so the team can triage wallet, energy, or account issues.
+              </Text>
+              <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+                <PrimaryButton onPress={() => Linking.openURL(`mailto:support@emappa.test?subject=${encodeURIComponent(`Resident support - ${building.project.name}`)}`)}>
+                  Email support
+                </PrimaryButton>
+                <PrimaryButton onPress={refetch}>Refresh profile</PrimaryButton>
+              </View>
+            </GlassCard>
           </>
         );
       }}
-    />
+    </ResidentScreenFrame>
   );
 }

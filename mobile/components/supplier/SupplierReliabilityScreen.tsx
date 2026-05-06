@@ -4,8 +4,8 @@ import { SupplierBar, SupplierCard, SupplierMetricGrid, SupplierProofTable, Supp
 export function SupplierReliabilityScreen() {
   return (
     <RoleDashboardScaffold
-      role="supplier"
-      cohesionRole="supplier"
+      role="provider"
+      cohesionRole="provider"
       section="Reliability"
       title="Reliability Score"
       subtitle="Fulfillment history, proof gaps, and schedule confidence. No catalog or RFQ work here."

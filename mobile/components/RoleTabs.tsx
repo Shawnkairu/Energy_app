@@ -44,8 +44,8 @@ function TabBarChromeBackground() {
 const hiddenTabRoutes: Partial<Record<StakeholderRole, string[]>> = {
   provider: ["qualified-projects", "commit-capacity", "accept-terms"],
   financier: ["tranche-release"],
-  installer: ["jobs-inbox"],
-  owner: ["list-building", "compare-today", "resident-roster", "approve-terms", "owner-account"],
+  electrician: ["jobs-inbox"],
+  building_owner: ["compare-today", "resident-roster", "approve-terms", "owner-account"],
 };
 
 export function RoleTabs({ role }: { role: StakeholderRole }) {

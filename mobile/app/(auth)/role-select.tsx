@@ -1,26 +1,55 @@
 import { useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import type { StakeholderRole } from "@emappa/shared";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import type { BusinessType, StakeholderRole } from "@emappa/shared";
 import { AppMark, colors, PaletteCard, typography } from "@emappa/ui";
-import { saveSelectedRole } from "../../components/session";
+import { useAuth } from "../../components/AuthContext";
+import { useApi } from "../../lib/api";
 
 /** shared-screens `ScreenRolePicker`: stacked role cards, first row emphasized, subtitle per row. */
-const roles = [
-  { label: "Resident", sub: "I live in a building", role: "resident" as const, href: "/(resident)/home" },
-  { label: "Owner", sub: "I own a building", role: "owner" as const, href: "/(owner)/home" },
-  { label: "Provider", sub: "I deploy solar capacity", role: "provider" as const, href: "/(provider)/home" },
-  { label: "Financier", sub: "I fund deal-level capital", role: "financier" as const, href: "/(financier)/home" },
-  { label: "Electrician", sub: "I install and verify", role: "installer" as const, href: "/(installer)/home" },
-  { label: "Supplier", sub: "I supply hardware & BOM", role: "supplier" as const, href: "/(supplier)/home" },
-  { label: "Admin", sub: "Internal ops & cockpit", role: "admin" as const, href: "/(admin)/home" },
-] as const;
+const roles: Array<{ label: string; sub: string; role: StakeholderRole; href: string; businessType?: BusinessType }> = [
+  { label: "Resident", sub: "I live in a building", role: "resident", href: "/(resident)/home" },
+  { label: "Homeowner", sub: "I own and live in a single-family home", role: "homeowner", href: "/(building-owner)/home" },
+  { label: "Building owner", sub: "I own a multi-unit building", role: "building_owner", href: "/(building-owner)/home" },
+  { label: "Provider", sub: "I supply panels or infrastructure", role: "provider", href: "/(provider)/home", businessType: "both" },
+  { label: "Financier", sub: "I fund deal-level capital", role: "financier", href: "/(financier)/portfolio" },
+  { label: "Electrician", sub: "I install and verify", role: "electrician", href: "/(electrician)/jobs" },
+];
 
 export default function RoleSelect() {
   const router = useRouter();
+  const api = useApi();
+  const { completeProfile, refreshUser, session, setRole } = useAuth();
+  const [displayName, setDisplayName] = useState(session?.user?.displayName ?? "");
+  const [status, setStatus] = useState("Confirm your workspace to finish onboarding.");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function chooseRole(role: StakeholderRole, href: string) {
-    saveSelectedRole(role);
-    router.replace(href);
+  async function chooseRole(role: StakeholderRole, href: string, businessType?: BusinessType) {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatus("Finishing onboarding...");
+
+    try {
+      const profile = {
+        displayName: displayName.trim() || undefined,
+        businessType: role === "provider" ? businessType : undefined,
+      };
+      await api.completeOnboarding(profile);
+      const user = await api.me();
+      completeProfile(profile);
+      refreshUser(user);
+      setRole(user.role ?? role);
+      router.replace(roleHomeHref(user.role ?? role, href));
+    } catch {
+      setRole(role);
+      setStatus("Saved locally, but the API could not complete onboarding yet.");
+      router.replace(href);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -30,18 +59,28 @@ export default function RoleSelect() {
           <View style={{ flex: 1 }}>
             <Text style={styles.kicker}>Continue as</Text>
             <Text style={styles.title}>Pick your role</Text>
-            <Text style={styles.subtitle}>One account, seven workspaces</Text>
+            <Text style={styles.subtitle}>One account, role-specific guarded workspaces</Text>
           </View>
           <AppMark size={40} />
         </View>
         <View style={{ height: 18 }} />
+        <TextInput
+          value={displayName}
+          onChangeText={setDisplayName}
+          autoCapitalize="words"
+          placeholder="Display name (optional)"
+          placeholderTextColor={colors.dim}
+          style={styles.input}
+          accessibilityLabel="Display name"
+        />
+        <Text style={styles.status}>{status}</Text>
         <View style={{ gap: 8 }}>
           {roles.map((r, index) => {
-            const selected = index === 0;
+            const selected = session?.user?.role ? session.user.role === r.role : index === 0;
             return (
               <Pressable
                 key={r.role}
-                onPress={() => chooseRole(r.role, r.href)}
+                onPress={() => chooseRole(r.role, r.href, r.businessType)}
                 style={({ pressed }) => [{ opacity: pressed ? 0.94 : 1 }]}
               >
                 <PaletteCard
@@ -93,6 +132,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   subtitle: { color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 6, maxWidth: 280 },
+  input: {
+    borderColor: colors.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: typography.body,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  status: { color: colors.muted, fontSize: typography.micro, lineHeight: 18, marginBottom: 12 },
   glyphWell: {
     height: 34,
     width: 34,
@@ -109,3 +159,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.orangeDeep,
   },
 });
+
+function roleHomeHref(role: StakeholderRole, fallback: string) {
+  const routes: Record<StakeholderRole, string> = {
+    resident: "/(resident)/home",
+    homeowner: "/(building-owner)/home",
+    building_owner: "/(building-owner)/home",
+    provider: "/(provider)/home",
+    financier: "/(financier)/portfolio",
+    electrician: "/(electrician)/jobs",
+    admin: "/(admin)/home",
+  };
+
+  return routes[role] ?? fallback;
+}

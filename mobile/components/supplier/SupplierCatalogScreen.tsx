@@ -4,8 +4,8 @@ import { SupplierBar, SupplierCard, SupplierMetricGrid, SupplierProofTable, Supp
 export function SupplierCatalogScreen() {
   return (
     <RoleDashboardScaffold
-      role="supplier"
-      cohesionRole="supplier"
+      role="provider"
+      cohesionRole="provider"
       section="Catalog"
       title="Component Catalog"
       subtitle="The maintained component and warranty catalogue. No RFQ or dispatch noise here."

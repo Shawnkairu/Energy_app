@@ -1,28 +1,25 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { Redirect } from "expo-router";
 import type { StakeholderRole } from "@emappa/shared";
 import { AppMark, colors, Surface } from "@emappa/ui";
-import { readPilotSession } from "./session";
+import { useAuth } from "./AuthContext";
 
 const homeByRole: Record<StakeholderRole, string> = {
   resident: "/(resident)/home",
-  owner: "/(owner)/home",
+  homeowner: "/(building-owner)/home",
+  building_owner: "/(building-owner)/home",
   provider: "/(provider)/home",
-  financier: "/(financier)/home",
-  installer: "/(installer)/home",
-  supplier: "/(supplier)/home",
+  financier: "/(financier)/portfolio",
+  electrician: "/(electrician)/jobs",
   admin: "/(admin)/home",
 };
 
 export function RoleGuard({ role, children }: { role: StakeholderRole; children: ReactNode }) {
-  const [sessionRole, setSessionRole] = useState<StakeholderRole | null | undefined>(undefined);
+  const { isHydrating, session } = useAuth();
+  const sessionRole = session?.role ?? null;
 
-  useEffect(() => {
-    setSessionRole(readPilotSession()?.role ?? null);
-  }, []);
-
-  if (sessionRole === undefined) {
+  if (isHydrating) {
     return (
       <Surface>
         <View style={{ flex: 1, justifyContent: "center" }}>
@@ -36,7 +33,9 @@ export function RoleGuard({ role, children }: { role: StakeholderRole; children:
     );
   }
 
-  if (sessionRole !== role) {
+  const canEnterWorkspace = sessionRole === role || (role === "building_owner" && sessionRole === "homeowner");
+
+  if (!canEnterWorkspace) {
     return <Redirect href={sessionRole ? homeByRole[sessionRole] : "/(auth)/role-select"} />;
   }
 

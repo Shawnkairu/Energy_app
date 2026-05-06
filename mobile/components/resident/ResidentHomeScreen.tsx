@@ -1,97 +1,73 @@
-import { Text } from "react-native";
-import { GlassCard, Label, colors, typography } from "@emappa/ui";
-import { RoleDashboardScaffold } from "../roles/RoleDashboardScaffold";
-import {
-  ResidentBigMetric,
-  ResidentKpiRow,
-  ResidentProgressBar,
-  SettlementWaterfall,
-  formatKes,
-  formatKwh,
-  formatPercent,
-  residentView,
-} from "./ResidentShared";
+import { useRouter } from "expo-router";
+import { PrimaryButton } from "@emappa/ui";
+import { TokenHero } from "../TokenHero";
+import { ResidentInfoCard, ResidentMetricGrid, ResidentScreenFrame } from "./ResidentScaffold";
+import { formatKes, formatKwh, formatPercent, residentView } from "./residentUtils";
 
 export function ResidentHomeScreen() {
-  return (
-    <RoleDashboardScaffold
-      role="resident"
-      cohesionRole="resident"
-      section="Home"
-      title="Today at Home"
-      subtitle="A calm snapshot of prepaid balance, local solar coverage, and savings for this household."
-      actions={["Top up", "See flow", "Review saving"]}
-      renderHero={(building) => {
-        const view = residentView(building);
+  const router = useRouter();
 
-        return {
-          label: "Prepaid solar balance",
-          value: formatKes(view.prepaidBalanceKes),
-          sub: `${formatKwh(view.monthlySolarKwh)} sold solar has been available to this home this month.`,
-        };
-      }}
-      renderPanels={(building) => {
+  return (
+    <ResidentScreenFrame
+      section="Home"
+      title="Today at home"
+      subtitle="Token balance, prepaid readiness, and the clearest next action for this household."
+    >
+      {(building) => {
         const view = residentView(building);
         const hasBalance = view.prepaidBalanceKes > 0;
 
         return (
           <>
-            <ResidentKpiRow
+            <TokenHero
+              eyebrow="Resident token"
+              title={hasBalance ? "Prepaid solar can allocate" : "Top up before solar allocates"}
+              subtitle={`${building.project.name} uses prepaid cash as the gate for sold local solar. Grid fallback stays separate.`}
+              tokenLabel="Available balance"
+              tokenValue={formatKes(view.prepaidBalanceKes)}
+            />
+
+            <ResidentMetricGrid
               items={[
                 {
                   label: "Coverage",
                   value: formatPercent(view.solarCoverage),
-                  note: "Local solar share",
+                  detail: `${formatKwh(view.monthlySolarKwh)} sold solar available to this resident account.`,
+                  tone: view.solarCoverage > 0 ? "good" : "warn",
                 },
                 {
                   label: "Savings",
                   value: formatKes(view.savingsKes),
-                  note: "Projected vs grid",
+                  detail: "Difference between sold prepaid solar and grid-only energy for this household.",
+                  tone: view.savingsKes > 0 ? "good" : "neutral",
                 },
                 {
-                  label: "Balance",
-                  value: hasBalance ? "Ready" : "Top up",
-                  note: hasBalance ? "Solar can allocate" : "Solar blocked",
+                  label: "DRS",
+                  value: building.drs.label,
+                  detail: building.drs.reasons[0] ?? "No readiness blocker visible for resident allocation.",
+                  tone: building.drs.reasons.length === 0 ? "good" : "warn",
+                },
+                {
+                  label: "Stage",
+                  value: building.project.stage,
+                  detail: `${building.project.units} homes in ${building.project.locationBand}.`,
+                  tone: "neutral",
                 },
               ]}
             />
 
-            <ResidentBigMetric
-              label="Household balance"
-              value={formatKes(view.averagePrepaidBalanceKes)}
-              detail={`${building.project.name} residents are shown with mock averaged wallet values so private household finances stay hidden.`}
-            />
-
-            <GlassCard>
-              <Label>Daily rhythm</Label>
-              <Text
-                style={{
-                  color: colors.text,
-                  fontSize: typography.heading,
-                  fontWeight: "600",
-                  letterSpacing: -0.35,
-                  marginTop: 5,
-                  lineHeight: typography.heading + 4,
-                }}
-              >
-                Solar carries the day when tokens are funded
-              </Text>
-              <ResidentProgressBar
-                label="Home solar cover"
-                value={view.solarCoverage}
-                caption="Coverage is capped to sold solar. Grid fallback remains separate from e.mappa prepaid balance."
-              />
-            </GlassCard>
-
-            <ResidentBigMetric
-              label="Building context"
-              value={`${building.project.units} homes`}
-              detail={`${building.project.name} is shown as a privacy-safe resident view for ${building.project.locationBand}.`}
-            />
-            <SettlementWaterfall role="resident" building={building} />
+            <ResidentInfoCard
+              eyebrow="Prepaid rule"
+              title="No prepaid cash, no solar allocation."
+              detail="Residents only receive solar that has been monetized through prepaid tokens. Wasted, curtailed, or free-exported energy creates no resident credit."
+            >
+              <PrimaryButton onPress={() => router.push("/(resident)/wallet")}>
+                {hasBalance ? "Review wallet" : "Pledge KSh 1,000"}
+              </PrimaryButton>
+            </ResidentInfoCard>
           </>
         );
       }}
-    />
+    </ResidentScreenFrame>
   );
 }

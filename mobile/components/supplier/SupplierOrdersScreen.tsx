@@ -4,8 +4,8 @@ import { SupplierCard, SupplierMetricGrid, SupplierProofTable, SupplierTimeline,
 export function SupplierOrdersScreen() {
   return (
     <RoleDashboardScaffold
-      role="supplier"
-      cohesionRole="supplier"
+      role="provider"
+      cohesionRole="provider"
       section="Orders"
       title="Awards & Proof"
       subtitle="Purchase orders only: award state, dispatch window, delivery proof, serials, and warranty closeout."

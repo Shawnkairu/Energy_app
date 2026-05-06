@@ -50,7 +50,7 @@ export function OwnerScreenShell({
   const [activity, setActivity] = useState<string[]>([]);
 
   useEffect(() => {
-    getRoleHome("owner").then((home) => {
+    getRoleHome("building_owner").then((home) => {
       setBuilding(home.primary);
       setActivity(home.activity);
     });
@@ -133,7 +133,7 @@ export function OwnerScreenShell({
 
         <OwnerActionRail actions={actions} />
         <OwnerHeroCard hero={heroMetric} />
-        <BuildingPulse role="owner" building={building} />
+        <BuildingPulse role="building_owner" building={building} />
         <KillSwitchBanner building={building} />
         {children(building)}
         <OwnerActivityCard activity={activity} />
