@@ -1,12 +1,11 @@
-from collections.abc import AsyncIterator
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from .config import get_settings
+"""Back-compat shim — canonical location is app.db.session.
 
-settings = get_settings()
-engine = create_async_engine(settings.database_url, echo=False, pool_pre_ping=True)
-SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+Existing imports `from .database import get_db / engine / SessionLocal` continue
+to work. New code should import from app.db.session directly.
+"""
+from .db.session import Base, SessionLocal, engine, get_session
 
+# Legacy alias
+get_db = get_session
 
-async def get_db() -> AsyncIterator[AsyncSession]:
-    async with SessionLocal() as session:
-        yield session
+__all__ = ["Base", "SessionLocal", "engine", "get_db", "get_session"]
