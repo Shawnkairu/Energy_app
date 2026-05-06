@@ -1,33 +1,77 @@
+// e.mappa API client
+//
+// Real-mode (baseUrl set): hits the FastAPI backend. Bearer-token auth via the
+// optional `token` config field. Errors throw ApiError.
+//
+// Mock-mode (baseUrl null): graceful fallback to demoProjects from
+// @emappa/shared so frontend dev work is never blocked. Pilot endpoints that
+// have no shared-mock equivalent throw NotInMockMode in mock-mode.
+
 import {
   demoProjects,
   projectBuilding,
   roles,
   type BuildingProject,
   type ProjectedBuilding,
+  type AuthSession,
+  type BuildingRecord,
+  type Certification,
+  type EnergyReading,
+  type FinancierPosition,
+  type InventoryItem,
+  type Job,
+  type PrepaidCommitment,
+  type ProjectCard,
+  type Role,
+  type RoofPolygon,
+  type SettlementPeriod,
   type StakeholderRole,
+  type User,
+  type WalletTransaction,
 } from "@emappa/shared";
 
-const delay = (ms = 120) => new Promise((resolve) => setTimeout(resolve, ms));
 const WAITLIST_STORAGE_KEY = "emappa.waitlist.leads";
 
-type RemoteProject = BuildingProject | ProjectedBuilding;
+// ---------------------------------------------------------------------------
+// Config + error types
+// ---------------------------------------------------------------------------
 
 export interface ApiClientConfig {
   baseUrl?: string | null;
   token?: string | null;
 }
 
+export class ApiError extends Error {
+  constructor(public status: number, public code: string, message?: string) {
+    super(message ?? code);
+    this.name = "ApiError";
+  }
+}
+
+export class NotInMockMode extends Error {
+  constructor(endpoint: string) {
+    super(`Endpoint ${endpoint} requires API mode (baseUrl set).`);
+    this.name = "NotInMockMode";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Legacy aliases preserved for migration
+// ---------------------------------------------------------------------------
+
 export interface RoleHome {
   role: StakeholderRole;
-  primary: ProjectedBuilding;
+  primary: ProjectedBuilding | null;
   projects: ProjectedBuilding[];
   activity: string[];
 }
 
 export interface WaitlistLead {
-  role: string;
-  phone: string;
-  neighborhood: string;
+  name?: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  neighborhood?: string;
 }
 
 export interface WaitlistSubmission extends WaitlistLead {
@@ -36,263 +80,223 @@ export interface WaitlistSubmission extends WaitlistLead {
   source: "api" | "local";
 }
 
-export interface AuthUser {
-  id: string;
-  phone: string;
-  role: StakeholderRole;
-  buildingId?: string | null;
+// ---------------------------------------------------------------------------
+// HTTP helper
+// ---------------------------------------------------------------------------
+
+async function http<T>(
+  cfg: ApiClientConfig,
+  method: string,
+  path: string,
+  body?: unknown
+): Promise<T> {
+  if (!cfg.baseUrl) {
+    throw new NotInMockMode(`${method} ${path}`);
+  }
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (cfg.token) headers["Authorization"] = `Bearer ${cfg.token}`;
+
+  const resp = await fetch(`${cfg.baseUrl}${path}`, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  if (!resp.ok) {
+    let detail = resp.statusText;
+    try {
+      const data = await resp.json();
+      detail = data?.detail ?? data?.error ?? detail;
+    } catch {
+      /* keep statusText */
+    }
+    throw new ApiError(resp.status, String(detail), `${method} ${path} → ${resp.status}`);
+  }
+
+  // Some endpoints return empty body on success
+  const text = await resp.text();
+  return text ? (JSON.parse(text) as T) : (undefined as unknown as T);
 }
 
-export interface TokenResponse {
-  token: string;
-  user: AuthUser;
+// ---------------------------------------------------------------------------
+// Client factory — preferred entry point for new code
+// ---------------------------------------------------------------------------
+
+export function createApiClient(cfg: ApiClientConfig) {
+  const get = <T>(path: string) => http<T>(cfg, "GET", path);
+  const post = <T>(path: string, body?: unknown) => http<T>(cfg, "POST", path, body);
+
+  return {
+    // auth
+    requestOtp: (email: string) => post<{ ok: true }>(`/auth/request-otp`, { email }),
+    verifyOtp: (email: string, code: string) =>
+      post<AuthSession>(`/auth/verify-otp`, { email, code }),
+    me: () => get<User>(`/auth/me`),
+    completeOnboarding: (body: { displayName?: string; businessType?: string }) =>
+      post<{ user: User }>(`/me/onboarding-complete`, body),
+
+    // projects
+    listProjects: () => get<ProjectedBuilding[]>(`/projects`),
+    getProject: (id: string) => get<ProjectedBuilding>(`/projects/${id}`),
+    roleHome: (role: Role) => get<RoleHome>(`/roles/${role}/home`),
+
+    // waitlist
+    submitWaitlistLead: (lead: WaitlistLead) =>
+      post<{ ok: true }>(`/waitlist`, lead),
+
+    // pledge / prepaid
+    commitPrepaid: (input: { buildingId: string; amountKes: number }) =>
+      post<{ commitment: PrepaidCommitment }>(`/prepaid/commit`, input),
+    getPrepaidBalance: (buildingId: string) =>
+      get<{ confirmedTotalKes: number }>(`/prepaid/${buildingId}/balance`),
+    getPrepaidHistory: (buildingId: string) =>
+      get<PrepaidCommitment[]>(`/prepaid/${buildingId}/history`),
+
+    // buildings
+    createBuilding: (input: {
+      name: string;
+      address: string;
+      lat: number;
+      lon: number;
+      unitCount: number;
+      occupancy?: number;
+      kind?: string;
+    }) => post<{ building: BuildingRecord }>(`/buildings`, input),
+    setRoof: (
+      buildingId: string,
+      input: { polygonGeojson?: unknown; areaM2?: number; source: string }
+    ) => post<{ building: BuildingRecord }>(`/buildings/${buildingId}/roof`, input),
+    suggestRoof: (buildingId: string, lat: number, lon: number) =>
+      get<RoofPolygon | { available: false }>(
+        `/buildings/${buildingId}/roof/suggest?lat=${lat}&lon=${lon}`
+      ),
+
+    // energy
+    getEnergyToday: (buildingId: string) =>
+      get<{
+        generation_kwh: number[];
+        load_kwh: number[];
+        irradiance_w_m2: number[];
+      }>(`/energy/${buildingId}/today`),
+    getEnergySeries: (buildingId: string, kind: string, from?: string, to?: string) =>
+      get<EnergyReading[]>(
+        `/energy/${buildingId}/series?kind=${encodeURIComponent(kind)}` +
+          (from ? `&from=${encodeURIComponent(from)}` : "") +
+          (to ? `&to=${encodeURIComponent(to)}` : "")
+      ),
+
+    // discover
+    getDiscover: (role: "provider" | "electrician" | "financier") =>
+      get<ProjectCard[]>(`/discover?role=${role}`),
+
+    // drs
+    getDrsAssessment: (buildingId: string) => get<unknown>(`/drs/${buildingId}`),
+    getDrsHistory: (buildingId: string) => get<unknown[]>(`/drs/${buildingId}/history`),
+
+    // settlement
+    runSettlement: (input: {
+      buildingId: string;
+      periodStart: string;
+      periodEnd: string;
+    }) => post<{ period: SettlementPeriod }>(`/settlement/run`, input),
+    getLatestSettlement: (buildingId: string) =>
+      get<SettlementPeriod | null>(`/settlement/${buildingId}/latest`),
+    getSettlementHistory: (buildingId: string) =>
+      get<SettlementPeriod[]>(`/settlement/${buildingId}/history`),
+
+    // ownership
+    getOwnership: (
+      buildingId: string,
+      side: "provider" | "financier" | "resident" | "homeowner"
+    ) => get<unknown[]>(`/ownership/${buildingId}/${side}`),
+
+    // providers
+    getProviderInventory: (userId: string) =>
+      get<InventoryItem[]>(`/providers/${userId}/inventory`),
+    addProviderInventory: (
+      userId: string,
+      input: { sku: string; kind: "panel" | "infra"; stock: number; unitPriceKes: number }
+    ) => post<{ item: InventoryItem }>(`/providers/${userId}/inventory`, input),
+    getProviderOrders: (userId: string) =>
+      get<unknown[]>(`/providers/${userId}/orders`),
+    getProviderQuoteRequests: (userId: string) =>
+      get<unknown[]>(`/providers/${userId}/quote-requests`),
+
+    // electricians
+    getElectricianJobs: (userId: string, status?: string) =>
+      get<Job[]>(
+        `/electricians/${userId}/jobs${status ? `?status=${encodeURIComponent(status)}` : ""}`
+      ),
+    getCertifications: (userId: string) =>
+      get<Certification[]>(`/electricians/${userId}/certifications`),
+    addCertification: (
+      userId: string,
+      input: {
+        name: string;
+        issuer: string;
+        docUrl?: string;
+        issuedAt: string;
+        expiresAt: string;
+      }
+    ) =>
+      post<{ certification: Certification }>(`/electricians/${userId}/certifications`, input),
+
+    // financiers
+    getPortfolio: (userId: string) =>
+      get<FinancierPosition[]>(`/financiers/${userId}/portfolio`),
+    pledgeCapital: (
+      userId: string,
+      input: { buildingId: string; amountKes: number }
+    ) =>
+      post<{ position: FinancierPosition }>(`/financiers/${userId}/pledge-capital`, input),
+
+    // wallet
+    getWalletBalance: (userId: string) =>
+      get<{ kes: number; breakdown: Record<string, number> }>(`/wallet/${userId}/balance`),
+    getWalletTransactions: (userId: string) =>
+      get<WalletTransaction[]>(`/wallet/${userId}/transactions`),
+  };
 }
 
-export interface PrepaidCommitment {
-  id: string;
-  buildingId: string;
-  residentId: string;
-  amountKes: number;
-  status: "pending" | "confirmed" | "allocated" | "refunded";
-  createdAt: string;
-}
+export type ApiClient = ReturnType<typeof createApiClient>;
 
-export interface PrepaidBalance {
-  buildingId: string;
-  confirmedKes: number;
-}
+// ---------------------------------------------------------------------------
+// Legacy free-function exports — back-compat for unmigrated callers.
+// All defer to a default mock-mode client (no baseUrl) and produce demo data.
+// ---------------------------------------------------------------------------
 
-export interface DrsAssessment {
-  score: number;
-  decision: string;
-  analysis: string;
-  recommendations: string[];
-  toolCallsMade: string[];
-}
+const mockClient = (cfg: ApiClientConfig = {}): ApiClient => createApiClient(cfg);
 
-let configuredBaseUrl: string | null = null;
-let configuredToken: string | null = null;
-
-export function configureApiClient(config: ApiClientConfig) {
-  configuredBaseUrl = cleanBaseUrl(config.baseUrl);
-  configuredToken = config.token ?? configuredToken;
-}
-
-export function getApiMode() {
-  return getBaseUrl() ? "api" : "mock";
-}
-
-export async function getRoles() {
-  const remote = await request<typeof roles>("/roles");
-  if (remote) return remote;
-
-  await delay();
-  return roles;
-}
-
-export async function getProjects() {
-  const remote = await request<RemoteProject[]>("/projects");
-  if (remote) return remote.map(normalizeProject);
-
-  await delay();
-  return getMockProjects();
-}
-
-export async function getProject(projectId: string) {
-  const remote = await request<RemoteProject>(`/projects/${encodeURIComponent(projectId)}`);
-  if (remote) return normalizeProject(remote);
-
-  await delay();
-  return getMockProject(projectId);
+export async function getProjects(): Promise<ProjectedBuilding[]> {
+  return demoProjects.map((p) => projectBuilding(p));
 }
 
 export async function getRoleHome(role: StakeholderRole): Promise<RoleHome> {
-  const remote = await request<RoleHome>(`/roles/${encodeURIComponent(role)}/home`);
-  if (remote) return remote;
-
-  const projects = getMockProjects();
-  const primary = projects[0];
-
+  const projects = await getProjects();
   return {
     role,
-    primary,
+    primary: projects[0] ?? null,
     projects,
-    activity: [
-      "Resident prepaid commitment increased by KSh 18,000",
-      "Supplier quote verified for inverter and battery package",
-      "Installer checklist ready for Nyeri Ridge A",
-      "DRS review flagged low utilization risk at Karatina Court",
-    ],
+    activity: [],
   };
 }
 
 export async function submitWaitlistLead(lead: WaitlistLead): Promise<WaitlistSubmission> {
-  const remote = await request<WaitlistSubmission>("/waitlist", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(lead),
-  });
-
-  if (remote) return remote;
-
   const submission: WaitlistSubmission = {
     ...lead,
     id: `local-${Date.now()}`,
     createdAt: new Date().toISOString(),
     source: "local",
   };
-  persistLocalWaitlistLead(submission);
-  await delay();
+  if (typeof localStorage !== "undefined") {
+    try {
+      const existing = JSON.parse(localStorage.getItem(WAITLIST_STORAGE_KEY) ?? "[]");
+      localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify([...existing, submission]));
+    } catch {
+      /* ignore */
+    }
+  }
   return submission;
 }
 
-export async function requestOtp(phone: string) {
-  const remote = await request<{ status: string; channel: string }>("/auth/request-otp", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ phone }),
-  });
-
-  await delay();
-  return remote ?? { status: "sent", channel: "demo" };
-}
-
-export async function verifyOtp(phone: string, code: string): Promise<TokenResponse> {
-  const remote = await request<TokenResponse>("/auth/verify-otp", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ phone, code }),
-  });
-
-  if (remote) {
-    configuredToken = remote.token;
-    return remote;
-  }
-
-  await delay();
-  return {
-    token: `demo-${Date.now()}`,
-    user: { id: "pilot-user", phone, role: "resident", buildingId: "nyeri-ridge-a" },
-  };
-}
-
-export async function commitPrepaid(buildingId: string, amountKes: number, residentId = "pilot-resident") {
-  const remote = await request<PrepaidCommitment>("/prepaid/commit", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ buildingId, amountKes, residentId }),
-  });
-
-  if (remote) return remote;
-  await delay();
-  return {
-    id: `local-prepaid-${Date.now()}`,
-    buildingId,
-    residentId,
-    amountKes,
-    status: "pending" as const,
-    createdAt: new Date().toISOString(),
-  };
-}
-
-export async function confirmPrepaid(commitmentId: string) {
-  return request<PrepaidCommitment>(`/prepaid/${encodeURIComponent(commitmentId)}/confirm`, {
-    method: "POST",
-  });
-}
-
-export async function getPrepaidBalance(buildingId: string): Promise<PrepaidBalance> {
-  const remote = await request<PrepaidBalance>(`/prepaid/${encodeURIComponent(buildingId)}/balance`);
-  if (remote) return remote;
-
-  const project = getMockProject(buildingId);
-  await delay();
-  return { buildingId, confirmedKes: project?.project.prepaidCommittedKes ?? 0 };
-}
-
-export async function getPrepaidHistory(buildingId: string): Promise<PrepaidCommitment[]> {
-  const remote = await request<PrepaidCommitment[]>(`/prepaid/${encodeURIComponent(buildingId)}/history`);
-  if (remote) return remote;
-
-  await delay();
-  return [];
-}
-
-export async function getDrs(buildingId: string) {
-  const remote = await request<ProjectedBuilding["drs"]>(`/drs/${encodeURIComponent(buildingId)}`);
-  if (remote) return remote;
-  return getMockProject(buildingId)?.drs ?? null;
-}
-
-export async function getDrsAssessment(buildingId: string) {
-  return request<DrsAssessment>(`/drs/${encodeURIComponent(buildingId)}/assess`, {
-    method: "POST",
-  });
-}
-
-function getMockProjects() {
-  return demoProjects.map(projectBuilding);
-}
-
-function getMockProject(projectId: string) {
-  const project = demoProjects.find((item) => item.id === projectId);
-  return project ? projectBuilding(project) : null;
-}
-
-function normalizeProject(project: RemoteProject): ProjectedBuilding {
-  return isProjectedProject(project) ? project : projectBuilding(project);
-}
-
-function isProjectedProject(project: RemoteProject): project is ProjectedBuilding {
-  return "settlement" in project && "roleViews" in project;
-}
-
-async function request<T>(path: string, init?: RequestInit) {
-  const baseUrl = getBaseUrl();
-  if (!baseUrl) return null;
-
-  try {
-    const response = await fetch(`${baseUrl}${path}`, withAuthHeaders(init));
-    if (!response.ok) {
-      console.warn(`e.mappa API ${path} failed with ${response.status}; using local demo data when available.`);
-      return null;
-    }
-
-    return response.json() as Promise<T>;
-  } catch (error) {
-    console.warn(`e.mappa API ${path} unavailable; using local demo data when available.`, error);
-    return null;
-  }
-}
-
-function getBaseUrl() {
-  if (configuredBaseUrl) return configuredBaseUrl;
-  const globalBaseUrl = (globalThis as { __EMAPPA_API_BASE_URL__?: string }).__EMAPPA_API_BASE_URL__;
-  return cleanBaseUrl(globalBaseUrl);
-}
-
-function cleanBaseUrl(baseUrl: string | null | undefined) {
-  const trimmed = baseUrl?.trim();
-  return trimmed ? trimmed.replace(/\/+$/, "") : null;
-}
-
-function withAuthHeaders(init?: RequestInit): RequestInit | undefined {
-  if (!configuredToken) return init;
-  return {
-    ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-      authorization: `Bearer ${configuredToken}`,
-    },
-  };
-}
-
-function persistLocalWaitlistLead(submission: WaitlistSubmission) {
-  try {
-    const current = globalThis.localStorage?.getItem(WAITLIST_STORAGE_KEY);
-    const submissions = current ? (JSON.parse(current) as WaitlistSubmission[]) : [];
-    globalThis.localStorage?.setItem(WAITLIST_STORAGE_KEY, JSON.stringify([...submissions, submission]));
-  } catch {
-    // Some native/runtime contexts do not expose localStorage; the resolved submission is still usable by the UI.
-  }
-}
+export { roles };

@@ -1,6 +1,29 @@
+"""FastAPI app — wiring."""
+from __future__ import annotations
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api import auth, drs, health, ownership, prepaid, projects, roles, settlement, waitlist, websocket
+
+from .api import (
+    auth,
+    buildings,
+    discover,
+    drs,
+    electricians,
+    energy,
+    financiers,
+    health,
+    me,
+    ownership,
+    prepaid,
+    projects,
+    providers,
+    roles,
+    settlement,
+    waitlist,
+    wallet,
+    websocket,
+)
 from .config import get_settings
 
 settings = get_settings()
@@ -14,5 +37,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in [health.router, auth.router, roles.router, projects.router, waitlist.router, prepaid.router, drs.router, settlement.router, ownership.router, websocket.router]:
+for router in [
+    health.router,
+    auth.router,
+    me.router,
+    roles.router,
+    projects.router,
+    buildings.router,
+    energy.router,
+    discover.router,
+    waitlist.router,
+    prepaid.router,
+    drs.router,
+    settlement.router,
+    ownership.router,
+    providers.router,
+    electricians.router,
+    financiers.router,
+    wallet.router,
+    websocket.router,
+]:
     app.include_router(router)
