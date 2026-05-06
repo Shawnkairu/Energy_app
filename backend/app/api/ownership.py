@@ -1,25 +1,29 @@
-from fastapi import APIRouter, HTTPException
-from app.schemas.ownership import OwnershipTransferInput
-from app.store import store
+"""Ownership endpoints — pilot pass-through using FinancierPosition snapshot."""
+from __future__ import annotations
+
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..db.session import get_session
+from ..middleware.jwt import get_current_user
+from ..models.user import User
+from ..repos import financiers as financiers_repo
 
 router = APIRouter(prefix="/ownership", tags=["ownership"])
 
 
-@router.get("/{building_id}/{pool}")
-def get_ownership(building_id: str, pool: str):
-    project = store.get_project(building_id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Building not found")
-    if pool not in {"provider", "financier"}:
-        raise HTTPException(status_code=400, detail="Pool must be provider or financier")
-    return project[f"{pool}Ownership"]
-
-
-@router.post("/{building_id}/transfer")
-def transfer(building_id: str, payload: OwnershipTransferInput):
-    try:
-        return store.transfer_ownership(building_id, payload.model_dump())
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Building not found")
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+@router.get("/{building_id}/{side}")
+async def get_ownership(
+    building_id: str,
+    side: str,
+    _: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    if side not in {"provider", "financier", "resident", "homeowner"}:
+        raise HTTPException(status_code=400, detail="invalid_side")
+    # Pilot scope: only financier positions are stored explicitly.
+    # Provider/resident shares ride on FinancierPosition-style records that the
+    # post-pilot ownership ledger will manage.
+    return []
