@@ -4,6 +4,7 @@ import type { BuildingProject, StakeholderRole } from "./types";
 // selectable per docs/IA_SPEC.md §8.5; admin role is granted via backend/scripts/grant_admin.py only.
 export const roles: Array<{ id: StakeholderRole; label: string; promise: string }> = [
   { id: "resident", label: "Resident", promise: "Cheaper prepaid solar with grid fallback." },
+  { id: "homeowner", label: "Homeowner", promise: "Solar on your roof, financed by the network." },
   { id: "building_owner", label: "Building Owner", promise: "Turn your building into an energy site." },
   { id: "provider", label: "Provider", promise: "Deploy panels and infrastructure into qualified demand." },
   { id: "financier", label: "Financier", promise: "Fund named infrastructure deals." },

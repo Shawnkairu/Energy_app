@@ -86,7 +86,10 @@ git rm mobile/app/\(resident\)/ownership.tsx               # folds into wallet.t
 git rm mobile/app/\(resident\)/support.tsx                 # folds into profile.tsx
 
 # 7. Create onboarding folder
-mkdir -p mobile/app/\(onboard\)/{resident,building-owner,provider,electrician,financier}
+mkdir -p mobile/app/\(onboard\)/{resident,homeowner,building-owner,provider,electrician,financier}
+
+# 8. Create homeowner role group
+mkdir -p mobile/app/\(homeowner\)/_embedded
 ```
 
 Commit this as one diff:
@@ -110,9 +113,10 @@ Spawn **6 parallel subagents** off `sprint/mobile`. Each works on a feature bran
 
 | Subagent | Branch | Owned paths | Task |
 |---|---|---|---|
-| `infra` | `sprint/mobile/infra` | `mobile/app/_layout.tsx`, `mobile/app/(auth)/**`, `mobile/components/AuthContext.tsx`, `mobile/components/PilotBanner.tsx`, `mobile/components/SyntheticBadge.tsx`, `mobile/components/ProjectCard.tsx`, `mobile/components/PortfolioRow.tsx`, `mobile/components/EnergyTodayChart.tsx`, `mobile/components/RoofMap.tsx`, `mobile/lib/**` | Auth flow + shared components + utility libs that every other subagent imports |
-| `onboard` | `sprint/mobile/onboard` | `mobile/app/(onboard)/**` | Per-role onboarding flows, all five |
+| `infra` | `sprint/mobile/infra` | `mobile/app/_layout.tsx`, `mobile/app/(auth)/**`, `mobile/components/AuthContext.tsx`, `mobile/components/PilotBanner.tsx`, `mobile/components/SyntheticBadge.tsx`, `mobile/components/ProjectCard.tsx`, `mobile/components/PortfolioRow.tsx`, `mobile/components/EnergyTodayChart.tsx`, `mobile/components/TokenHero.tsx`, `mobile/components/ProjectHero.tsx`, `mobile/components/RoofMap.tsx`, `mobile/lib/**` | Auth flow + shared components + utility libs that every other subagent imports |
+| `onboard` | `sprint/mobile/onboard` | `mobile/app/(onboard)/**` | Per-role onboarding flows, all six (resident, homeowner, building-owner, provider, electrician, financier) |
 | `resident` | `sprint/mobile/resident` | `mobile/app/(resident)/**` | Home / Energy / Wallet / Profile |
+| `homeowner` | `sprint/mobile/homeowner` | `mobile/app/(homeowner)/**` | Home (adaptive) / Energy / Wallet / Profile — composes TokenHero + ProjectHero from infra subagent |
 | `building-owner` | `sprint/mobile/building-owner` | `mobile/app/(building-owner)/**` | Home / Energy / Wallet / Profile + embedded views |
 | `contributors` | `sprint/mobile/contributors` | `mobile/app/(provider)/**`, `mobile/app/(electrician)/**`, `mobile/app/(financier)/**` | All three "Discover-first" roles |
 | `admin` | `sprint/mobile/admin` | `mobile/app/(admin)/**` | Minimal mobile admin (3 screens) |
@@ -137,6 +141,8 @@ Push these as no-op-but-typed stubs first thing:
 - `mobile/components/PortfolioRow.tsx` — Robinhood-style row; props: `FinancierPosition` + `onPress`
 - `mobile/components/EnergyTodayChart.tsx` — 24h stacked area chart wrapping `react-native-chart-kit`; props: `{ generation: number[], load: number[], irradiance?: number[], showGeneration: boolean, source: 'synthetic'|'measured' }`
 - `mobile/components/RoofMap.tsx` — wraps `react-native-maps` satellite tile; props: `{ polygon?, editable, onPolygonChange? }`
+- `mobile/components/TokenHero.tsx` — pledged-token balance hero. Props: `{ balanceKes: number, todayCoverageKwh: number, onPledge: () => void, disabled?: boolean }`. When `disabled=true`, renders the disabled-state copy *"Tokens activate once your project goes live."* — used by homeowner Home tab pre-live.
+- `mobile/components/ProjectHero.tsx` — DRS card + decision pill + deployment progress + top 3 blockers. Props: `{ drs: DrsResult, stage: BuildingStage, blockers: string[], variant: 'full' | 'compact', onAction?: (id: string) => void }`. `compact` variant used by homeowner Home post-live (collapsed below TokenHero).
 
 ### Hour 2-5: real implementations
 
@@ -155,8 +161,9 @@ Push these as no-op-but-typed stubs first thing:
 4. **`mobile/app/(auth)/login.tsx`** — two-step (email → OTP) per IA §7.0, with rate-limit error handling and 60s resend countdown.
 
 5. **`mobile/app/(auth)/role-select.tsx`** — only shown if `user.role` is null (rare; pilot users are pre-assigned). Otherwise auto-skip.
-   - **Admin must NEVER appear as an option here.** Filter the role list to `PublicRole` only — `['resident', 'building_owner', 'provider', 'financier', 'electrician']`. Per [IA_SPEC §8.5](../IA_SPEC.md), there is no UI path that creates an admin.
-   - Display strings: "Resident", "Building Owner", "Provider", "Financier", "Electrician"
+   - **Admin must NEVER appear as an option here.** Filter the role list to `PublicRole` only — `['resident', 'homeowner', 'building_owner', 'provider', 'financier', 'electrician']`. Per [IA_SPEC §8.5](../IA_SPEC.md), there is no UI path that creates an admin.
+   - Display strings: "Resident", "Homeowner", "Building Owner", "Provider", "Financier", "Electrician"
+   - Provide brief explanatory copy under each option so users disambiguate Resident (live in someone else's building) vs Homeowner (own a single-family home) vs Building Owner (own a multi-unit property).
 
 6. **`useApiData<T>`** — wraps async fetch with loading/error/refetch. Caches per stable-string key. Re-fetches on focus.
 
@@ -220,6 +227,13 @@ Build per-role onboarding flows per [IA_SPEC.md §7](../IA_SPEC.md).
 - `confirm.tsx` → show building card from API, "This is my building" / "Wrong building"
 - `first-pledge.tsx` → optional first pledge using same pledge entry component as the resident Home tab (lift to `mobile/components/PledgeEntry.tsx`)
 - Final → `/(resident)/home`
+
+### Homeowner (`(onboard)/homeowner/`)
+- `address.tsx` → single address input. Geocode on blur. Submitted form sets `kind='single_family'`, `unit_count=1` automatically (these are NOT user-editable for homeowner role; backend enforces).
+- `roof-capture.tsx` → identical waterfall to building-owner roof-capture (Microsoft auto-suggest → owner-traced → manual sqm). Use the same RoofMap component.
+- `terms.tsx` → homeowner-specific royalty + ownership terms preview (read-only summary)
+- `first-pledge.tsx` → optional first pledge using the same PledgeEntry component as residents. "Skip" allowed.
+- Final → `POST /me/onboarding-complete` → `/(homeowner)/home`
 
 ### Building Owner (`(onboard)/building-owner/`)
 - `index.tsx` → building basics form (name, address with on-blur geocode, unit count, occupancy slider)
@@ -340,6 +354,66 @@ For each of `drs.tsx`, `deployment.tsx`, `resident-roster.tsx`, `approve-terms.t
 - [ ] Owner with building sees DRS, blockers, deployment progress, pledged demand
 - [ ] All 5 embedded screens render real data
 - [ ] No dead buttons
+
+---
+
+## Subagent: `homeowner`
+
+Implement Homeowner's 4 tabs per [IA_SPEC.md §1.5](../IA_SPEC.md). A homeowner is a single-family-home owner who is also the sole resident — `users.role='homeowner'` AND `buildings.kind='single_family'` AND `buildings.unit_count=1`. The seed user `homeowner@emappa.test` exercises this path.
+
+**Composition principle:** the homeowner subagent does NOT reimplement token UI or project UI. Compose `TokenHero` and `ProjectHero` from the infra subagent. Compose `EnergyTodayChart`, `WalletSegments`-style patterns same way.
+
+### `_layout.tsx`
+Tabs: Home, Energy, Wallet, Profile. Profile is rightmost.
+
+### `home.tsx` — Adaptive
+Read the user's building (`useApiData(getBuildingForUser)`). Branch on `building.stage`:
+
+**Pre-live** (`stage in ('listed','qualifying','funding','installing')`):
+- `<PilotBanner variant="pledge" />`
+- `<ProjectHero variant="full" drs={...} stage={building.stage} blockers={...} />`
+- `<TokenHero disabled balanceKes={0} ... />` with copy *"Tokens activate once your project goes live."*
+- Action rail (single row of pills) → push to embedded screens:
+  - View blockers → `_embedded/drs.tsx`
+  - Approve terms → `_embedded/approve-terms.tsx`
+  - Compare bill → `_embedded/compare-today.tsx`
+  - Deployment timeline → `_embedded/deployment.tsx`
+  - Roof detail → `_embedded/roof-detail.tsx`
+
+**Live** (`stage='live'`):
+- `<PilotBanner variant="pledge" />`
+- `<TokenHero balanceKes={...} todayCoverageKwh={...} onPledge={...} />`
+- `<ProjectHero variant="compact" drs={...} stage="live" blockers={[]} />`
+- Action rail: Pledge / View energy / Wallet / Roof
+
+### `energy.tsx`
+Same as building-owner energy: `<EnergyTodayChart showGeneration={true} ... />`. Always shows generation since homeowner owns the rooftop.
+
+### `wallet.tsx`
+Three top cards: Pledged total / Royalties earned / Share earnings.
+Segmented control internal: Cashflow / Ownership / Pledges.
+Cashflow: union of pledge debits + royalty credits + share-earning credits via `getWalletTransactions(user.id)`.
+Ownership: positions from `getOwnership(building.id, 'homeowner')`. If shares < 100%, render a "Buy back shares" CTA → embedded marketplace.
+Pledges: history with status pills.
+
+### `profile.tsx`
+- Account header (avatar, email, "Homeowner" pill)
+- **Building & roof** section: address, polygon thumbnail (RoofMap, editable=false), roof source/confidence, [Edit roof] CTA
+- **Settings** (embedded section)
+- **Support** (embedded section)
+- Logout
+
+### Embedded `_embedded/`
+Reuse Building Owner's embedded screen logic where it's identical (DRS, deployment, terms, compare-today). Don't duplicate code — import the building-owner versions if they're already written, OR put them in a shared location and import from both. Coordinate with the `infra` subagent if a shared `mobile/components/embedded/` location is needed.
+
+**Acceptance:**
+- [ ] Homeowner without a building (fresh seed) → Home shows giant "Start project" CTA → routes to `/(onboard)/homeowner/address`
+- [ ] Homeowner with `stage != 'live'` → ProjectHero is the hero, TokenHero is disabled
+- [ ] Homeowner with `stage = 'live'` → TokenHero is the hero, ProjectHero is compact
+- [ ] Homeowner can pledge end-to-end against their own building
+- [ ] Energy tab always shows generation (never gated)
+- [ ] Wallet shows three streams correctly; "buy back shares" appears when shares < 100%
+- [ ] Profile lets homeowner update their roof polygon
 
 ---
 

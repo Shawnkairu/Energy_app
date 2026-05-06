@@ -41,6 +41,7 @@ def upgrade() -> None:
         sa.Column("lon", sa.Numeric(), nullable=False),
         sa.Column("unit_count", sa.Integer(), nullable=False),
         sa.Column("occupancy", sa.Numeric(), nullable=True),
+        sa.Column("kind", sa.Text(), nullable=False, server_default=sa.text("'apartment'")),
         sa.Column("stage", sa.Text(), nullable=False),
         sa.Column("roof_area_m2", sa.Numeric(), nullable=True),
         sa.Column("roof_polygon_geojson", postgresql.JSONB(), nullable=True),
@@ -52,6 +53,15 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "stage IN ('listed','qualifying','funding','installing','live','retired')",
             name="buildings_stage_check",
+        ),
+        sa.CheckConstraint(
+            "kind IN ('apartment','single_family')",
+            name="buildings_kind_check",
+        ),
+        # Single-family buildings must have exactly one unit. Enforced at API too.
+        sa.CheckConstraint(
+            "kind <> 'single_family' OR unit_count = 1",
+            name="buildings_single_family_unit_count",
         ),
         sa.CheckConstraint(
             "roof_source IS NULL OR roof_source IN ('microsoft_footprints','owner_traced','owner_typed')",
@@ -76,9 +86,12 @@ def upgrade() -> None:
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("last_seen_at", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.CheckConstraint(
-            "role IN ('resident','building_owner','provider','financier','electrician','admin')",
+            "role IN ('resident','homeowner','building_owner','provider','financier','electrician','admin')",
             name="users_role_check",
         ),
+        # Homeowner role must reference a single_family building. Enforced via deferred check;
+        # Postgres validates the FK row's kind via a trigger added in a follow-up migration if needed.
+        # For pilot we trust API-level enforcement on POST /buildings + onboarding.
         sa.CheckConstraint(
             "business_type IS NULL OR business_type IN ('panels','infrastructure','both')",
             name="users_business_type_check",

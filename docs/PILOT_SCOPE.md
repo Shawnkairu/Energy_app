@@ -2,7 +2,7 @@
 
 Single source of truth for what the pilot covers and what is deferred. Where this document conflicts with [ROADMAP.md](../ROADMAP.md), [TEST.md](../TEST.md), or other product docs, **PILOT_SCOPE.md wins for the pilot release**.
 
-> **IA companion:** [IA_SPEC.md](IA_SPEC.md) is the canonical screen layout for mobile and website portals — six roles, max 5 tabs each, profile always rightmost. Provider and Supplier are merged into a single Provider role with `business_type` (panels / infrastructure / both). Installer is renamed to Electrician. Owner is renamed to Building Owner (role string `building_owner`). Admin is never publicly selectable — see [IA_SPEC §8.5](IA_SPEC.md).
+> **IA companion:** [IA_SPEC.md](IA_SPEC.md) is the canonical screen layout for mobile and website portals — seven roles, max 5 tabs each, profile always rightmost. Provider and Supplier are merged into a single Provider role with `business_type` (panels / infrastructure / both). Installer is renamed to Electrician. Owner is renamed to Building Owner (role string `building_owner`). **Homeowner** is a new role: a single-family-home owner who is also the sole resident, combining the building_owner project lifecycle with the resident token/consumption flow. Admin is never publicly selectable — see [IA_SPEC §8.5](IA_SPEC.md).
 
 ## Doctrine carve-outs (pilot only)
 

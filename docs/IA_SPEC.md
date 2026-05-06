@@ -25,11 +25,14 @@ Canonical screen layout and navigation for the e.mappa pilot. **Frozen at sprint
 | Role | 1st | 2nd | 3rd | 4th | 5th | Total |
 |---|---|---|---|---|---|---|
 | **Resident** | Home (Tokens) | Energy | Wallet | Profile | — | 4 |
+| **Homeowner** | Home (Adaptive) | Energy | Wallet | Profile | — | 4 |
 | **Building Owner** | Home (Project) | Energy | Wallet | Profile | — | 4 |
 | **Provider** (panels + infra merged) | Discover | Inventory | Generation | Wallet | Profile | 5 |
 | **Electrician** | Discover | Jobs | Wallet | Compliance | Profile | 5 |
 | **Financier** | Discover | Portfolio | Wallet | Profile | — | 4 |
 | **Admin (mobile)** | Alerts | Projects | Profile | — | — | 3 |
+
+> **Homeowner = single-family-home owner who is also the sole resident.** Their building has `kind='single_family'` and `unit_count=1`. They combine the building_owner project lifecycle (list, capture roof, watch DRS, approve terms) with the resident token/consumption flow (pledge tokens, see usage, optionally buy shares). Their Home tab adapts: pre-live shows project readiness as the hero; post-live shows token balance as the hero. The other always appears as a secondary card.
 
 Cockpit (web) is not bound by the 5-screen rule — it's an internal ops surface, not a stakeholder app.
 
@@ -89,6 +92,71 @@ Cockpit (web) is not bound by the 5-screen rule — it's an internal ops surface
 - Account: email, phone (optional), role, building membership
 - **Settings** (embedded section): notifications, units (KES/USD), language
 - **Support** (embedded section): help articles, "Contact support" → opens email or in-app chat
+- Logout
+
+---
+
+## 1.5 Homeowner (4 screens)
+
+A homeowner is a single-family-home owner who is also the sole resident of their own building. They combine building_owner project lifecycle with resident token/consumption flow. Backed by `users.role = 'homeowner'` AND `buildings.kind = 'single_family'` AND `buildings.unit_count = 1`. The seed user `homeowner@emappa.test` exercises this path.
+
+**Why a separate role and not a building_owner with a flag:** UX clarity. A homeowner's day-1 mental model is "I'm getting solar on my house," not "I'm a landlord." Distinct role, but the implementation reuses screen components from resident and building_owner via shared lego pieces (`TokenHero`, `ProjectHero`, `EnergyScreen`, `WalletSegments`).
+
+### 1.5.1 Home — Adaptive
+**Purpose:** show what matters most given the project's lifecycle stage.
+
+**Layout (adaptive by `building.stage`):**
+
+- **Pre-live** (`stage in ('listed','qualifying','funding','installing')`):
+  - PilotBanner
+  - **Hero: ProjectHero** — DRS card, decision pill, deployment progress bar, top 3 blockers
+  - **Secondary card: TokenHero** — disabled with copy *"Tokens activate once your project goes live."*
+  - Action rail: View blockers / Approve terms / Compare bill / Deployment timeline / Roof detail
+
+- **Live** (`stage='live'`):
+  - PilotBanner
+  - **Hero: TokenHero** — pledged token balance, big number, [Pledge tokens] CTA, today's solar coverage
+  - **Secondary card: ProjectHero** — collapsed view of DRS + system uptime + deployment retrospective
+  - Action rail: Pledge / View energy / Wallet detail / Roof detail
+
+**Embedded screens** (push, not tab):
+- Pledge entry / pledge history
+- DRS detail
+- Deployment timeline
+- Terms approval
+- Compare bill
+- Roof polygon detail (renders the polygon over satellite tile)
+
+### 1.5.2 Energy
+**Purpose:** show usage and generation. Homeowner always sees generation since they own the rooftop unconditionally.
+
+**Layout:**
+- 24h stacked area chart: solar / battery / grid (homeowner is sole consumer, so this is just their household consumption)
+- Synthetic-data badge top-right
+- Today summary: kWh consumed, kWh from solar, KES saved vs grid
+- **Generation panel — always visible for homeowner.** Today's array generation, 30-day history sparkline, share % they retain (often 100% for fresh deployments)
+- If shares < 100% (i.e., they've sold some to financiers/providers): show the share split as a small ring chart
+
+### 1.5.3 Wallet
+**Purpose:** consolidate the homeowner's three cashflow streams.
+
+**Layout:**
+- Three cards top: Pledged total / Royalties earned (as building owner) / Share earnings (if they retain shares of monetized solar)
+- Segmented control: Cashflow / Ownership / Pledges
+  - Cashflow: chronological transactions (pledges out, royalties in, share earnings in)
+  - Ownership: shares of own-array, optional marketplace to buy back any sold shares
+  - Pledges: history of pledges with status pills
+
+**Embedded screens:**
+- Buy-back marketplace (if shares < 100%)
+- Asset detail
+- Transfer history
+
+### 1.5.4 Profile
+- Account: email, phone (optional), role pill ("Homeowner")
+- **Building & roof profile** (embedded section): address, polygon thumbnail, roof source/confidence, [Edit roof] CTA
+- **Settings** (embedded section): notifications, units, language
+- **Support** (embedded section): help articles, contact support
 - Logout
 
 ---
@@ -299,6 +367,16 @@ After email-OTP verification, if a user has no role-specific profile complete, t
 7. **First pledge (optional)** — "Pledge tokens now or later" — can skip
 8. → Home
 
+### 7.1.5 Homeowner
+5. **Address** — single input; geocode on blur. unit_count=1 and kind='single_family' are auto-set.
+6. **Roof capture** — same three-tier waterfall as building owner:
+   1. Auto-suggest from Microsoft footprints
+   2. Owner-traced polygon on satellite tile
+   3. Manual sqm entry
+7. **Terms preview** — homeowner-specific royalty + ownership terms (read-only)
+8. **First pledge (optional)** — same component as resident first-pledge; can skip
+9. → Home (adaptive, will show project hero pre-live)
+
 ### 7.2 Building Owner
 5. **Building basics** — name, address (auto-geocode), unit count, occupancy estimate
 6. **Roof capture** — three-tier waterfall:
@@ -412,6 +490,13 @@ mobile/app/(building-owner)/earnings.tsx  →  (building-owner)/wallet.tsx
 ```
 mobile/app/(resident)/wallet.tsx          — new (replacing ownership)
 mobile/app/(resident)/energy.tsx          — was deleted; rebuild
+mobile/app/(homeowner)/                   — entire folder is new
+mobile/app/(homeowner)/_layout.tsx        — 4-tab layout
+mobile/app/(homeowner)/home.tsx           — adaptive (TokenHero + ProjectHero composition)
+mobile/app/(homeowner)/energy.tsx         — usage + always-on generation
+mobile/app/(homeowner)/wallet.tsx         — three-stream wallet
+mobile/app/(homeowner)/profile.tsx        — building/roof profile + account
+mobile/app/(homeowner)/_embedded/         — DRS detail, deployment, roof, marketplace, etc.
 mobile/app/(provider)/inventory.tsx       — new merged file
 mobile/app/(provider)/generation.tsx      — new merged file
 mobile/app/(provider)/wallet.tsx          — new
@@ -423,6 +508,10 @@ mobile/app/(onboard)/_layout.tsx
 mobile/app/(onboard)/welcome.tsx
 mobile/app/(onboard)/role-select.tsx      — moved from (auth)
 mobile/app/(onboard)/resident/join.tsx
+mobile/app/(onboard)/homeowner/address.tsx
+mobile/app/(onboard)/homeowner/roof-capture.tsx
+mobile/app/(onboard)/homeowner/terms.tsx
+mobile/app/(onboard)/homeowner/first-pledge.tsx
 mobile/app/(onboard)/building-owner/list-building.tsx
 mobile/app/(onboard)/building-owner/roof-capture.tsx
 mobile/app/(onboard)/provider/business.tsx
@@ -434,6 +523,8 @@ mobile/components/RoofMap.tsx
 mobile/components/ProjectCard.tsx         — Airbnb-style card used by Discover screens
 mobile/components/PortfolioRow.tsx        — Robinhood-style position row
 mobile/components/EnergyTodayChart.tsx    — Tesla/Enphase style 24h chart
+mobile/components/TokenHero.tsx           — pledged token balance hero (used by resident + homeowner)
+mobile/components/ProjectHero.tsx         — DRS + blockers + deployment hero (used by building_owner + homeowner)
 mobile/lib/geo.ts
 mobile/lib/useApiData.ts
 mobile/lib/api.ts                         — token-injecting api wrapper

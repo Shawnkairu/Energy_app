@@ -53,15 +53,15 @@ Migration `0001_pilot_baseline` creates everything below. Owned by Claude Code; 
 - `id uuid pk default gen_random_uuid()`
 - `email text not null unique`
 - `phone text` (nullable, post-pilot)
-- `role text not null check (role in ('resident','building_owner','provider','financier','electrician','admin'))`
+- `role text not null check (role in ('resident','homeowner','building_owner','provider','financier','electrician','admin'))`
 - `business_type text check (business_type in ('panels','infrastructure','both'))` — only meaningful when `role='provider'`; nullable otherwise
-- `building_id uuid references buildings(id)` (nullable; admins/financiers/electricians/providers may not be tied to one)
+- `building_id uuid references buildings(id)` (nullable; admins/financiers/electricians/providers may not be tied to one). Required for `homeowner` (the building they own and live in).
 - `onboarding_complete boolean not null default false`
 - `display_name text`
 - `created_at timestamptz not null default now()`
 - `last_seen_at timestamptz`
 
-> **Note:** `supplier` role removed and merged into `provider` per [IA_SPEC.md §3](IA_SPEC.md). `installer` renamed to `electrician`. Six total roles.
+> **Note:** `supplier` role removed and merged into `provider` per [IA_SPEC.md §3](IA_SPEC.md). `installer` renamed to `electrician`. `homeowner` added as the seventh role (six public + admin) per [IA_SPEC.md §2.5](IA_SPEC.md) — a homeowner is a single_family-building owner who is also the sole resident. Combines building_owner project lifecycle with resident token/consumption flow.
 
 ### otp_codes
 - `id uuid pk default gen_random_uuid()`
@@ -81,6 +81,7 @@ Migration `0001_pilot_baseline` creates everything below. Owned by Claude Code; 
 - `lon numeric not null`
 - `unit_count int not null`
 - `occupancy numeric` (0..1)
+- `kind text not null default 'apartment' check (kind in ('apartment','single_family'))` — single_family enforces unit_count=1 via `(kind <> 'single_family' OR unit_count = 1)` constraint
 - `stage text not null check (stage in ('listed','qualifying','funding','installing','live','retired'))`
 - `roof_area_m2 numeric`
 - `roof_polygon_geojson jsonb`
@@ -140,10 +141,14 @@ Migration `0001_pilot_baseline` creates everything below. Owned by Claude Code; 
 - existing — keep as-is
 
 ### Seed data (script `backend/scripts/seed.py`)
-- 2 buildings: `nyeri-ridge-a`, `karatina-court` (lat/lon real, in Kenya)
+- 3 buildings:
+  - `nyeri-ridge-a` (apartment, 12 units, real Kenyan lat/lon)
+  - `karatina-court` (apartment, 8 units, real Kenyan lat/lon)
+  - `kahawa-sukari-1` (single_family, 1 unit — homeowner test fixture)
 - 1 admin user: `admin@emappa.test`
 - 4 residents (2 with ownership shares > 0, 2 with shares = 0 — to test gated Generation panels)
-- 1 building owner: `building-owner@emappa.test`
+- 1 homeowner: `homeowner@emappa.test` — owns `kahawa-sukari-1`, sole occupant
+- 1 building owner: `building-owner@emappa.test` (owns `nyeri-ridge-a`)
 - 2 providers: `provider-panels@emappa.test` (business_type='panels'), `provider-both@emappa.test` (business_type='both')
 - 1 financier: `financier@emappa.test`
 - 1 electrician: `electrician@emappa.test`
@@ -213,7 +218,11 @@ POST /ownership/transfer                   (owner of position only)
      body: { from_user, to_user, asset_id, percent_points }
      → 200 { ledger_entry: OwnershipLedgerEntry }
 
-POST /buildings                             (building_owner role)
+POST /buildings                             (building_owner OR homeowner)
+     body: { name, address, lat, lon, unit_count, occupancy, kind }
+     - homeowner: backend forces kind='single_family' and unit_count=1
+     - building_owner: kind defaults to 'apartment'
+     - On success links users.building_id to the new building
      body: { name, address, lat, lon, unit_count, occupancy }
      → 200 { building: Building }
 POST /buildings/{id}/roof
@@ -284,8 +293,9 @@ events: prepaid.confirmed, drs.updated, settlement.completed, ownership.transfer
 These get added to `packages/shared/src/types.ts` exactly once by Claude Code at sprint start. After that, **read-only**.
 
 ```ts
-export type Role = 'resident'|'building_owner'|'provider'|'financier'|'electrician'|'admin';
+export type Role = 'resident'|'homeowner'|'building_owner'|'provider'|'financier'|'electrician'|'admin';
 export type PublicRole = Exclude<Role, 'admin'>;   // role-select UI only ever offers PublicRole
+export type BuildingKind = 'apartment'|'single_family';
 export type BusinessType = 'panels'|'infrastructure'|'both';
 
 export interface User {

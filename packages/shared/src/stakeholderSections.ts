@@ -22,6 +22,12 @@ export const stakeholderSections = {
     section("wallet", "Wallet", "Pledged total, ownership earnings, savings", "/(resident)/wallet", { webRoute: "/portal/resident/wallet" }),
     section("profile", "Profile", "Account, settings, support, logout", "/(resident)/profile", { webRoute: "/portal/resident/profile" }),
   ],
+  homeowner: [
+    section("home", "Home", "Adaptive: project readiness pre-live, token balance post-live", "/(homeowner)/home", { webRoute: "/portal/homeowner/home" }),
+    section("energy", "Energy", "Usage + always-on generation (homeowner owns the rooftop)", "/(homeowner)/energy", { webRoute: "/portal/homeowner/energy" }),
+    section("wallet", "Wallet", "Pledges, royalties, share earnings (segmented)", "/(homeowner)/wallet", { webRoute: "/portal/homeowner/wallet" }),
+    section("profile", "Profile", "Building/roof profile, account, settings, support, logout", "/(homeowner)/profile", { webRoute: "/portal/homeowner/profile" }),
+  ],
   building_owner: [
     section("home", "Home", "Project status, DRS, blockers, deployment progress", "/(building-owner)/home", { webRoute: "/portal/building-owner/home" }),
     section("energy", "Energy", "Generation and usage on owned building", "/(building-owner)/energy", { webRoute: "/portal/building-owner/energy" }),
@@ -60,6 +66,7 @@ export const stakeholderSections = {
 // Public roles only — admin excluded by design (see IA_SPEC §8.5).
 export const stakeholderPortalRoles = [
   "resident",
+  "homeowner",
   "building_owner",
   "provider",
   "financier",

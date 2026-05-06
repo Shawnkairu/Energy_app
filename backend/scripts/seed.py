@@ -7,16 +7,18 @@ For now this file documents the required seed shape so subagents have an unambig
 
 Required seed contents:
 
-  Buildings (2):
-    - nyeri-ridge-a   — real Kenyan lat/lon
-    - karatina-court  — real Kenyan lat/lon
+  Buildings (3):
+    - nyeri-ridge-a   apartment      12 units   — real Kenyan lat/lon
+    - karatina-court  apartment      8 units    — real Kenyan lat/lon
+    - kahawa-sukari-1 single_family  1 unit     — homeowner test fixture
 
-  Users (10):
+  Users (11):
     - admin@emappa.test                  role=admin            (granted via this script, NOT public)
     - resident-a@emappa.test             role=resident         building=nyeri-ridge-a, owns shares > 0
     - resident-b@emappa.test             role=resident         building=nyeri-ridge-a, owns shares > 0
     - resident-c@emappa.test             role=resident         building=karatina-court, shares = 0
     - resident-d@emappa.test             role=resident         building=karatina-court, shares = 0
+    - homeowner@emappa.test              role=homeowner        building=kahawa-sukari-1 (sole occupant)
     - building-owner@emappa.test         role=building_owner   building=nyeri-ridge-a
     - provider-panels@emappa.test        role=provider         business_type=panels
     - provider-both@emappa.test          role=provider         business_type=both

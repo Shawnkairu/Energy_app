@@ -143,6 +143,12 @@ website/src/screens/stakeholders/
 │   ├── energy.tsx            ← mirrors mobile/(resident)/energy.tsx
 │   ├── wallet.tsx            ← mirrors mobile/(resident)/wallet.tsx
 │   └── profile.tsx           ← mirrors mobile/(resident)/profile.tsx
+├── homeowner/                                              ← single-family-home owner who is also sole resident
+│   ├── home.tsx              ← adaptive (project hero pre-live, token hero post-live)
+│   ├── energy.tsx            ← always-on generation
+│   ├── wallet.tsx            ← three-stream wallet (pledges + royalties + share earnings)
+│   ├── profile.tsx           ← building/roof + account
+│   └── _embedded/{drs,deployment,approve-terms,compare-today,roof-detail,marketplace}.tsx
 ├── building-owner/                                         ← folder uses kebab-case; role string is 'building_owner'
 │   ├── home.tsx, energy.tsx, wallet.tsx, profile.tsx
 │   └── _embedded/{drs,deployment,resident-roster,approve-terms,compare-today}.tsx
@@ -170,7 +176,8 @@ For each public role, build `website/src/onboard/{role}/*.tsx` mirroring `mobile
 Same components as cockpit, deployed on every authenticated portal page where money or data is displayed.
 
 **Acceptance:**
-- [ ] Logging in as each seed user (`resident@emappa.test`, `building-owner@emappa.test`, `provider-panels@emappa.test`, `electrician@emappa.test`, `financier@emappa.test`, `admin@emappa.test`) shows the **exact same screens, in the same order, with the same data** as the mobile app
+- [ ] Logging in as each seed user (`resident@emappa.test`, `homeowner@emappa.test`, `building-owner@emappa.test`, `provider-panels@emappa.test`, `electrician@emappa.test`, `financier@emappa.test`, `admin@emappa.test`) shows the **exact same screens, in the same order, with the same data** as the mobile app
+- [ ] Homeowner home is adaptive: pre-live shows ProjectHero as primary; post-live shows TokenHero as primary
 - [ ] Onboarding flows on web complete and post `POST /me/onboarding-complete`
 - [ ] Roof capture on web works for owner onboarding (auto-suggest + manual trace + manual sqm)
 - [ ] Waitlist signup persists; visible from cockpit

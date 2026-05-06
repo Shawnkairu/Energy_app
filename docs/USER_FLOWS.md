@@ -8,6 +8,10 @@ For the canonical screen layout, **always defer to [IA_SPEC.md](IA_SPEC.md)**. T
 
 Onboard via email OTP, enter building invite code, confirm building. Land on Home (Tokens) and pledge from there. Energy tab shows usage always; generation panel appears only if shares ≥ 1. Wallet aggregates pledges and (if any) ownership earnings. Optional path: buy a share via Wallet's marketplace embed.
 
+## Homeowner (4 screens: Home / Energy / Wallet / Profile)
+
+A homeowner is a single-family-home owner who is also the sole resident — they combine building owner project lifecycle with resident token/consumption flow. Onboard via email OTP, enter address (unit_count=1 and kind=single_family auto-set), capture roof polygon (auto-suggest → traced → manual sqm fallback), preview homeowner royalty terms, optionally pledge first tokens. Land on adaptive Home — shows project readiness as the hero pre-live, token balance as the hero post-live. Energy always shows generation (homeowner owns the rooftop). Wallet consolidates three streams: pledges out, royalties in (as building owner), share earnings in (if they retain shares). When others buy shares of the homeowner's array, the homeowner's share shrinks but they continue earning royalty as the building host.
+
 ## Building Owner (4 screens: Home / Energy / Wallet / Profile)
 
 Onboard via email OTP, submit building basics, **confirm or trace the roof polygon** (Microsoft footprint auto-suggest → owner trace → manual sqm fallback), preview owner royalty terms. Land on Home (Project) which surfaces DRS, blockers, deployment progress, pledged demand, and embedded actions (resident roster, compare-bill, approve-terms, deployment detail).

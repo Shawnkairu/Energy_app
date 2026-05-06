@@ -2,9 +2,13 @@
 // - 'supplier' merged into 'provider' (with BusinessType for differentiation)
 // - 'installer' renamed to 'electrician'
 // - 'owner' renamed to 'building_owner'
+// - 'homeowner' added: single-family-home owner who is also the sole resident
+//   of their own building. Combines building_owner project lifecycle with
+//   resident token/consumption flow. Backed by buildings.kind='single_family'.
 // Admin is intentionally last; role-select UI must filter to PublicRole only.
 export type Role =
   | "resident"
+  | "homeowner"
   | "building_owner"
   | "provider"
   | "financier"
@@ -14,6 +18,8 @@ export type Role =
 export type PublicRole = Exclude<Role, "admin">;
 
 export type BusinessType = "panels" | "infrastructure" | "both";
+
+export type BuildingKind = "apartment" | "single_family";
 
 // Back-compat alias. New code should prefer Role.
 export type StakeholderRole = Role;
@@ -310,6 +316,7 @@ export interface BuildingRecord {
   lon: number;
   unitCount: number;
   occupancy: number | null;
+  kind: BuildingKind;     // 'single_family' is required when owner role is 'homeowner'
   stage: "listed" | "qualifying" | "funding" | "installing" | "live" | "retired";
   roofAreaM2?: number;
   roofPolygonGeojson?: { type: "Polygon"; coordinates: number[][][] };
