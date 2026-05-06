@@ -1,26 +1,121 @@
-from fastapi import APIRouter, HTTPException
-from app.schemas.auth import AuthUser, RequestOtpInput, TokenResponse, VerifyOtpInput
-from app.services.auth import create_token
-from app.store import store
+"""Email-OTP auth endpoints. Pilot mode — see docs/PILOT_SCOPE.md §1."""
+from __future__ import annotations
+
+import secrets
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..db.session import get_session
+from ..middleware.jwt import get_current_user
+from ..models.user import User
+from ..repos import otp as otp_repo
+from ..repos import users as users_repo
+from ..services.email import send_otp_email
+from ..services.jwt import issue_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _serialize_user(user: User) -> dict:
+    return {
+        "id": str(user.id),
+        "email": user.email,
+        "phone": user.phone,
+        "role": user.role,
+        "businessType": user.business_type,
+        "buildingId": str(user.building_id) if user.building_id else None,
+        "onboardingComplete": bool(user.onboarding_complete),
+        "displayName": user.display_name,
+        "createdAt": (user.created_at or datetime.now(timezone.utc)).isoformat(),
+        "lastSeenAt": user.last_seen_at.isoformat() if user.last_seen_at else None,
+    }
+
+
+class RequestOtpBody(BaseModel):
+    email: EmailStr
+
+
+class VerifyOtpBody(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=6, max_length=6)
+
+
 @router.post("/request-otp")
-def request_otp(payload: RequestOtpInput):
-    code = store.issue_otp(payload.phone)
-    print(f"e.mappa pilot OTP for {payload.phone}: {code}")
-    return {"status": "sent", "channel": "console"}
+async def request_otp(
+    body: RequestOtpBody,
+    session: AsyncSession = Depends(get_session),
+):
+    email = body.email.lower().strip()
+
+    # Rate limit: max 3 codes per email per 10 min
+    recent = await otp_repo.recent_count(session, email)
+    if recent >= otp_repo.RATE_LIMIT_MAX:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="rate_limited"
+        )
+
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    await otp_repo.create_code(session, email, code)
+    await session.commit()
+
+    try:
+        await send_otp_email(email, code)
+    except Exception:
+        # Email delivery failure: still return 200; the dev console fallback
+        # is the safety net. Production failure is captured by Sentry separately.
+        pass
+
+    return {"ok": True}
 
 
-@router.post("/verify-otp", response_model=TokenResponse)
-def verify_otp(payload: VerifyOtpInput):
-    user = store.verify_otp(payload.phone, payload.code)
+@router.post("/verify-otp")
+async def verify_otp(
+    body: VerifyOtpBody,
+    session: AsyncSession = Depends(get_session),
+):
+    email = body.email.lower().strip()
+    record = await otp_repo.get_active_for_email(session, email)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_code"
+        )
+
+    if otp_repo.is_expired(record):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="expired")
+
+    if otp_repo.is_locked_out(record):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="too_many_attempts"
+        )
+
+    if record.code_hash != otp_repo.hash_code(body.code):
+        await otp_repo.increment_attempts(session, record)
+        await session.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_code"
+        )
+
+    await otp_repo.consume_code(session, record)
+
+    # Fetch or auto-provision the user. Auto-provisioning is allowed for the pilot;
+    # in production the post-OTP step would require a sign-up form.
+    user = await users_repo.get_by_email(session, email)
     if user is None:
-        raise HTTPException(status_code=401, detail="Invalid or expired OTP")
-    return {"token": create_token(user), "user": user}
+        # New user: default to resident with onboarding pending. They pick role
+        # next via the (auth)/role-select screen, which calls /me/onboarding-complete.
+        user = await users_repo.create(
+            session, email=email, role="resident", onboarding_complete=False
+        )
+    await users_repo.touch_last_seen(session, user.id)
+    await session.commit()
+
+    token = issue_token(user)
+    return {"token": token, "user": _serialize_user(user)}
 
 
-@router.get("/me", response_model=AuthUser)
-def me():
-    return store.default_user()
+@router.get("/me")
+async def me(user: User = Depends(get_current_user)):
+    return _serialize_user(user)
