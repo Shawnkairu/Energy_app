@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { AdminAlertsScreen } from "../../components/admin/AdminScreens";
 
-export default function AdminAlerts() {
-  return <RoleScreen role="admin" section="Alerts" />;
-}
+export default AdminAlertsScreen;

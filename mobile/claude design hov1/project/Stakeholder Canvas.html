@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>e.mappa — Stakeholder Screen Canvas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #F5EFE6;
+    font-family: Inter, system-ui, sans-serif; color: #2A1808;
+    -webkit-font-smoothing: antialiased; }
+  #root { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; left: 18px; top: 18px; z-index: 10;
+    background: rgba(255,255,255,0.86); backdrop-filter: blur(12px);
+    border: 1px solid rgba(71,23,8,0.12); border-radius: 16px;
+    padding: 14px 16px 12px; box-shadow: 0 10px 30px -16px rgba(71,23,8,0.3);
+    max-width: 360px;
+  }
+  .hud .kicker { font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #965A35; }
+  .hud h1 { font-family: Fraunces, Georgia, serif; font-weight: 600;
+    font-size: 24px; letter-spacing: -0.02em; color: #2A1808; margin: 4px 0 6px; line-height: 1.05; }
+  .hud p { font-size: 12.5px; color: #5C4631; line-height: 1.5; margin: 0; }
+  .hud .keys { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #8B7659; }
+  .hud .keys b { color: #2A1808; font-weight: 600; }
+  .mini-legend {
+    position: fixed; right: 18px; top: 18px; z-index: 10;
+    background: rgba(255,255,255,0.86); backdrop-filter: blur(12px);
+    border: 1px solid rgba(71,23,8,0.12); border-radius: 16px;
+    padding: 12px 14px;
+    box-shadow: 0 10px 30px -16px rgba(71,23,8,0.3);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .mini-legend .title { font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #8B7659; margin-bottom: 4px; }
+  .mini-legend .row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #2A1808; font-weight: 500; }
+  .mini-legend .dot { width: 9px; height: 9px; border-radius: 999px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<div class="hud">
+  <div class="kicker">e.mappa · canvas v1</div>
+  <h1>Stakeholder Screen Canvas</h1>
+  <p>Each stakeholder has its own warm swimlane. Wires connect role-specific screens into the shared screens every account passes through.</p>
+  <div class="keys"><span><b>drag</b> to pan</span><span><b>⌘ + scroll</b> zoom</span><span><b>⌘0</b> fit</span></div>
+</div>
+
+<div class="mini-legend">
+  <div class="title">Stakeholders</div>
+  <div class="row"><span class="dot" style="background:#965A35"></span>Resident</div>
+  <div class="row"><span class="dot" style="background:#764927"></span>Owner</div>
+  <div class="row"><span class="dot" style="background:#7D5734"></span>Provider</div>
+  <div class="row"><span class="dot" style="background:#693719"></span>Financier</div>
+  <div class="row"><span class="dot" style="background:#856444"></span>Installer</div>
+  <div class="row"><span class="dot" style="background:#997757"></span>Supplier</div>
+  <div class="row"><span class="dot" style="background:#471708"></span>Cockpit</div>
+  <div class="row"><span class="dot" style="background:#A98866"></span>Shared</div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="palette.jsx"></script>
+<script type="text/babel" src="canvas.jsx"></script>
+<script type="text/babel" src="screen-primitives.jsx"></script>
+<script type="text/babel" src="shared-screens.jsx"></script>
+<script type="text/babel" src="resident-screens.jsx"></script>
+<script type="text/babel" src="other-screens.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+  const DEFAULTS = /*EDITMODE-BEGIN*/{
+    "showWires": true,
+    "showLabels": true
+  }/*EDITMODE-END*/;
+
+  function App() {
+    const [tweaks, setTweak] = useTweaks(DEFAULTS);
+
+    // Layout — generous spacing so connectors are readable.
+    // Phone bezel is 340w × 678h (+36 for label) → call it 340 × 720.
+    // World grid: 4 stakeholder columns × 2 phone rows on top,
+    // + 4 stakeholder columns × 1 row on bottom,
+    // + a centered shared cluster between the two bands.
+
+    const PW = 340;
+    const PH = 720;
+    const COL_GAP = 60;
+    const ROW_GAP = 80;
+
+    // top band y, mid band y, bottom band y
+    const Y_TOP_LANE = 220;
+    const Y_TOP_PHONES = 340;
+    const Y_TOP_PHONES_2 = Y_TOP_PHONES + PH + ROW_GAP;
+
+    const Y_SHARED_LANE = Y_TOP_PHONES_2 + PH + 80;
+    const Y_SHARED_PHONES = Y_SHARED_LANE + 130;
+
+    const Y_BOTTOM_LANE = Y_SHARED_PHONES + PH + 80;
+    const Y_BOTTOM_PHONES = Y_BOTTOM_LANE + 130;
+
+    // X columns for the 4 top stakeholders
+    const COL_X = [80, 880, 1680, 2480]; // top: resident, owner, provider, financier
+    const LANE_W = PW * 2 + COL_GAP + 100;
+    const LANE_H_TOP = (PH + ROW_GAP) * 2 + 200;
+    const LANE_H_SINGLE = PH + 220;
+
+    // Bottom: installer, supplier, admin (3 lanes)
+    const COL_X_BOT = [80, 880, 1680];
+    const SHARED_X = 2480; // shared cluster on the right of mid
+
+    // World height/width
+    const WORLD_W = 3700;
+    const WORLD_H = Y_BOTTOM_PHONES + PH + 200;
+
+    // Helper: phone position
+    const slot = (xCol, row, yBase) => ({ x: xCol + 40 + row * (PW + COL_GAP), y: yBase });
+
+    return (
+      <WorldCanvas world={{ w: WORLD_W, h: WORLD_H }}>
+        {/* Title block */}
+        <div style={{ position: 'absolute', left: 80, top: 60, width: 1500, pointerEvents: 'none' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: TOKENS.accent }}>e.mappa · stakeholder map</div>
+          <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 600, fontSize: 80, letterSpacing: '-0.04em', color: TOKENS.ink, lineHeight: 1, marginTop: 6 }}>
+            All screens, by role.
+          </div>
+          <div style={{ fontSize: 16, color: TOKENS.inkSoft, marginTop: 12, maxWidth: 980, lineHeight: 1.5 }}>
+            Seven warm swimlanes, one shared cluster. Wires show how every role threads through the same auth, building, profile, and notifications surfaces.
+          </div>
+        </div>
+
+        {/* ───────── Top swimlanes ───────── */}
+        <SwimLane x={COL_X[0]} y={Y_TOP_LANE} w={LANE_W} h={LANE_H_TOP} title="Resident"   subtitle="Tesla / Robinhood" color={ROLES.resident.color}  soft={ROLES.resident.soft + 'CC'}/>
+        <SwimLane x={COL_X[1]} y={Y_TOP_LANE} w={LANE_W} h={LANE_H_TOP} title="Owner"      subtitle="Airbnb trust"      color={ROLES.owner.color}     soft={ROLES.owner.soft + 'CC'}/>
+        <SwimLane x={COL_X[2]} y={Y_TOP_LANE} w={LANE_W} h={LANE_H_TOP} title="Provider"   subtitle="Robinhood asset"   color={ROLES.provider.color}  soft={ROLES.provider.soft + 'CC'}/>
+        <SwimLane x={COL_X[3]} y={Y_TOP_LANE} w={LANE_W} h={LANE_H_TOP} title="Financier"  subtitle="Deal room"         color={ROLES.financier.color} soft={ROLES.financier.soft + 'CC'}/>
+
+        {/* ───────── Shared mid-lane ───────── */}
+        <SwimLane x={80} y={Y_SHARED_LANE} w={WORLD_W - 160} h={LANE_H_SINGLE}
+          title="Shared screens" subtitle="Auth · Building · Profile · Updates"
+          color={ROLES.shared.color} soft={ROLES.shared.soft + 'B0'}/>
+
+        {/* ───────── Bottom swimlanes ───────── */}
+        <SwimLane x={COL_X_BOT[0]} y={Y_BOTTOM_LANE} w={LANE_W} h={LANE_H_SINGLE} title="Electrician" subtitle="Operational"     color={ROLES.installer.color} soft={ROLES.installer.soft + 'CC'}/>
+        <SwimLane x={COL_X_BOT[1]} y={Y_BOTTOM_LANE} w={LANE_W} h={LANE_H_SINGLE} title="Supplier"    subtitle="Catalog & PO"    color={ROLES.supplier.color}  soft={ROLES.supplier.soft + 'CC'}/>
+        <SwimLane x={COL_X_BOT[2]} y={Y_BOTTOM_LANE} w={LANE_W} h={LANE_H_SINGLE} title="Cockpit"     subtitle="e.mappa internal"color={ROLES.admin.color}     soft={ROLES.admin.soft + 'CC'}/>
+
+        {/* ───────── RESIDENT ───────── */}
+        <Phone id="r-home"   role="resident" {...slot(COL_X[0], 0, Y_TOP_PHONES)}   label="Home · solar wallet" sublabel="01"><ResHome/></Phone>
+        <Phone id="r-energy" role="resident" {...slot(COL_X[0], 1, Y_TOP_PHONES)}   label="Energy · today"      sublabel="02"><ResEnergyDetail/></Phone>
+        <Phone id="r-wallet" role="resident" {...slot(COL_X[0], 0, Y_TOP_PHONES_2)} label="Wallet · top up"     sublabel="03"><ResWallet/></Phone>
+        <Phone id="r-own"    role="resident" {...slot(COL_X[0], 1, Y_TOP_PHONES_2)} label="Buy ownership"       sublabel="04"><ResOwnership/></Phone>
+
+        {/* ───────── OWNER ───────── */}
+        <Phone id="o-list"    role="owner" {...slot(COL_X[1], 0, Y_TOP_PHONES)}   label="Your buildings" sublabel="01"><OwnList/></Phone>
+        <Phone id="o-drs"     role="owner" {...slot(COL_X[1], 1, Y_TOP_PHONES)}   label="DRS report"     sublabel="02"><OwnDRS/></Phone>
+        <Phone id="o-royalty" role="owner" {...slot(COL_X[1], 0, Y_TOP_PHONES_2)} label="Royalties"      sublabel="03"><OwnRoyalty/></Phone>
+
+        {/* ───────── PROVIDER ───────── */}
+        <Phone id="p-projects" role="provider" {...slot(COL_X[2], 0, Y_TOP_PHONES)} label="Qualified deals" sublabel="01"><ProvProjects/></Phone>
+        <Phone id="p-asset"    role="provider" {...slot(COL_X[2], 1, Y_TOP_PHONES)} label="Asset perf"      sublabel="02"><ProvAssetPerf/></Phone>
+
+        {/* ───────── FINANCIER ───────── */}
+        <Phone id="f-deals" role="financier" {...slot(COL_X[3], 0, Y_TOP_PHONES)}   label="Named deals"      sublabel="01"><FinDeals/></Phone>
+        <Phone id="f-room"  role="financier" {...slot(COL_X[3], 1, Y_TOP_PHONES)}   label="Deal room · gates" sublabel="02"><FinDealRoom/></Phone>
+
+        {/* ───────── SHARED — 5 across ───────── */}
+        {(() => {
+          const total = 5;
+          const span = WORLD_W - 240;
+          const startX = 120;
+          const step = span / total;
+          const x = (i) => startX + i * step + (step - PW) / 2;
+          return <>
+            <Phone id="sh-welcome"  role="shared" x={x(0)} y={Y_SHARED_PHONES} label="Welcome"        sublabel="entry"><ScreenWelcome/></Phone>
+            <Phone id="sh-verify"   role="shared" x={x(1)} y={Y_SHARED_PHONES} label="Verify · OTP"    sublabel="auth"><ScreenVerify/></Phone>
+            <Phone id="sh-role"     role="shared" x={x(2)} y={Y_SHARED_PHONES} label="Pick role"       sublabel="branch"><ScreenRolePicker/></Phone>
+            <Phone id="sh-building" role="shared" x={x(3)} y={Y_SHARED_PHONES} label="Building detail" sublabel="common"><ScreenBuildingDetail/></Phone>
+            <Phone id="sh-profile"  role="shared" x={x(4)} y={Y_SHARED_PHONES} label="Profile"         sublabel="trust"><ScreenProfile/></Phone>
+          </>;
+        })()}
+
+        {/* extra shared: notifications + resident QR (treated as shared entry) */}
+        <Phone id="sh-notif" role="shared" x={WORLD_W - 80 - PW} y={Y_SHARED_PHONES + PH + 40} label="Updates" sublabel="all roles"><ScreenNotifications/></Phone>
+        <Phone id="r-join"   role="resident" x={120 - 30} y={Y_SHARED_PHONES + PH + 40} label="Join via QR" sublabel="resident · onboard"><ResJoinQR/></Phone>
+
+        {/* ───────── INSTALLER ───────── */}
+        <Phone id="i-jobs"  role="installer" {...slot(COL_X_BOT[0], 0, Y_BOTTOM_PHONES)} label="Today's jobs"     sublabel="01"><InstJobs/></Phone>
+        <Phone id="i-check" role="installer" {...slot(COL_X_BOT[0], 1, Y_BOTTOM_PHONES)} label="Install checklist" sublabel="02"><InstChecklist/></Phone>
+
+        {/* ───────── SUPPLIER ───────── */}
+        <Phone id="s-orders" role="supplier" {...slot(COL_X_BOT[1], 0, Y_BOTTOM_PHONES)} label="Orders & POs" sublabel="01"><SupOrders/></Phone>
+        <Phone id="s-quote"  role="supplier" {...slot(COL_X_BOT[1], 1, Y_BOTTOM_PHONES)} label="Quote · BOM"  sublabel="02"><SupQuote/></Phone>
+
+        {/* ───────── ADMIN ───────── */}
+        <Phone id="a-cockpit" role="admin" {...slot(COL_X_BOT[2], 0, Y_BOTTOM_PHONES)} label="Cockpit · pipeline" sublabel="01"><AdminCockpit/></Phone>
+        <Phone id="a-settle"  role="admin" {...slot(COL_X_BOT[2], 1, Y_BOTTOM_PHONES)} label="Settlement · April"  sublabel="02"><AdminSettlement/></Phone>
+
+        {/* ─────────── WIRES ─────────── */}
+        {tweaks.showWires && <>
+          {/* Welcome → Verify → Role picker (auth flow) */}
+          <Wire from="sh-welcome"  to="sh-verify"   color={ROLES.shared.wire} label="continue"/>
+          <Wire from="sh-verify"   to="sh-role"     color={ROLES.shared.wire} label="otp ok"/>
+
+          {/* Role-picker branches into each role's first screen */}
+          <Wire from="sh-role" to="r-home"     color={ROLES.resident.wire}  label="resident"/>
+          <Wire from="sh-role" to="o-list"     color={ROLES.owner.wire}     label="owner"/>
+          <Wire from="sh-role" to="p-projects" color={ROLES.provider.wire}  label="provider"/>
+          <Wire from="sh-role" to="f-deals"    color={ROLES.financier.wire} label="financier"/>
+          <Wire from="sh-role" to="i-jobs"     color={ROLES.installer.wire} label="installer"/>
+          <Wire from="sh-role" to="s-orders"   color={ROLES.supplier.wire}  label="supplier"/>
+
+          {/* Resident: QR entry feeds verify; home → energy/wallet/own; profile/notif from home */}
+          <Wire from="r-join"   to="sh-verify" color={ROLES.resident.wire} dashed/>
+          <Wire from="r-home"   to="r-energy"  color={ROLES.resident.wire}/>
+          <Wire from="r-home"   to="r-wallet"  color={ROLES.resident.wire}/>
+          <Wire from="r-wallet" to="r-own"     color={ROLES.resident.wire}/>
+          <Wire from="r-home"   to="sh-profile" color={ROLES.resident.wire} dashed/>
+          <Wire from="r-home"   to="sh-notif"   color={ROLES.resident.wire} dashed/>
+
+          {/* Owner */}
+          <Wire from="o-list"   to="o-drs"        color={ROLES.owner.wire}/>
+          <Wire from="o-drs"    to="o-royalty"    color={ROLES.owner.wire}/>
+          <Wire from="o-list"   to="sh-building"  color={ROLES.owner.wire} dashed/>
+          <Wire from="o-list"   to="sh-profile"   color={ROLES.owner.wire} dashed/>
+
+          {/* Provider */}
+          <Wire from="p-projects" to="p-asset"    color={ROLES.provider.wire}/>
+          <Wire from="p-projects" to="sh-building" color={ROLES.provider.wire} dashed/>
+          <Wire from="p-asset"    to="sh-profile" color={ROLES.provider.wire} dashed/>
+
+          {/* Financier */}
+          <Wire from="f-deals" to="f-room"        color={ROLES.financier.wire}/>
+          <Wire from="f-room"  to="sh-building"   color={ROLES.financier.wire} dashed/>
+          <Wire from="f-deals" to="sh-notif"      color={ROLES.financier.wire} dashed/>
+
+          {/* Installer */}
+          <Wire from="i-jobs"  to="i-check"       color={ROLES.installer.wire}/>
+          <Wire from="i-jobs"  to="sh-building"   color={ROLES.installer.wire} dashed/>
+          <Wire from="i-check" to="sh-notif"      color={ROLES.installer.wire} dashed/>
+
+          {/* Supplier */}
+          <Wire from="s-orders" to="s-quote"      color={ROLES.supplier.wire}/>
+          <Wire from="s-orders" to="sh-notif"     color={ROLES.supplier.wire} dashed/>
+
+          {/* Admin observes everything (subtle dashed wires to selected anchors) */}
+          <Wire from="a-cockpit" to="o-drs"       color={ROLES.admin.wire} dashed/>
+          <Wire from="a-cockpit" to="i-jobs"      color={ROLES.admin.wire} dashed/>
+          <Wire from="a-settle"  to="o-royalty"   color={ROLES.admin.wire} dashed/>
+          <Wire from="a-settle"  to="p-asset"     color={ROLES.admin.wire} dashed/>
+          <Wire from="a-settle"  to="f-room"      color={ROLES.admin.wire} dashed/>
+
+          {/* Settlement waterfall touches all payout-receiving roles */}
+        </>}
+
+        {/* Annotations */}
+        {tweaks.showLabels && <>
+          <Annotation x={WORLD_W - 360} y={Y_SHARED_LANE - 70} w={320} kind="insight"
+            title="Why a shared lane"
+            body="Every role hits the same auth, building, profile and notifications surfaces. The shared lane is the truth-source for those — wires below are 'borrows', not duplicates."/>
+          <Annotation x={80} y={Y_SHARED_LANE - 70} w={300} kind="rule"
+            title="Settlement non-negotiables"
+            body="No prepaid → no allocation. No payout from wasted, curtailed or free-exported energy. Reserve · Providers · Financiers · Owner · e.mappa."/>
+        </>}
+      </WorldCanvas>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+  // Tweaks panel (mounted in its own root by useTweaks via TweaksPanel — provided in tweaks-panel.jsx)
+</script>
+
+<script type="text/babel" data-presets="env,react">
+  // Mount tweaks panel as a sibling so toggle works.
+  function PanelHost() {
+    const [tweaks, setTweak] = useTweaks({ showWires: true, showLabels: true });
+    return (
+      <TweaksPanel title="Canvas tweaks">
+        <TweakSection title="Display">
+          <TweakToggle label="Show connectors" value={tweaks.showWires} onChange={(v) => setTweak('showWires', v)}/>
+          <TweakToggle label="Show annotations" value={tweaks.showLabels} onChange={(v) => setTweak('showLabels', v)}/>
+        </TweakSection>
+      </TweaksPanel>
+    );
+  }
+  const panelMount = document.createElement('div');
+  document.body.appendChild(panelMount);
+  ReactDOM.createRoot(panelMount).render(<PanelHost/>);
+</script>
+</body>
+</html>

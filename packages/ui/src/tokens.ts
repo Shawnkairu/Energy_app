@@ -1,21 +1,52 @@
+export const officialPalette = {
+  studioCocoa: "#7D5734",
+  warmUmbar: "#856444",
+  plushCaramel: "#D9BB96",
+  toastedClay: "#997757",
+  scarfOat: "#BA9A74",
+  softCinnamon: "#A98866",
+  guitarMaple: "#CBAB84",
+  deepWood: "#764927",
+  furCream: "#E4C6A4",
+  espressoShadow: "#57361B",
+  burntChestnut: "#693719",
+  nearBlackBrown: "#471708",
+  rustBrown: "#67270C",
+  foxOrange: "#965A35",
+} as const;
+
+/**
+ * App semantics blend officialPalette + readability (see docs/OFFICIAL_COLOR_PALETTE.md).
+ * Primary actions: fox / rust lineage; status green/red unchanged for real state only.
+ */
 export const colors = {
-  ink: "#080A0D",
-  night: "#101318",
-  panel: "#171B22",
-  panelSoft: "#202633",
-  border: "#2A3140",
-  text: "#F7F2EC",
-  muted: "#9BA3AF",
-  dim: "#667085",
-  orange: "#E07856",
-  orangeDeep: "#B84F2D",
-  amber: "#F4A261",
-  solar: "#FFB454",
-  green: "#4ADE80",
-  cyan: "#22D3EE",
-  blue: "#60A5FA",
-  red: "#EF4444",
+  /** Solid canvas aligned with shell gradient base (safe areas, chrome fallback) */
+  surface: "#FAF6F1",
+  surfaceElevated: "#FDF9F5",
+  ink: "#FFFFFF",
+  night: "#FFFFFF",
+  panel: "#FFF8F2",
+  panelSoft: "#F3EBE3",
+  cream: "#FFF3DE",
+  sky: "#FFF7EA",
+  border: "rgba(125, 87, 52, 0.14)",
+  borderStrong: "rgba(87, 54, 27, 0.20)",
+  /** Warm near-black (espresso / near-black-brown lineage) */
+  text: "#2A211C",
+  muted: "#5C534A",
+  dim: "#8A8178",
+  /** Secondary warm accent */
+  orange: officialPalette.guitarMaple,
+  /** Primary actions — fox orange */
+  orangeDeep: officialPalette.foxOrange,
+  amber: "#DDAA3A",
+  solar: "#F5C65B",
+  green: "#2F9F6B",
+  cyan: "#E9A86F",
+  blue: "#B96F46",
+  red: "#C94A3C",
   white: "#FFFFFF",
+  graphite: "#27302B",
 } as const;
 
 export const spacing = {
@@ -31,24 +62,61 @@ export const radius = {
   sm: 10,
   md: 16,
   lg: 24,
+  xl: 30,
   pill: 999,
 } as const;
 
 export const typography = {
-  hero: 42,
-  title: 30,
-  heading: 22,
-  body: 16,
+  hero: 28,
+  title: 20,
+  heading: 17,
+  body: 15,
   small: 13,
   micro: 11,
 } as const;
 
+/** Full-screen shell: warm neutral base + low-saturation fur/plush whisper (not flat white). */
+export const shellGradientColors = ["#FCFAF7", "#F8F1EA", "rgba(228, 198, 164, 0.26)", "#FAF6F1"] as const;
+
+export const shellGradientLocations = [0, 0.34, 0.62, 1] as const;
+
+/** Vertical soft wash — subtle depth without muddying text contrast. */
+export const shellWashColors = ["rgba(203, 171, 132, 0.07)", "transparent", "rgba(150, 90, 53, 0.045)"] as const;
+
+export const shellWashLocations = [0, 0.48, 1] as const;
+
+/** Card face: dual-stop feel, cream knockout, readable under `colors.text`. */
+export const cardGradientColors = [
+  "#FFFDFB",
+  "rgba(255, 249, 242, 0.97)",
+  "rgba(228, 198, 164, 0.20)",
+  "rgba(217, 187, 150, 0.12)",
+  "#FFFBF8",
+] as const;
+
+export const cardGradientLocations = [0, 0.22, 0.46, 0.72, 1] as const;
+
+/** Soft top-left highlight mesh over card base */
+export const cardHighlightGradientColors = ["rgba(255, 255, 255, 0.5)", "transparent", "rgba(186, 154, 116, 0.065)"] as const;
+
+export const cardHighlightGradientLocations = [0, 0.42, 1] as const;
+
+/** Hairline using deep wood lineage */
+export const cardBorderColor = "rgba(118, 73, 39, 0.16)";
+
 export const shadows = {
   card: {
-    shadowColor: "#000",
-    shadowOpacity: 0.24,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 8,
+    shadowColor: officialPalette.espressoShadow,
+    shadowOpacity: 0.09,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  soft: {
+    shadowColor: officialPalette.espressoShadow,
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
   },
 } as const;

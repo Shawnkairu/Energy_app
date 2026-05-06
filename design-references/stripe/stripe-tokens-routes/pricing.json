@@ -1,0 +1,153 @@
+{
+  "url": "https://stripe.com/pricing",
+  "path": "/pricing",
+  "added": {},
+  "changed": {
+    "primitive": {
+      "color": {
+        "brand": {
+          "primary": {
+            "$value": "#635bff"
+          },
+          "secondary": {
+            "$value": "#e8e9ff"
+          }
+        },
+        "neutral": {
+          "n100": {
+            "$value": "#425466"
+          },
+          "n200": {
+            "$value": "#000000"
+          },
+          "n300": {
+            "$value": "#f6f9fc"
+          },
+          "n400": {
+            "$value": "#667691"
+          },
+          "n500": {
+            "$value": "#adbdcc"
+          }
+        },
+        "background": {
+          "bg0": {
+            "$value": "#f6f9fc"
+          },
+          "bg1": {
+            "$value": "#f8fafd"
+          },
+          "bg2": {
+            "$value": "#ffffff"
+          },
+          "bg3": {
+            "$value": "#0c2e4e"
+          }
+        },
+        "text": {
+          "text1": {
+            "$value": "#425466"
+          },
+          "text2": {
+            "$value": "#0000ee"
+          },
+          "text3": {
+            "$value": "#0a2540"
+          },
+          "text4": {
+            "$value": "#635bff"
+          },
+          "text5": {
+            "$value": "#ffffff"
+          },
+          "text6": {
+            "$value": "#533afd"
+          },
+          "text7": {
+            "$value": "#061b31"
+          },
+          "text8": {
+            "$value": "#3c4f69"
+          },
+          "text9": {
+            "$value": "#667691"
+          }
+        }
+      },
+      "spacing": {
+        "s1": {
+          "$value": "20px"
+        },
+        "s2": {
+          "$value": "24px"
+        },
+        "s3": {
+          "$value": "32px"
+        },
+        "s4": {
+          "$value": "48px"
+        },
+        "s5": {
+          "$value": "75px"
+        },
+        "s6": {
+          "$value": "84px"
+        },
+        "s7": {
+          "$value": "112px"
+        },
+        "s8": {
+          "$value": "128px"
+        },
+        "s9": {
+          "$value": "282px"
+        }
+      },
+      "radius": {
+        "r0": {
+          "$value": "1px"
+        },
+        "r1": {
+          "$value": "4px"
+        },
+        "r3": {
+          "$value": "17px"
+        },
+        "r4": {
+          "$value": "99px"
+        }
+      },
+      "shadow": {
+        "sh0": {
+          "$value": "rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px"
+        },
+        "sh1": {
+          "$value": "rgba(50, 50, 93, 0.25) 0px 13.5px 27px -12.4px"
+        },
+        "sh2": {
+          "$value": "rgba(0, 0, 0, 0.1) 0px 18px 36px -18px, rgba(50, 50, 93, 0.25) 0px 30px 45px -30px"
+        }
+      },
+      "fontFamily": {
+        "f1": {
+          "$value": "Times New Roman"
+        },
+        "f2": {
+          "$value": "Arial"
+        }
+      }
+    },
+    "semantic": {
+      "typography": {
+        "body": {
+          "$value": {
+            "fontFamily": "sohne-var",
+            "fontSize": "56px",
+            "fontWeight": "500",
+            "lineHeight": "68px"
+          }
+        }
+      }
+    }
+  }
+}

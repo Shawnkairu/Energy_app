@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { OwnerDeploymentScreen } from "../../components/owner/OwnerScreens";
 
-export default function OwnerDeployment() {
-  return <RoleScreen role="owner" section="Deployment" />;
-}
+export default OwnerDeploymentScreen;

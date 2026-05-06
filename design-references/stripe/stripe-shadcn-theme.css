@@ -1,0 +1,19 @@
+/* shadcn/ui Theme — extracted from https://stripe.com */
+/* Paste into your globals.css */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --primary: 247 99% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 237 100% 95%;
+    --secondary-foreground: 0 0% 0%;
+    --accent: 20 100% 91%;
+    --accent-foreground: 0 0% 0%;
+    --muted: 209 23% 74%;
+    --muted-foreground: 0 0% 0%;
+    --border: 218 16% 52%;
+    --radius: 8px;
+  }
+}

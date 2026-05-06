@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { SupplierOrdersScreen } from "../../components/supplier/SupplierScreens";
 
-export default function SupplierOrders() {
-  return <RoleScreen role="supplier" section="Orders" />;
-}
+export default SupplierOrdersScreen;

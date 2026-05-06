@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { ProviderAssetsScreen } from "../../components/provider/ProviderScreens";
 
-export default function ProviderAssets() {
-  return <RoleScreen role="provider" section="Assets" />;
-}
+export default ProviderAssetsScreen;

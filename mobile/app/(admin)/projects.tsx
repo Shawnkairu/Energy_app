@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { AdminProjectsScreen } from "../../components/admin/AdminScreens";
 
-export default function AdminProjects() {
-  return <RoleScreen role="admin" section="Projects" />;
-}
+export default AdminProjectsScreen;

@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { FinancierPortfolioScreen } from "../../components/financier/FinancierScreens";
 
-export default function FinancierPortfolio() {
-  return <RoleScreen role="financier" section="Portfolio" />;
-}
+export default FinancierPortfolioScreen;

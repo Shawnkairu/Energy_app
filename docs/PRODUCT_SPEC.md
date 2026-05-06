@@ -11,12 +11,14 @@ e.mappa turns apartment buildings into prepaid, locally financed energy economie
 - No opaque financier pool in the initial product.
 - Show distributions and benchmarks, not private counterpart finances.
 
+> **Pilot mode** ([PILOT_SCOPE.md](PILOT_SCOPE.md)) temporarily relaxes three of these: pre-onboarded demand is captured as **non-binding pledges** rather than prepaid cash, settlement runs in **simulation mode** with synthesized energy data, and identity is verified by **email OTP** instead of SMS. The doctrine above remains the long-term truth and is restored at each documented pilot exit criterion.
+
 ## Primary Surfaces
 
-- Mobile app: role-based product for residents, owners, providers, financiers, installers, suppliers, and admins.
-- Cockpit: expanded analytics, tables, DRS command center, settlement monitor, stress testing, and operating workflows.
-- Website: public explanation and conversion surface.
+- Mobile app: native role-based product for residents, owners, providers, financiers, installers, and suppliers. Each role is guarded and owns its own route/component folder.
+- Cockpit: e.mappa-internal analytics, tables, DRS command center, settlement monitor, stress testing, and operating workflows. It is not a stakeholder portal.
+- Website: public explanation plus isolated stakeholder web portals for all non-e.mappa roles.
 
 ## UX Direction
 
-Dark-first, high-contrast, graph-first interfaces inspired by Tesla energy flows, Enphase system visualization, Robinhood finance clarity, and Airbnb trust/onboarding.
+Light-first, graph-aware interfaces with Stripe-level composition, not Stripe theming: white/off-white backgrounds, crisp cards, subtle depth, high whitespace, precise typography, and a distinctly e.mappa palette of graphite, solar peach, soft sky, warm cream, and status colors only when they communicate truth. Keep Tesla/Enphase energy clarity, Robinhood finance legibility, and Airbnb trust/onboarding polish, but avoid dark default UI and stray brand colors.

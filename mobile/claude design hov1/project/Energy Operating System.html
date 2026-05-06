@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>e.mappa — Energy Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-2:#111113;
+    --ink:#f5f1ea;
+    --ink-soft:#b7b1a7;
+    --ink-mute:#7a756d;
+    --line:rgba(245,241,234,0.10);
+    --line-strong:rgba(245,241,234,0.22);
+    --peach:#E07856;
+    --peach-soft:#E89A7F;
+    --peach-dim:rgba(224,120,86,0.18);
+    --teal:#A2BFD9;
+    --teal-soft:rgba(162,191,217,0.16);
+    --card:#141416;
+    --card-2:#19191c;
+  }
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ background:var(--bg); color:var(--ink); font-family:"Inter","Helvetica Neue",Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(224,120,86,0.08), transparent 60%),
+      radial-gradient(900px 500px at 10% 40%, rgba(162,191,217,0.05), transparent 60%),
+      var(--bg);
+    min-height:100vh;
+    padding: 48px 48px 72px;
+  }
+  .mono{ font-family:"JetBrains Mono", ui-monospace, monospace; }
+  .wrap{ max-width:1680px; margin:0 auto; }
+
+  /* ===== Masthead ===== */
+  .mast{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    align-items:end;
+    gap:40px;
+    padding: 10px 2px 40px;
+    border-bottom:1px solid var(--line);
+    margin-bottom: 40px;
+  }
+  .brand{ display:flex; flex-direction:column; gap:18px; }
+  .brand .logo{
+    display:inline-flex; align-items:baseline; gap:1px;
+    font-weight:800; font-size:42px; letter-spacing:-0.04em; line-height:1;
+  }
+  .brand .logo .e{ color:var(--peach); }
+  .brand h1{
+    font-size:64px; font-weight:800; letter-spacing:-0.045em; line-height:1;
+    color:var(--ink);
+  }
+  .brand h1 em{ font-style:normal; color:var(--peach); }
+  .brand .kicker{
+    font-size:11px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--peach); display:flex; align-items:center; gap:10px;
+  }
+  .brand .kicker::before{
+    content:""; width:24px; height:1px; background:var(--peach);
+  }
+  .brand p.lede{
+    max-width:560px; color:var(--ink-soft); font-size:15px; line-height:1.7;
+    margin-top: 4px;
+  }
+  .meta{
+    display:flex; flex-direction:column; align-items:flex-end; gap:10px;
+    color:var(--ink-mute); font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+  }
+  .meta .rule{ width:56px; height:1px; background:var(--line-strong); }
+  .meta .big{ color:var(--ink); font-weight:600; letter-spacing:0.04em; text-transform:none; font-size:13px; }
+  .meta .doc{ color:var(--ink-mute); font-size:10px; letter-spacing:0.2em; }
+
+  /* ===== Section labels (above the SVG) ===== */
+  .section-label{
+    display:flex; align-items:center; gap:14px;
+    font-size:10px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase;
+    color:var(--ink-mute);
+    margin: 28px 0 12px;
+  }
+  .section-label .num{
+    color:var(--peach); font-family:"JetBrains Mono", monospace; letter-spacing:0; font-size:11px;
+  }
+  .section-label .rule{ flex:1; height:1px; background:var(--line); }
+
+  /* ===== Legend ===== */
+  .legend{
+    display:flex; flex-wrap:wrap; gap:28px 32px; align-items:center;
+    padding: 18px 22px; border:1px solid var(--line); border-radius:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    margin-top: 24px;
+  }
+  .legend .item{ display:flex; align-items:center; gap:12px; font-size:12px; color:var(--ink-soft); }
+  .legend .swatch{ width:28px; height:2px; border-radius:2px; position:relative; }
+  .legend .swatch.data{ background:var(--ink); }
+  .legend .swatch.pay{ background:var(--peach); }
+  .legend .swatch.ops{
+    background: repeating-linear-gradient(90deg, var(--teal) 0 6px, transparent 6px 10px);
+  }
+  .legend .dot{ width:8px; height:8px; border-radius:999px; background:var(--peach); box-shadow:0 0 0 3px rgba(224,120,86,0.18); }
+
+  /* ===== How it works strip ===== */
+  .hiw{
+    margin-top: 40px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    padding: 28px 32px;
+  }
+  .hiw-head{
+    display:flex; align-items:center; gap:14px;
+    margin-bottom: 22px;
+  }
+  .hiw-head .kicker{
+    font-size:10px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase; color:var(--peach);
+  }
+  .hiw-head h3{
+    font-size:22px; font-weight:700; letter-spacing:-0.02em; color:var(--ink);
+  }
+  .hiw-grid{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr) 1.2fr;
+    gap: 0;
+    align-items: stretch;
+  }
+  .hiw-step{
+    padding: 18px 22px 18px 0;
+    border-right:1px solid var(--line);
+    position:relative;
+  }
+  .hiw-step:last-child{ border-right:none; padding-right:0; }
+  .hiw-step:not(:first-child){ padding-left:22px; }
+  .hiw-step .n{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; color:var(--peach); font-weight:500;
+    margin-bottom:10px; letter-spacing:0.08em;
+  }
+  .hiw-step h4{
+    font-size:13px; font-weight:700; color:var(--ink); line-height:1.35; margin-bottom:6px;
+    letter-spacing:-0.01em;
+  }
+  .hiw-step p{ font-size:12px; line-height:1.55; color:var(--ink-soft); }
+  .hiw-step.result{
+    background: linear-gradient(135deg, rgba(224,120,86,0.10), rgba(224,120,86,0.02));
+    border-radius:10px;
+    padding:18px 22px;
+    margin-left:22px;
+    border:1px solid rgba(224,120,86,0.22);
+  }
+  .hiw-step.result .tag{
+    font-size:10px; letter-spacing:0.2em; font-weight:700; text-transform:uppercase; color:var(--peach);
+    margin-bottom:8px;
+  }
+  .hiw-step.result h4{ color:var(--ink); font-size:14px; margin-bottom:6px; }
+  .hiw-step.result p{ color:var(--ink-soft); }
+
+  /* ===== SVG-internal styles (inheriting from root) ===== */
+  svg{ display:block; }
+  svg text{ font-family:"Inter","Helvetica Neue",Arial,sans-serif; }
+  svg .mono-t{ font-family:"JetBrains Mono", ui-monospace, monospace; }
+
+  /* ===== Footer note ===== */
+  .foot{
+    margin-top: 48px; padding-top: 24px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+    color:var(--ink-mute); font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+  }
+  .foot .right{ display:flex; gap:20px; }
+
+  @media (max-width: 1200px){
+    body{ padding: 28px 20px 56px; }
+    .brand h1{ font-size: 44px; }
+    .hiw-grid{ grid-template-columns: 1fr 1fr; }
+    .hiw-step{ border-right:none; border-bottom:1px solid var(--line); padding:16px 0; }
+    .hiw-step.result{ margin-left:0; grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="mast">
+    <div class="brand">
+      <div class="kicker">Platform Architecture · v1.0</div>
+      <div class="logo"><span class="e">e</span><span>.mappa</span></div>
+      <h1>The Energy <em>Operating System.</em></h1>
+      <p class="lede">
+        One platform coordinating data, payments, and compliance across a shared building energy economy —
+        from rooftop hardware to resident wallet.
+      </p>
+    </div>
+    <div class="meta">
+      <div class="doc">Document</div>
+      <div class="big">System Blueprint</div>
+      <div class="rule"></div>
+      <div>Measured · Transparent · Local</div>
+    </div>
+  </header>
+
+  <!-- SECTION 01: HARDWARE LAYER -->
+  <div class="section-label">
+    <span class="num">01</span>
+    <span>Hardware Layer — Power &amp; Metering</span>
+    <span class="rule"></span>
+    <span>Physical</span>
+  </div>
+
+  <svg viewBox="0 0 1680 420" width="100%" role="img" aria-label="Hardware layer">
+    <defs>
+      <!-- subtle card gradient -->
+      <linearGradient id="card-grad" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#1a1a1d"/>
+        <stop offset="1" stop-color="#121214"/>
+      </linearGradient>
+      <linearGradient id="card-grad-strong" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#1f1f23"/>
+        <stop offset="1" stop-color="#141417"/>
+      </linearGradient>
+      <!-- arrow marker -->
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#d9d3c7"/>
+      </marker>
+      <marker id="arrow-peach" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#E07856"/>
+      </marker>
+      <marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#A2BFD9"/>
+      </marker>
+
+      <!-- icon: solar panel -->
+      <symbol id="i-solar" viewBox="0 0 48 48">
+        <g fill="none" stroke="#E89A7F" stroke-width="1.5" stroke-linejoin="round">
+          <path d="M10 14 L40 14 L38 34 L12 34 Z"/>
+          <path d="M18 14 L16 34 M26 14 L25 34 M34 14 L34 34"/>
+          <path d="M12 20 L38 20 M12 27 L38 27"/>
+          <path d="M24 14 L24 8"/>
+        </g>
+      </symbol>
+      <!-- icon: meter -->
+      <symbol id="i-meter" viewBox="0 0 48 48">
+        <g fill="none" stroke="#A2BFD9" stroke-width="1.5">
+          <rect x="10" y="10" width="28" height="32" rx="3"/>
+          <circle cx="24" cy="22" r="7"/>
+          <path d="M24 22 L28 19" stroke-linecap="round"/>
+          <rect x="15" y="33" width="18" height="4" rx="1"/>
+        </g>
+      </symbol>
+      <!-- icon: inverter -->
+      <symbol id="i-inverter" viewBox="0 0 48 48">
+        <g fill="none" stroke="#E89A7F" stroke-width="1.5">
+          <rect x="8" y="10" width="32" height="28" rx="3"/>
+          <path d="M14 19 L22 19 M26 19 L34 19" />
+          <path d="M14 26 L18 26 M22 26 L34 26" stroke-dasharray="2 2"/>
+          <path d="M14 33 L34 33"/>
+        </g>
+      </symbol>
+      <!-- icon: panel board -->
+      <symbol id="i-board" viewBox="0 0 48 48">
+        <g fill="none" stroke="#d9d3c7" stroke-width="1.5">
+          <rect x="10" y="8" width="28" height="32" rx="2"/>
+          <path d="M16 15 h16 M16 21 h16 M16 27 h16 M16 33 h10"/>
+          <circle cx="34" cy="33" r="1.5" fill="#E07856" stroke="none"/>
+        </g>
+      </symbol>
+      <!-- icon: grid -->
+      <symbol id="i-grid" viewBox="0 0 48 48">
+        <g fill="none" stroke="#A2BFD9" stroke-width="1.5" stroke-linejoin="round">
+          <path d="M24 6 L14 22 L34 22 Z"/>
+          <path d="M18 22 L18 40 M30 22 L30 40 M18 30 L30 30"/>
+          <path d="M10 40 L38 40"/>
+        </g>
+      </symbol>
+      <!-- icon: battery -->
+      <symbol id="i-battery" viewBox="0 0 48 48">
+        <g fill="none" stroke="#E89A7F" stroke-width="1.5">
+          <rect x="8" y="14" width="30" height="22" rx="3"/>
+          <rect x="38" y="20" width="3" height="10" rx="1" fill="#E89A7F"/>
+          <rect x="12" y="18" width="5" height="14" rx="1" fill="#E07856" stroke="none" opacity="0.9"/>
+          <rect x="19" y="18" width="5" height="14" rx="1" fill="#E07856" stroke="none" opacity="0.6"/>
+          <rect x="26" y="18" width="5" height="14" rx="1" fill="#E07856" stroke="none" opacity="0.3"/>
+        </g>
+      </symbol>
+      <!-- icon: apartment -->
+      <symbol id="i-apt" viewBox="0 0 48 48">
+        <g fill="none" stroke="#d9d3c7" stroke-width="1.5">
+          <rect x="12" y="12" width="24" height="28" rx="1"/>
+          <path d="M18 18 h3 v3 h-3 z M27 18 h3 v3 h-3 z M18 26 h3 v3 h-3 z M27 26 h3 v3 h-3 z M21 34 h6 v6 h-6 z"/>
+        </g>
+      </symbol>
+    </defs>
+
+    <!-- === Provider A (solar + meter) === -->
+    <g transform="translate(40,120)">
+      <text x="0" y="0" fill="#7a756d" font-size="10" font-weight="600" letter-spacing="2">PROVIDER A</text>
+      <g transform="translate(0,12)">
+        <rect width="92" height="108" rx="10" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-solar" x="22" y="18" width="48" height="48"/>
+        <text x="46" y="88" text-anchor="middle" fill="#d9d3c7" font-size="11" font-weight="600">Solar Array</text>
+      </g>
+      <g transform="translate(108,12)">
+        <rect width="80" height="108" rx="10" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-meter" x="16" y="20" width="48" height="48"/>
+        <text x="40" y="88" text-anchor="middle" fill="#d9d3c7" font-size="11" font-weight="600">Smart Meter</text>
+      </g>
+      <!-- production data label -->
+      <text x="94" y="146" text-anchor="middle" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1.5">PRODUCTION DATA</text>
+    </g>
+
+    <!-- === Provider B === -->
+    <g transform="translate(260,120)">
+      <text x="0" y="0" fill="#7a756d" font-size="10" font-weight="600" letter-spacing="2">PROVIDER B</text>
+      <g transform="translate(0,12)">
+        <rect width="92" height="108" rx="10" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-solar" x="22" y="18" width="48" height="48"/>
+        <text x="46" y="88" text-anchor="middle" fill="#d9d3c7" font-size="11" font-weight="600">Solar Array</text>
+      </g>
+      <g transform="translate(108,12)">
+        <rect width="80" height="108" rx="10" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-meter" x="16" y="20" width="48" height="48"/>
+        <text x="40" y="88" text-anchor="middle" fill="#d9d3c7" font-size="11" font-weight="600">Smart Meter</text>
+      </g>
+      <text x="94" y="146" text-anchor="middle" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1.5">PRODUCTION DATA</text>
+    </g>
+
+    <!-- ellipsis indicator -->
+    <g transform="translate(470,168)" fill="#7a756d">
+      <circle cx="0" cy="0" r="1.6"/>
+      <circle cx="8" cy="0" r="1.6"/>
+      <circle cx="16" cy="0" r="1.6"/>
+    </g>
+
+    <!-- === Hybrid Inverter === -->
+    <g transform="translate(520,120)">
+      <text x="0" y="0" fill="#7a756d" font-size="10" font-weight="600" letter-spacing="2">AGGREGATION</text>
+      <g transform="translate(0,12)">
+        <rect width="140" height="108" rx="10" fill="url(#card-grad-strong)" stroke="rgba(224,120,86,0.28)"/>
+        <use href="#i-inverter" x="46" y="16" width="48" height="48"/>
+        <text x="70" y="80" text-anchor="middle" fill="#f5f1ea" font-size="12" font-weight="700">Hybrid Inverter</text>
+        <text x="70" y="94" text-anchor="middle" fill="#E89A7F" font-size="10" font-weight="500">Dual MPPT</text>
+      </g>
+    </g>
+
+    <!-- === Battery (below inverter) === -->
+    <g transform="translate(520,254)">
+      <g>
+        <rect width="140" height="80" rx="10" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-battery" x="20" y="14" width="40" height="40"/>
+        <text x="70" y="70" text-anchor="middle" fill="#d9d3c7" font-size="11" font-weight="600">Battery Storage</text>
+      </g>
+      <text x="70" y="104" text-anchor="middle" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1.5">STORAGE DATA</text>
+    </g>
+
+    <!-- === Main Distribution Board === -->
+    <g transform="translate(720,120)">
+      <text x="0" y="0" fill="#7a756d" font-size="10" font-weight="600" letter-spacing="2">DISTRIBUTION</text>
+      <g transform="translate(0,12)">
+        <rect width="140" height="108" rx="10" fill="url(#card-grad-strong)" stroke="rgba(245,241,234,0.12)"/>
+        <use href="#i-board" x="46" y="18" width="48" height="48"/>
+        <text x="70" y="82" text-anchor="middle" fill="#f5f1ea" font-size="12" font-weight="700">Main Board</text>
+        <text x="70" y="96" text-anchor="middle" fill="#A2BFD9" font-size="10" font-weight="500">DB</text>
+      </g>
+    </g>
+
+    <!-- === Grid === -->
+    <g transform="translate(920,120)">
+      <text x="0" y="0" fill="#7a756d" font-size="10" font-weight="600" letter-spacing="2">UTILITY</text>
+      <g transform="translate(0,12)">
+        <rect width="140" height="108" rx="10" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-grid" x="46" y="18" width="48" height="48"/>
+        <text x="70" y="82" text-anchor="middle" fill="#f5f1ea" font-size="12" font-weight="700">Grid CT / KPLC</text>
+        <text x="70" y="96" text-anchor="middle" fill="#A2BFD9" font-size="10" font-weight="500">Import · Export</text>
+      </g>
+      <text x="70" y="146" text-anchor="middle" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1.5">IMPORT / EXPORT DATA</text>
+    </g>
+
+    <!-- === Resident meters (column) === -->
+    <g transform="translate(1140,60)">
+      <text x="0" y="0" fill="#7a756d" font-size="10" font-weight="600" letter-spacing="2">RESIDENT METERS</text>
+      <g transform="translate(0,14)">
+        <rect width="180" height="44" rx="8" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-meter" x="10" y="6" width="32" height="32"/>
+        <text x="52" y="20" fill="#d9d3c7" font-size="11" font-weight="600">Smart Meter 1</text>
+        <text x="52" y="34" fill="#7a756d" font-size="10">Apartment 01</text>
+      </g>
+      <g transform="translate(0,64)">
+        <rect width="180" height="44" rx="8" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-meter" x="10" y="6" width="32" height="32"/>
+        <text x="52" y="20" fill="#d9d3c7" font-size="11" font-weight="600">Smart Meter 2</text>
+        <text x="52" y="34" fill="#7a756d" font-size="10">Apartment 02</text>
+      </g>
+      <g transform="translate(0,114)">
+        <rect width="180" height="44" rx="8" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-meter" x="10" y="6" width="32" height="32"/>
+        <text x="52" y="20" fill="#d9d3c7" font-size="11" font-weight="600">Smart Meter 3</text>
+        <text x="52" y="34" fill="#7a756d" font-size="10">Apartment 03</text>
+      </g>
+      <g transform="translate(0,170)" fill="#7a756d">
+        <circle cx="90" cy="0" r="1.6"/>
+        <circle cx="98" cy="0" r="1.6"/>
+        <circle cx="106" cy="0" r="1.6"/>
+      </g>
+      <g transform="translate(0,190)">
+        <rect width="180" height="44" rx="8" fill="url(#card-grad)" stroke="rgba(245,241,234,0.08)"/>
+        <use href="#i-meter" x="10" y="6" width="32" height="32"/>
+        <text x="52" y="20" fill="#d9d3c7" font-size="11" font-weight="600">Smart Meter N</text>
+        <text x="52" y="34" fill="#7a756d" font-size="10">Apartment N</text>
+      </g>
+    </g>
+
+    <!-- === Connector lines === -->
+    <g fill="none" stroke="#d9d3c7" stroke-width="1.25">
+      <!-- Provider A solar -> meter -->
+      <path d="M132 174 L148 174" marker-end="url(#arrow)"/>
+      <!-- Provider A meter -> Provider B solar (separator) visually between groups is NOT needed; skip -->
+      <!-- Provider A meter → inverter -->
+      <path d="M188 174 L260 174" stroke-dasharray="0" marker-end="url(#arrow)"/>
+      <!-- Provider B solar -> meter -->
+      <path d="M352 174 L368 174" marker-end="url(#arrow)"/>
+      <!-- Provider B meter → inverter -->
+      <path d="M408 174 L520 174" marker-end="url(#arrow)"/>
+      <!-- Inverter → Distribution Board -->
+      <path d="M660 186 L720 186" marker-end="url(#arrow)"/>
+      <!-- Battery ↔ Inverter (up) -->
+      <path d="M590 254 L590 240" marker-end="url(#arrow)"/>
+      <path d="M600 240 L600 254" marker-end="url(#arrow)"/>
+      <!-- Distribution Board → Grid -->
+      <path d="M860 186 L920 186" marker-end="url(#arrow)"/>
+      <!-- Grid → Resident Meters (fan out) -->
+      <path d="M1060 170 C 1100 170, 1100 92, 1140 92" marker-end="url(#arrow)"/>
+      <path d="M1060 180 C 1100 180, 1100 142, 1140 142" marker-end="url(#arrow)"/>
+      <path d="M1060 190 C 1100 190, 1100 192, 1140 192" marker-end="url(#arrow)"/>
+      <path d="M1060 200 C 1100 200, 1100 268, 1140 268" marker-end="url(#arrow)"/>
+      <!-- Resident meters → apartments (tiny) — omitted as meters already labeled -->
+    </g>
+
+    <!-- measured data callout below hardware -->
+    <g transform="translate(720,366)">
+      <line x1="-680" y1="0" x2="900" y2="0" stroke="rgba(224,120,86,0.22)" stroke-dasharray="2 4"/>
+      <rect x="-80" y="-14" width="300" height="28" rx="14" fill="#0a0a0a" stroke="#E07856" stroke-opacity="0.4"/>
+      <text x="70" y="5" text-anchor="middle" fill="#E89A7F" font-size="11" font-weight="700" letter-spacing="2">MEASURED DATA · NORMALIZED</text>
+    </g>
+  </svg>
+
+  <!-- SECTION 02: THE PLATFORM -->
+  <div class="section-label">
+    <span class="num">02</span>
+    <span>The Platform — Software Layer</span>
+    <span class="rule"></span>
+    <span>Digital</span>
+  </div>
+
+  <svg viewBox="0 0 1680 880" width="100%" role="img" aria-label="Platform layer">
+    <defs>
+      <linearGradient id="core-grad" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#1c1c20"/>
+        <stop offset="1" stop-color="#121214"/>
+      </linearGradient>
+      <linearGradient id="stake-grad" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#17171a"/>
+        <stop offset="1" stop-color="#0f0f11"/>
+      </linearGradient>
+      <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="rgba(224,120,86,0.22)"/>
+        <stop offset="1" stop-color="rgba(224,120,86,0)"/>
+      </radialGradient>
+
+      <!-- Stakeholder icons -->
+      <symbol id="s-residents" viewBox="0 0 32 32">
+        <g fill="none" stroke="#E07856" stroke-width="1.5">
+          <circle cx="11" cy="11" r="3.5"/>
+          <circle cx="21" cy="11" r="3.5"/>
+          <path d="M5 24 c0-4 3-7 6-7 s6 3 6 7 M15 24 c0-4 3-7 6-7 s6 3 6 7" stroke-linecap="round"/>
+        </g>
+      </symbol>
+      <symbol id="s-providers" viewBox="0 0 32 32">
+        <g fill="none" stroke="#E07856" stroke-width="1.5" stroke-linejoin="round">
+          <path d="M16 4 L16 9 M6 14 L10 14 M22 14 L26 14 M9 7 L12 10 M23 7 L20 10"/>
+          <circle cx="16" cy="16" r="5"/>
+          <path d="M10 24 L22 24 M8 28 L24 28"/>
+        </g>
+      </symbol>
+      <symbol id="s-buildings" viewBox="0 0 32 32">
+        <g fill="none" stroke="#E07856" stroke-width="1.5">
+          <rect x="5" y="10" width="10" height="18"/>
+          <rect x="17" y="5" width="10" height="23"/>
+          <path d="M8 14 h4 M8 18 h4 M8 22 h4 M20 9 h4 M20 13 h4 M20 17 h4 M20 21 h4"/>
+        </g>
+      </symbol>
+      <symbol id="s-suppliers" viewBox="0 0 32 32">
+        <g fill="none" stroke="#E07856" stroke-width="1.5">
+          <rect x="3" y="11" width="14" height="10" rx="1"/>
+          <path d="M17 13 h6 l4 4 v4 h-10 z"/>
+          <circle cx="8" cy="24" r="2.5"/>
+          <circle cx="22" cy="24" r="2.5"/>
+        </g>
+      </symbol>
+      <symbol id="s-electricians" viewBox="0 0 32 32">
+        <g fill="none" stroke="#E07856" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 4 L10 16 L15 16 L12 28 L22 14 L17 14 L20 4 Z"/>
+        </g>
+      </symbol>
+      <symbol id="s-fabricators" viewBox="0 0 32 32">
+        <g fill="none" stroke="#E07856" stroke-width="1.5">
+          <circle cx="16" cy="16" r="5"/>
+          <path d="M16 4 L16 8 M16 24 L16 28 M4 16 L8 16 M24 16 L28 16 M7.5 7.5 L10 10 M22 22 L24.5 24.5 M7.5 24.5 L10 22 M22 10 L24.5 7.5"/>
+        </g>
+      </symbol>
+
+      <!-- Platform module icons -->
+      <symbol id="m-ingestion" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4" stroke-linecap="round">
+          <path d="M7 17 a5 5 0 1 1 10 0 a4 4 0 0 1 -1 8 H8 a4 4 0 0 1 -1 -8 z"/>
+          <path d="M14 14 L14 22 M11 19 L14 22 L17 19"/>
+        </g>
+      </symbol>
+      <symbol id="m-resident" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <circle cx="14" cy="11" r="4"/>
+          <path d="M6 23 c0-4 4-7 8-7 s8 3 8 7" stroke-linecap="round"/>
+        </g>
+      </symbol>
+      <symbol id="m-token" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <circle cx="14" cy="14" r="8"/>
+          <path d="M14 9 v10 M10 12 h8 M10 16 h8" stroke-linecap="round"/>
+        </g>
+      </symbol>
+      <symbol id="m-audit" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4" stroke-linecap="round">
+          <rect x="6" y="5" width="16" height="18" rx="2"/>
+          <path d="M10 10 h8 M10 14 h8 M10 18 h5"/>
+          <path d="M17 18 L19 20 L23 16" stroke="#E07856"/>
+        </g>
+      </symbol>
+      <symbol id="m-analytics" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4" stroke-linecap="round">
+          <path d="M5 22 L10 15 L14 18 L20 9 L23 13"/>
+          <path d="M5 22 L23 22"/>
+        </g>
+      </symbol>
+      <symbol id="m-eye" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <path d="M3 14 C 6 8 10 6 14 6 s 8 2 11 8 c -3 6 -7 8 -11 8 s -8 -2 -11 -8 z"/>
+          <circle cx="14" cy="14" r="3"/>
+        </g>
+      </symbol>
+
+      <symbol id="m-phone" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <rect x="8" y="3" width="12" height="22" rx="2"/>
+          <path d="M12 21 h4"/>
+        </g>
+      </symbol>
+      <symbol id="m-sun" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <circle cx="14" cy="14" r="4"/>
+          <path d="M14 3 v3 M14 22 v3 M3 14 h3 M22 14 h3 M6 6 l2 2 M20 20 l2 2 M6 22 l2 -2 M20 8 l2 -2"/>
+        </g>
+      </symbol>
+      <symbol id="m-building" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <rect x="6" y="4" width="16" height="20"/>
+          <path d="M10 8 h2 M16 8 h2 M10 12 h2 M16 12 h2 M10 16 h2 M16 16 h2 M12 21 h4 v3 h-4 z"/>
+        </g>
+      </symbol>
+      <symbol id="m-wallet" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <rect x="3" y="7" width="22" height="14" rx="2"/>
+          <path d="M20 14 h3" stroke-linecap="round"/>
+          <circle cx="20" cy="14" r="1.5" fill="#E07856" stroke="none"/>
+        </g>
+      </symbol>
+      <symbol id="m-shield" viewBox="0 0 28 28">
+        <g fill="none" stroke="#E07856" stroke-width="1.4">
+          <path d="M14 3 L23 6 v8 c 0 5 -4 9 -9 11 c -5 -2 -9 -6 -9 -11 v-8 z"/>
+          <path d="M10 14 l3 3 l5 -6"/>
+        </g>
+      </symbol>
+    </defs>
+
+    <!-- soft glow behind core -->
+    <ellipse cx="840" cy="430" rx="520" ry="330" fill="url(#glow)"/>
+
+    <!-- ======================================================= -->
+    <!-- LEFT STAKEHOLDERS -->
+    <!-- ======================================================= -->
+    <!-- Residents -->
+    <g transform="translate(20,60)">
+      <rect width="260" height="150" rx="14" fill="url(#stake-grad)" stroke="rgba(245,241,234,0.10)"/>
+      <g transform="translate(20,20)">
+        <circle cx="18" cy="18" r="20" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.35)"/>
+        <use href="#s-residents" x="2" y="2" width="32" height="32"/>
+      </g>
+      <text x="80" y="36" fill="#f5f1ea" font-size="13" font-weight="700" letter-spacing="1.5">RESIDENTS</text>
+      <g fill="#b7b1a7" font-size="11">
+        <text x="80" y="58">· Buy tokens</text>
+        <text x="80" y="76">· Consume energy</text>
+        <text x="80" y="94">· View kWh, savings, balance</text>
+      </g>
+      <text x="20" y="135" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">APP / DASHBOARD</text>
+    </g>
+
+    <!-- Providers -->
+    <g transform="translate(20,240)">
+      <rect width="260" height="170" rx="14" fill="url(#stake-grad)" stroke="rgba(245,241,234,0.10)"/>
+      <g transform="translate(20,20)">
+        <circle cx="18" cy="18" r="20" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.35)"/>
+        <use href="#s-providers" x="2" y="2" width="32" height="32"/>
+      </g>
+      <text x="80" y="36" fill="#f5f1ea" font-size="13" font-weight="700" letter-spacing="1.5">PROVIDERS</text>
+      <g fill="#b7b1a7" font-size="11">
+        <text x="80" y="58">· Invest in panels</text>
+        <text x="80" y="76">· Generate energy</text>
+        <text x="80" y="94">· View production</text>
+        <text x="80" y="112">· Receive payouts</text>
+      </g>
+      <text x="20" y="155" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">APP / DASHBOARD</text>
+    </g>
+
+    <!-- Building Owners -->
+    <g transform="translate(20,440)">
+      <rect width="260" height="180" rx="14" fill="url(#stake-grad)" stroke="rgba(245,241,234,0.10)"/>
+      <g transform="translate(20,20)">
+        <circle cx="18" cy="18" r="20" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.35)"/>
+        <use href="#s-buildings" x="2" y="2" width="32" height="32"/>
+      </g>
+      <text x="80" y="36" fill="#f5f1ea" font-size="13" font-weight="700" letter-spacing="1.5">BUILDING OWNERS</text>
+      <g fill="#b7b1a7" font-size="11">
+        <text x="80" y="58">· Provide rooftop access</text>
+        <text x="80" y="76">· View total consumption</text>
+        <text x="80" y="94">· View production</text>
+        <text x="80" y="112">· Receive payouts</text>
+      </g>
+      <text x="20" y="165" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">APP / DASHBOARD</text>
+    </g>
+
+    <!-- ======================================================= -->
+    <!-- RIGHT STAKEHOLDERS (PARTNER OPS) -->
+    <!-- ======================================================= -->
+    <!-- Suppliers -->
+    <g transform="translate(1400,60)">
+      <rect width="260" height="170" rx="14" fill="url(#stake-grad)" stroke="rgba(245,241,234,0.10)"/>
+      <g transform="translate(20,20)">
+        <circle cx="18" cy="18" r="20" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.35)"/>
+        <use href="#s-suppliers" x="2" y="2" width="32" height="32"/>
+      </g>
+      <text x="80" y="36" fill="#f5f1ea" font-size="13" font-weight="700" letter-spacing="1.5">SUPPLIERS</text>
+      <g fill="#b7b1a7" font-size="11">
+        <text x="80" y="58">· Supply panels, batteries,</text>
+        <text x="80" y="72">  inverters</text>
+        <text x="80" y="90">· Receive payments</text>
+        <text x="80" y="108">· Use strict procurement</text>
+        <text x="80" y="122">  interface</text>
+      </g>
+      <text x="20" y="155" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">ONBOARDING / SPECS</text>
+    </g>
+
+    <!-- Electricians -->
+    <g transform="translate(1400,260)">
+      <rect width="260" height="170" rx="14" fill="url(#stake-grad)" stroke="rgba(245,241,234,0.10)"/>
+      <g transform="translate(20,20)">
+        <circle cx="18" cy="18" r="20" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.35)"/>
+        <use href="#s-electricians" x="2" y="2" width="32" height="32"/>
+      </g>
+      <text x="80" y="36" fill="#f5f1ea" font-size="13" font-weight="700" letter-spacing="1.5">ELECTRICIANS</text>
+      <g fill="#b7b1a7" font-size="11">
+        <text x="80" y="58">· Install, route, meter,</text>
+        <text x="80" y="72">  maintain</text>
+        <text x="80" y="90">· Receive payments</text>
+        <text x="80" y="108">· Use certification &amp;</text>
+        <text x="80" y="122">  install workflow</text>
+      </g>
+      <text x="20" y="155" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">CERTIFICATION / SPECS</text>
+    </g>
+
+    <!-- Fabricators -->
+    <g transform="translate(1400,460)">
+      <rect width="260" height="170" rx="14" fill="url(#stake-grad)" stroke="rgba(245,241,234,0.10)"/>
+      <g transform="translate(20,20)">
+        <circle cx="18" cy="18" r="20" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.35)"/>
+        <use href="#s-fabricators" x="2" y="2" width="32" height="32"/>
+      </g>
+      <text x="80" y="36" fill="#f5f1ea" font-size="13" font-weight="700" letter-spacing="1.5">FABRICATORS</text>
+      <g fill="#b7b1a7" font-size="11">
+        <text x="80" y="58">· Build mounts, rails,</text>
+        <text x="80" y="72">  brackets</text>
+        <text x="80" y="90">· Receive payments</text>
+        <text x="80" y="108">· Follow strict fabrication</text>
+        <text x="80" y="122">  specs</text>
+      </g>
+      <text x="20" y="155" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">FABRICATION / SPECS</text>
+    </g>
+
+    <!-- ======================================================= -->
+    <!-- CENTER CORE — e.mappa platform -->
+    <!-- ======================================================= -->
+    <g transform="translate(320,60)">
+      <!-- outer chrome -->
+      <rect width="1060" height="760" rx="20" fill="url(#core-grad)" stroke="rgba(224,120,86,0.28)"/>
+      <rect x="1" y="1" width="1058" height="758" rx="19" fill="none" stroke="rgba(245,241,234,0.04)"/>
+
+      <!-- top header -->
+      <g transform="translate(0,30)">
+        <text x="530" y="32" text-anchor="middle" fill="#f5f1ea" font-size="30" font-weight="800" letter-spacing="-1.2">
+          <tspan fill="#E07856">e</tspan><tspan>.mappa</tspan>
+        </text>
+        <text x="530" y="56" text-anchor="middle" fill="#b7b1a7" font-size="12" font-weight="500" letter-spacing="3">ENERGY OPERATING SYSTEM</text>
+        <line x1="40" y1="76" x2="1020" y2="76" stroke="rgba(245,241,234,0.08)"/>
+      </g>
+
+      <!-- ==== A. DATA ENGINE ==== -->
+      <g transform="translate(40,130)">
+        <g transform="translate(0,0)">
+          <rect width="980" height="24" rx="12" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.3)"/>
+          <text x="20" y="16" fill="#E89A7F" font-size="11" font-weight="700" letter-spacing="2">A · DATA ENGINE</text>
+          <text x="960" y="16" text-anchor="end" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">INGEST · NORMALIZE · ALLOCATE</text>
+        </g>
+        <g transform="translate(0,44)">
+          <!-- 6 module cards -->
+          <g>
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-ingestion" x="16" y="16" width="28" height="28"/>
+            <text x="16" y="66" fill="#f5f1ea" font-size="11" font-weight="700">Production</text>
+            <text x="16" y="80" fill="#f5f1ea" font-size="11" font-weight="700">Ingestion</text>
+            <text x="16" y="96" fill="#7a756d" font-size="9.5">Raw meter feeds</text>
+          </g>
+          <g transform="translate(166,0)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-resident" x="16" y="16" width="28" height="28"/>
+            <text x="16" y="66" fill="#f5f1ea" font-size="11" font-weight="700">Resident</text>
+            <text x="16" y="80" fill="#f5f1ea" font-size="11" font-weight="700">Consumption</text>
+            <text x="16" y="96" fill="#7a756d" font-size="9.5">Per-apartment</text>
+          </g>
+          <g transform="translate(332,0)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-token" x="16" y="16" width="28" height="28"/>
+            <text x="16" y="66" fill="#f5f1ea" font-size="11" font-weight="700">Token</text>
+            <text x="16" y="80" fill="#f5f1ea" font-size="11" font-weight="700">Allocation</text>
+            <text x="16" y="96" fill="#7a756d" font-size="9.5">Fair accounting</text>
+          </g>
+          <g transform="translate(498,0)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-audit" x="16" y="16" width="28" height="28"/>
+            <text x="16" y="66" fill="#f5f1ea" font-size="11" font-weight="700">Audit</text>
+            <text x="16" y="80" fill="#f5f1ea" font-size="11" font-weight="700">Trails</text>
+            <text x="16" y="96" fill="#7a756d" font-size="9.5">Immutable log</text>
+          </g>
+          <g transform="translate(664,0)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-analytics" x="16" y="16" width="28" height="28"/>
+            <text x="16" y="66" fill="#f5f1ea" font-size="11" font-weight="700">Analytics</text>
+            <text x="16" y="80" fill="#f5f1ea" font-size="11" font-weight="700">Engine</text>
+            <text x="16" y="96" fill="#7a756d" font-size="9.5">Trends · forecast</text>
+          </g>
+          <g transform="translate(830,0)">
+            <rect x="0" y="0" width="150" height="110" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-eye" x="16" y="16" width="28" height="28"/>
+            <text x="16" y="66" fill="#f5f1ea" font-size="11" font-weight="700">Real-time</text>
+            <text x="16" y="80" fill="#f5f1ea" font-size="11" font-weight="700">Visibility</text>
+            <text x="16" y="96" fill="#7a756d" font-size="9.5">Live dashboards</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- ==== B. APPS & DASHBOARDS ==== -->
+      <g transform="translate(40,320)">
+        <g>
+          <rect width="980" height="24" rx="12" fill="rgba(162,191,217,0.10)" stroke="rgba(162,191,217,0.3)"/>
+          <text x="20" y="16" fill="#A2BFD9" font-size="11" font-weight="700" letter-spacing="2">B · APPS &amp; DASHBOARDS</text>
+          <text x="960" y="16" text-anchor="end" fill="#7a756d" font-size="10" font-weight="500" letter-spacing="1.5">STAKEHOLDER INTERFACES</text>
+        </g>
+        <g transform="translate(0,44)">
+          <g>
+            <rect x="0" y="0" width="320" height="150" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-phone" x="16" y="16" width="28" height="28"/>
+            <text x="58" y="28" fill="#f5f1ea" font-size="13" font-weight="700">Resident App</text>
+            <text x="58" y="44" fill="#7a756d" font-size="10">iOS · Android · M-Pesa</text>
+            <g fill="#b7b1a7" font-size="11">
+              <text x="16" y="76">· Token balance</text>
+              <text x="16" y="94">· kWh used</text>
+              <text x="16" y="112">· Savings</text>
+              <text x="16" y="130">· Payments</text>
+            </g>
+          </g>
+          <g transform="translate(336,0)">
+            <rect x="0" y="0" width="320" height="150" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-sun" x="16" y="16" width="28" height="28"/>
+            <text x="58" y="28" fill="#f5f1ea" font-size="13" font-weight="700">Provider Portal</text>
+            <text x="58" y="44" fill="#7a756d" font-size="10">Fleet management</text>
+            <g fill="#b7b1a7" font-size="11">
+              <text x="16" y="76">· Production</text>
+              <text x="16" y="94">· Performance</text>
+              <text x="16" y="112">· Payouts</text>
+              <text x="16" y="130">· Fleet health</text>
+            </g>
+          </g>
+          <g transform="translate(672,0)">
+            <rect x="0" y="0" width="308" height="150" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-building" x="16" y="16" width="28" height="28"/>
+            <text x="58" y="28" fill="#f5f1ea" font-size="13" font-weight="700">Owner Dashboard</text>
+            <text x="58" y="44" fill="#7a756d" font-size="10">Building level</text>
+            <g fill="#b7b1a7" font-size="11">
+              <text x="16" y="76">· Total consumption</text>
+              <text x="16" y="94">· Total production</text>
+              <text x="16" y="112">· Rooftop participation</text>
+              <text x="16" y="130">· Payouts</text>
+            </g>
+          </g>
+        </g>
+      </g>
+
+      <!-- ==== C & D — side by side ==== -->
+      <g transform="translate(40,554)">
+        <!-- C. Payments & Settlement -->
+        <g>
+          <g>
+            <rect width="482" height="24" rx="12" fill="rgba(224,120,86,0.10)" stroke="rgba(224,120,86,0.3)"/>
+            <text x="20" y="16" fill="#E89A7F" font-size="11" font-weight="700" letter-spacing="2">C · PAYMENTS &amp; SETTLEMENT</text>
+          </g>
+          <g transform="translate(0,44)">
+            <rect x="0" y="0" width="482" height="150" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-wallet" x="20" y="20" width="32" height="32"/>
+            <text x="62" y="36" fill="#f5f1ea" font-size="13" font-weight="700">Money Rails</text>
+            <text x="62" y="52" fill="#7a756d" font-size="10">Automated settlement</text>
+            <g fill="#b7b1a7" font-size="11.5">
+              <text x="20" y="88">· Resident top-ups / token purchases</text>
+              <text x="20" y="108">· Payouts to providers &amp; owners</text>
+              <text x="20" y="128">· Billing · Settlement logic</text>
+            </g>
+          </g>
+        </g>
+        <!-- D. Partner Ops & Compliance -->
+        <g transform="translate(498,0)">
+          <g>
+            <rect width="482" height="24" rx="12" fill="rgba(162,191,217,0.10)" stroke="rgba(162,191,217,0.3)"/>
+            <text x="20" y="16" fill="#A2BFD9" font-size="11" font-weight="700" letter-spacing="2">D · PARTNER OPS &amp; COMPLIANCE</text>
+          </g>
+          <g transform="translate(0,44)">
+            <rect x="0" y="0" width="482" height="150" rx="10" fill="#1a1a1d" stroke="rgba(245,241,234,0.08)"/>
+            <use href="#m-shield" x="20" y="20" width="32" height="32"/>
+            <text x="62" y="36" fill="#f5f1ea" font-size="13" font-weight="700">Certification &amp; Workflow</text>
+            <text x="62" y="52" fill="#7a756d" font-size="10">Quality · traceability</text>
+            <g fill="#b7b1a7" font-size="11.5">
+              <text x="20" y="88">· Onboarding &amp; certification</text>
+              <text x="20" y="108">· Strict install specs</text>
+              <text x="20" y="128">· Procurement &amp; fabrication guidance</text>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <!-- ======================================================= -->
+    <!-- CONNECTORS: stakeholders ↔ core -->
+    <!-- ======================================================= -->
+    <g fill="none">
+      <!-- Residents ↔ core (payments + data) -->
+      <path d="M280 135 L320 135" stroke="#d9d3c7" stroke-width="1.25" marker-end="url(#arrow)"/>
+      <path d="M320 145 L280 145" stroke="#E07856" stroke-width="1.25" marker-end="url(#arrow-peach)"/>
+      <text x="292" y="128" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1">APP / DATA</text>
+      <text x="292" y="162" fill="#E89A7F" font-size="9" font-weight="500" letter-spacing="1">PAYMENTS</text>
+
+      <!-- Providers ↔ core -->
+      <path d="M280 320 L320 320" stroke="#d9d3c7" stroke-width="1.25" marker-end="url(#arrow)"/>
+      <path d="M320 330 L280 330" stroke="#E07856" stroke-width="1.25" marker-end="url(#arrow-peach)"/>
+      <text x="292" y="313" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1">APP / DATA</text>
+      <text x="292" y="347" fill="#E89A7F" font-size="9" font-weight="500" letter-spacing="1">PAYOUTS</text>
+
+      <!-- Building Owners ↔ core -->
+      <path d="M280 525 L320 525" stroke="#d9d3c7" stroke-width="1.25" marker-end="url(#arrow)"/>
+      <path d="M320 535 L280 535" stroke="#E07856" stroke-width="1.25" marker-end="url(#arrow-peach)"/>
+      <text x="292" y="518" fill="#7a756d" font-size="9" font-weight="500" letter-spacing="1">DASHBOARD</text>
+      <text x="292" y="552" fill="#E89A7F" font-size="9" font-weight="500" letter-spacing="1">PAYOUTS</text>
+
+      <!-- Suppliers ↔ core (partner ops dashed teal + payments) -->
+      <path d="M1380 135 L1400 135" stroke="#A2BFD9" stroke-width="1.25" stroke-dasharray="4 4" marker-end="url(#arrow-teal)"/>
+      <path d="M1400 145 L1380 145" stroke="#E07856" stroke-width="1.25" marker-end="url(#arrow-peach)"/>
+      <text x="1388" y="128" fill="#A2BFD9" font-size="9" font-weight="500" letter-spacing="1" text-anchor="end">ONBOARDING / SPECS</text>
+      <text x="1388" y="162" fill="#E89A7F" font-size="9" font-weight="500" letter-spacing="1" text-anchor="end">PAYMENTS</text>
+
+      <!-- Electricians ↔ core -->
+      <path d="M1380 335 L1400 335" stroke="#A2BFD9" stroke-width="1.25" stroke-dasharray="4 4" marker-end="url(#arrow-teal)"/>
+      <path d="M1400 345 L1380 345" stroke="#E07856" stroke-width="1.25" marker-end="url(#arrow-peach)"/>
+      <text x="1388" y="328" fill="#A2BFD9" font-size="9" font-weight="500" letter-spacing="1" text-anchor="end">CERTIFICATION</text>
+      <text x="1388" y="362" fill="#E89A7F" font-size="9" font-weight="500" letter-spacing="1" text-anchor="end">PAYMENTS</text>
+
+      <!-- Fabricators ↔ core -->
+      <path d="M1380 535 L1400 535" stroke="#A2BFD9" stroke-width="1.25" stroke-dasharray="4 4" marker-end="url(#arrow-teal)"/>
+      <path d="M1400 545 L1380 545" stroke="#E07856" stroke-width="1.25" marker-end="url(#arrow-peach)"/>
+      <text x="1388" y="528" fill="#A2BFD9" font-size="9" font-weight="500" letter-spacing="1" text-anchor="end">FAB SPECS</text>
+      <text x="1388" y="562" fill="#E89A7F" font-size="9" font-weight="500" letter-spacing="1" text-anchor="end">PAYMENTS</text>
+    </g>
+
+    <!-- top measured data → core -->
+    <g fill="none">
+      <path d="M840 0 L840 60" stroke="#E07856" stroke-width="1.25" stroke-dasharray="2 4"/>
+      <text x="850" y="30" fill="#E89A7F" font-size="10" font-weight="500" letter-spacing="1.5">FROM HARDWARE LAYER</text>
+    </g>
+  </svg>
+
+  <!-- LEGEND -->
+  <div class="legend" role="list">
+    <div class="item" role="listitem"><span class="swatch data"></span>Measured data flow</div>
+    <div class="item" role="listitem"><span class="swatch pay"></span>Payments / payouts</div>
+    <div class="item" role="listitem"><span class="swatch ops"></span>Partner ops / compliance</div>
+    <div class="item" role="listitem"><span class="dot"></span>Platform core · e.mappa</div>
+    <div class="item" role="listitem" style="margin-left:auto; color:var(--ink-mute);">All flows bi-directional unless marked.</div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="hiw">
+    <div class="hiw-head">
+      <span class="kicker">How it works</span>
+      <h3>From rooftop to resident, in six steps.</h3>
+    </div>
+    <div class="hiw-grid">
+      <div class="hiw-step">
+        <div class="n">01</div>
+        <h4>Measure</h4>
+        <p>Data is captured across production, consumption, and the grid.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="n">02</div>
+        <h4>Ingest</h4>
+        <p>e.mappa ingests and validates every reading in real time.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="n">03</div>
+        <h4>Allocate</h4>
+        <p>Tokens are assigned fairly and transparently to residents.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="n">04</div>
+        <h4>Visualize</h4>
+        <p>Stakeholders view live data via apps and dashboards.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="n">05</div>
+        <h4>Settle</h4>
+        <p>Payments are settled and payouts are automated.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="n">06</div>
+        <h4>Certify</h4>
+        <p>Partners follow certified workflows and strict standards.</p>
+      </div>
+      <div class="hiw-step result">
+        <div class="tag">Result</div>
+        <h4>A trusted, transparent, repeatable energy economy.</h4>
+        <p>One platform. Any building. Built to scale.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOT -->
+  <div class="foot">
+    <div>© e.mappa · Energy Operating System</div>
+    <div class="right">
+      <span>Blueprint v1.0</span>
+      <span>Measured · Transparent · Local</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

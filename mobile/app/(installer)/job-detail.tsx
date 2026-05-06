@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { InstallerJobDetailScreen } from "../../components/installer/InstallerScreens";
 
-export default function InstallerJobDetail() {
-  return <RoleScreen role="installer" section="Job Detail" />;
-}
+export default InstallerJobDetailScreen;

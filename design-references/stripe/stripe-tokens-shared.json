@@ -1,0 +1,58 @@
+{
+  "primitive": {
+    "color": {
+      "text": {
+        "text0": {
+          "$value": "#000000"
+        }
+      }
+    },
+    "spacing": {
+      "s0": {
+        "$value": "1px"
+      }
+    },
+    "radius": {
+      "r2": {
+        "$value": "8px"
+      }
+    },
+    "fontFamily": {
+      "f0": {
+        "$value": "sohne-var"
+      }
+    }
+  },
+  "semantic": {
+    "color": {
+      "action": {
+        "primary": {
+          "$value": "{primitive.color.brand.primary}"
+        },
+        "secondary": {
+          "$value": "{primitive.color.brand.secondary}"
+        }
+      },
+      "surface": {
+        "default": {
+          "$value": "{primitive.color.background.bg0}"
+        }
+      },
+      "text": {
+        "body": {
+          "$value": "{primitive.color.text.text0}"
+        }
+      }
+    },
+    "radius": {
+      "control": {
+        "$value": "{primitive.radius.r0}"
+      }
+    },
+    "shadow": {
+      "elevated": {
+        "$value": "{primitive.shadow.sh0}"
+      }
+    }
+  }
+}

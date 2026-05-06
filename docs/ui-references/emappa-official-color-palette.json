@@ -1,0 +1,161 @@
+{
+  "sourceImage": "./emappa-official-color-palette-character.png",
+  "extraction": "Image-derived representative colors. Source was resampled to 240px wide, converted to BMP with sips, bucketed in 16-channel RGB bands, then averaged from sampled pixels.",
+  "note": "Because the artwork uses gradients, fur, fabric texture, shadows, and depth of field, these are exact representative hex values from sampled pixels rather than flat object fills.",
+  "palette": [
+    {
+      "token": "studio_cocoa",
+      "hex": "#7D5734",
+      "rgb": [
+        125,
+        87,
+        52
+      ],
+      "coverage": 0.196,
+      "use": "studio background and ambient brand warmth"
+    },
+    {
+      "token": "warm_umbar",
+      "hex": "#856444",
+      "rgb": [
+        133,
+        100,
+        68
+      ],
+      "coverage": 0.1279,
+      "use": "grounding shadows and warm depth"
+    },
+    {
+      "token": "plush_caramel",
+      "hex": "#D9BB96",
+      "rgb": [
+        217,
+        187,
+        150
+      ],
+      "coverage": 0.0328,
+      "use": "character fur midtone and friendly surfaces"
+    },
+    {
+      "token": "toasted_clay",
+      "hex": "#997757",
+      "rgb": [
+        153,
+        119,
+        87
+      ],
+      "coverage": 0.0319,
+      "use": "warm grounded canvas and mid-depth surfaces"
+    },
+    {
+      "token": "scarf_oat",
+      "hex": "#BA9A74",
+      "rgb": [
+        186,
+        154,
+        116
+      ],
+      "coverage": 0.0252,
+      "use": "soft neutral panels and secondary surfaces"
+    },
+    {
+      "token": "soft_cinnamon",
+      "hex": "#A98866",
+      "rgb": [
+        169,
+        136,
+        102
+      ],
+      "coverage": 0.0245,
+      "use": "soft textile accent and secondary warmth"
+    },
+    {
+      "token": "guitar_maple",
+      "hex": "#CBAB84",
+      "rgb": [
+        203,
+        171,
+        132
+      ],
+      "coverage": 0.0204,
+      "use": "secondary wood/action accent"
+    },
+    {
+      "token": "deep_wood",
+      "hex": "#764927",
+      "rgb": [
+        118,
+        73,
+        39
+      ],
+      "coverage": 0.0122,
+      "use": "boots, strings, and strong detail"
+    },
+    {
+      "token": "fur_cream",
+      "hex": "#E4C6A4",
+      "rgb": [
+        228,
+        198,
+        164
+      ],
+      "coverage": 0.0077,
+      "use": "fur highlight, cheek glow, and elevated cream"
+    },
+    {
+      "token": "espresso_shadow",
+      "hex": "#57361B",
+      "rgb": [
+        87,
+        54,
+        27
+      ],
+      "coverage": 0.0072,
+      "use": "deep shadow and high-contrast detail"
+    },
+    {
+      "token": "burnt_chestnut",
+      "hex": "#693719",
+      "rgb": [
+        105,
+        55,
+        25
+      ],
+      "coverage": 0.0057,
+      "use": "warm dark accent for wood, hat, and linework"
+    },
+    {
+      "token": "near_black_brown",
+      "hex": "#471708",
+      "rgb": [
+        71,
+        23,
+        8
+      ],
+      "coverage": 0.0041,
+      "use": "strongest detail color for eyes, strings, and deep contrast"
+    },
+    {
+      "token": "rust_brown",
+      "hex": "#67270C",
+      "rgb": [
+        103,
+        39,
+        12
+      ],
+      "coverage": 0.0037,
+      "use": "deep orange active accent"
+    },
+    {
+      "token": "fox_orange",
+      "hex": "#965A35",
+      "rgb": [
+        150,
+        90,
+        53
+      ],
+      "coverage": 0.0028,
+      "use": "fox/tail warmth and lively orange accent"
+    }
+  ]
+}

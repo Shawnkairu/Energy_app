@@ -1,28 +1,100 @@
+import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
-import { colors, GlassCard, Surface } from "@emappa/ui";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { requestOtp, verifyOtp } from "@emappa/api-client";
+import { AppMark, colors, GlassCard, Label, PrimaryButton, typography } from "@emappa/ui";
 import { savePilotSession } from "../../components/session";
 
 export default function Login() {
   const router = useRouter();
+  const [phone, setPhone] = useState("+254700000000");
+  const [code, setCode] = useState("");
+  const [otpRequested, setOtpRequested] = useState(false);
+  const [status, setStatus] = useState("Console OTP for API mode; any 6 digits work in mock mode.");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function continueToRoleSelect() {
-    savePilotSession({ phone: "+254 7XX XXX XXX" });
-    router.push("/(auth)/role-select");
+  async function continueToRoleSelect() {
+    setIsSubmitting(true);
+    try {
+      if (!otpRequested) {
+        await requestOtp(phone);
+        setOtpRequested(true);
+        setStatus("OTP requested. Check backend logs, or enter any 6 digits in mock mode.");
+        return;
+      }
+
+      const auth = await verifyOtp(phone, code || "000000");
+      savePilotSession({ phone, token: auth.token, role: auth.user.role, buildingId: auth.user.buildingId });
+      router.push("/(auth)/role-select");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
-    <Surface>
-      <Text style={{ color: colors.text, fontSize: 36, fontWeight: "900", marginTop: 60 }}>Welcome back</Text>
-      <Text style={{ color: colors.muted, marginTop: 10, lineHeight: 22 }}>
+    <View style={styles.root}>
+      <View style={{ marginTop: 40 }}>
+        <AppMark size={50} />
+      </View>
+      <Text style={styles.headline}>Welcome back</Text>
+      <Text style={styles.lede}>
         Pilot phone login for the e.mappa demo. This creates a local session that can be swapped for OTP/KYC when the backend is connected.
       </Text>
-      <GlassCard accent={colors.orange}>
-        <Text style={{ color: colors.text, fontWeight: "800" }}>+254 7XX XXX XXX</Text>
+      <GlassCard>
+        <Label>Pilot phone</Label>
+        <TextInput
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          autoCapitalize="none"
+          style={styles.input}
+          accessibilityLabel="Pilot phone number"
+        />
+        {otpRequested ? (
+          <>
+            <Label>OTP code</Label>
+            <TextInput
+              value={code}
+              onChangeText={setCode}
+              keyboardType="number-pad"
+              maxLength={6}
+              placeholder="000000"
+              placeholderTextColor={colors.dim}
+              style={styles.input}
+              accessibilityLabel="Six digit OTP code"
+            />
+          </>
+        ) : null}
+        <Text style={styles.note}>{status}</Text>
       </GlassCard>
-      <Pressable onPress={continueToRoleSelect}>
-        <Text style={{ color: colors.orange, fontWeight: "900", fontSize: 18 }}>Continue</Text>
-      </Pressable>
-    </Surface>
+      <PrimaryButton onPress={continueToRoleSelect}>{isSubmitting ? "Working..." : otpRequested ? "Verify and continue" : "Request OTP"}</PrimaryButton>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  headline: {
+    color: colors.text,
+    fontSize: 34,
+    fontWeight: "600",
+    letterSpacing: -1.2,
+    lineHeight: 40,
+    marginTop: 22,
+  },
+  lede: { color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 10 },
+  input: {
+    borderColor: colors.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: typography.title,
+    fontWeight: "600",
+    letterSpacing: -0.45,
+    marginTop: 8,
+    marginBottom: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  note: { color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8 },
+});

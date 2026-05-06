@@ -7,3 +7,4 @@ export * from "./payback";
 export * from "./mockData";
 export * from "./projector";
 export * from "./consistency";
+export * from "./stakeholderSections";

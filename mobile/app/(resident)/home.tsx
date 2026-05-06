@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { ResidentHomeScreen } from "../../components/resident/ResidentScreens";
 
-export default function ResidentHome() {
-  return <RoleScreen role="resident" section="Home" />;
-}
+export default ResidentHomeScreen;

@@ -6,6 +6,8 @@
 # Python caches
 __pycache__/
 *.py[cod]
+.venv/
+backend/.venv/
 
 # JavaScript / Expo / Vite
 node_modules/

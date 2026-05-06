@@ -16,10 +16,12 @@
     "lint": "tsc --noEmit"
   },
   "peerDependencies": {
+    "expo-linear-gradient": ">=14.0.0",
     "react": "*",
     "react-native": "*"
   },
   "devDependencies": {
+    "expo-linear-gradient": "~15.0.8",
     "@types/react": "19.2.14",
     "typescript": "5.9.3"
   }

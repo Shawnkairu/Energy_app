@@ -1,42 +1,52 @@
 import { Link } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
-import { colors, GlassCard, Pill, Surface } from "@emappa/ui";
+import { StyleSheet, Text, View } from "react-native";
+import { AppMark, colors, PrimaryButton, typography } from "@emappa/ui";
+import { AuthFooterHint, SecondaryButton } from "./(auth)/authShell";
 
+/** Welcome — shared-screens `ScreenWelcome`: centered mark, bottom primary + secondary + login hint. Root layout supplies shell gradient. */
 export default function Index() {
   return (
-    <Surface>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={{ color: colors.text, fontSize: 44, fontWeight: "900", marginTop: 48 }}>
-          e.mappa
+    <View style={styles.root}>
+      <View style={styles.hero}>
+        <AppMark size={72} />
+        <Text style={styles.title}>e.mappa</Text>
+        <Text style={styles.tagline}>
+          Your building's energy economy. Prepaid solar, fair grid fallback, optional ownership.
         </Text>
-        <Text style={{ color: colors.muted, fontSize: 17, lineHeight: 25, marginTop: 12, marginBottom: 24 }}>
-          A prepaid operating system for building-level energy economies.
-        </Text>
-        <Pill>Monetized kWh only</Pill>
-        <View style={{ height: 24 }} />
-        <Link href="/(auth)/login" asChild>
-          <Text
-            style={{
-              color: colors.ink,
-              backgroundColor: colors.orange,
-              borderRadius: 18,
-              padding: 18,
-              marginBottom: 12,
-              fontWeight: "900",
-              overflow: "hidden",
-              textAlign: "center",
-            }}
-          >
-            Sign in to choose your role
-          </Text>
+      </View>
+      <View style={styles.footer}>
+        <Link href="/(auth)/join-building" asChild>
+          <PrimaryButton>Join my building</PrimaryButton>
         </Link>
-        <GlassCard accent={colors.orange}>
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: "900" }}>Build order</Text>
-          <Text style={{ color: colors.muted, marginTop: 8, lineHeight: 21 }}>
-            Qualify demand, lock prepaid commitment, fund named deals, verify installation, then activate settlement.
-          </Text>
-        </GlassCard>
-      </ScrollView>
-    </Surface>
+        <View style={{ height: 10 }} />
+        <Link href="/(auth)/login" asChild>
+          <SecondaryButton>I'm a partner</SecondaryButton>
+        </Link>
+        <AuthFooterHint muted="Already a member?" accentLabel="Log in" accentHref="/(auth)/login" />
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, paddingHorizontal: 20, paddingTop: 46, paddingBottom: 28 },
+  hero: { flex: 1, justifyContent: "center", alignItems: "center", paddingBottom: 24 },
+  title: {
+    color: colors.text,
+    fontSize: 34,
+    fontWeight: "600",
+    letterSpacing: -1.1,
+    lineHeight: 40,
+    marginTop: 22,
+  },
+  tagline: {
+    color: colors.muted,
+    fontSize: typography.small,
+    lineHeight: 21,
+    marginTop: 12,
+    textAlign: "center",
+    paddingHorizontal: 12,
+    maxWidth: 320,
+  },
+  footer: { paddingTop: 8 },
+});

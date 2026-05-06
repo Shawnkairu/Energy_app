@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { InstallerHomeScreen } from "../../components/installer/InstallerScreens";
 
-export default function InstallerHome() {
-  return <RoleScreen role="installer" section="Home" />;
-}
+export default InstallerHomeScreen;

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>e.mappa — Stakeholder Screen Canvas (faithful)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #FFFFFF;
+    font-family: Manrope, system-ui, sans-serif; color: #0E1011;
+    -webkit-font-smoothing: antialiased; }
+  #root { position: fixed; inset: 0; }
+  .hud {
+    position: fixed; left: 18px; top: 18px; z-index: 10;
+    background: rgba(255,255,255,0.86); backdrop-filter: blur(12px);
+    border: 1px solid rgba(71,23,8,0.12); border-radius: 16px;
+    padding: 14px 16px 12px; box-shadow: 0 10px 30px -16px rgba(71,23,8,0.3);
+    max-width: 380px;
+  }
+  .hud .kicker { font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #965A35; }
+  .hud h1 { font-weight: 700;
+    font-size: 22px; letter-spacing: -0.02em; color: #0E1011; margin: 4px 0 6px; line-height: 1.05; }
+  .hud p { font-size: 12.5px; color: #5C4631; line-height: 1.5; margin: 0; }
+  .hud .keys { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #8B7659; }
+  .hud .keys b { color: #2A1808; font-weight: 600; }
+  .mini-legend {
+    position: fixed; right: 18px; top: 18px; z-index: 10;
+    background: rgba(255,255,255,0.86); backdrop-filter: blur(12px);
+    border: 1px solid rgba(71,23,8,0.12); border-radius: 16px;
+    padding: 12px 14px; max-width: 220px;
+    box-shadow: 0 10px 30px -16px rgba(71,23,8,0.3);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .mini-legend .title { font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #8B7659; margin-bottom: 4px; }
+  .mini-legend .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: #2A1808; font-weight: 500; }
+  .mini-legend .row span:last-child { color: #8B7659; font-weight: 400; }
+  .mini-legend .dot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="palette.jsx"></script>
+<script type="text/babel" src="canvas.jsx"></script>
+<script type="text/babel" src="screen-kit.jsx"></script>
+<script type="text/babel" src="mock-building.jsx"></script>
+<script type="text/babel" src="resident-screens-v2.jsx"></script>
+<script type="text/babel" src="owner-screens-v2.jsx"></script>
+<script type="text/babel" src="provider-screens-v2.jsx"></script>
+<script type="text/babel" src="financier-screens-v2.jsx"></script>
+<script type="text/babel" src="installer-screens-v2.jsx"></script>
+<script type="text/babel" src="supplier-screens-v2.jsx"></script>
+<script type="text/babel" src="cohesion.jsx"></script>
+<script type="text/babel" src="owner-proposed-screens.jsx"></script>
+<script type="text/babel" src="proposed-flow-screens.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+  // Layout: each stakeholder is a horizontal swimlane. Phones are
+  // arranged left-to-right in the order their screens appear in the
+  // <Role>Screens.tsx index file.
+  const PW = 340; // phone bezel width (PHONE_W + BEZEL*2)
+  const PH = 720; // phone bezel height + label area
+  const COL_GAP = 40;
+  const LANE_PAD_TOP = 130;   // space for lane label
+  const LANE_PAD_BOTTOM = 60;
+  const LANE_GAP = 60;
+
+  const STAKEHOLDERS = [
+    {
+      key: 'resident', title: 'Resident', subtitle: '6 in code · 2 proposed · prepaid solar consumer',
+      role: 'resident',
+      screens: [
+        // ── Proposed pre-flow (entry & verify) ──
+        { id: 'r-join',      label: 'Join via QR',  sub: 'P1', Comp: ResidentJoinScreen,        proposed: true },
+        { id: 'r-verify',    label: 'Verify OTP',   sub: 'P2', Comp: ResidentVerifyScreen,      proposed: true },
+        // ── Implemented ──
+        { id: 'r-home',      label: 'Home',       sub: '01', Comp: ResidentHomeScreenV2 },
+        { id: 'r-wallet',    label: 'Wallet',     sub: '02', Comp: ResidentWalletScreenV2 },
+        { id: 'r-usage',     label: 'Usage',      sub: '03', Comp: ResidentUsageScreenV2 },
+        { id: 'r-ownership', label: 'Ownership',  sub: '04', Comp: ResidentOwnershipScreenV2 },
+        { id: 'r-profile',   label: 'Profile',    sub: '05', Comp: ResidentProfileScreenV2 },
+        { id: 'r-support',   label: 'Support',    sub: '06', Comp: ResidentSupportScreenV2 },
+      ],
+    },
+    {
+      key: 'owner', title: 'Owner', subtitle: '4 in code · 5 proposed · building command',
+      role: 'owner',
+      screens: [
+        { id: 'o-home',       label: 'Home',       sub: '01', Comp: OwnerHomeScreenV2 },
+        { id: 'o-drs',        label: 'DRS',        sub: '02', Comp: OwnerDrsScreenV2 },
+        { id: 'o-earnings',   label: 'Earnings',   sub: '03', Comp: OwnerEarningsScreenV2 },
+        { id: 'o-deployment', label: 'Deployment', sub: '04', Comp: OwnerDeploymentScreenV2 },
+        // ── Proposed (not in codebase) — wireframes only ──
+        { id: 'o-listing',    label: 'List building',  sub: 'P1', Comp: OwnerListBuildingScreen,  proposed: true },
+        { id: 'o-compare',    label: 'Compare today',  sub: 'P2', Comp: OwnerComparisonScreen,    proposed: true },
+        { id: 'o-residents',  label: 'Residents',      sub: 'P3', Comp: OwnerResidentsScreen,     proposed: true },
+        { id: 'o-approve',    label: 'Approve terms',  sub: 'P4', Comp: OwnerApproveTermsScreen,  proposed: true },
+        { id: 'o-profile',    label: 'Profile',        sub: 'P5', Comp: OwnerProfileScreen,       proposed: true },
+      ],
+    },
+    {
+      key: 'provider', title: 'Provider', subtitle: '7 in code · 3 proposed · solar asset operator',
+      role: 'provider',
+      screens: [
+        // ── Proposed pre-deal flow ──
+        { id: 'p-projects-prop', label: 'Projects',     sub: 'P1', Comp: ProviderProjectsScreen,  proposed: true },
+        { id: 'p-commit-prop',   label: 'Commit',       sub: 'P2', Comp: ProviderCommitScreen,    proposed: true },
+        { id: 'p-terms-prop',    label: 'Accept terms', sub: 'P3', Comp: ProviderTermsScreen,     proposed: true },
+        // ── Implemented ──
+        { id: 'p-home',        label: 'Home',        sub: '01', Comp: ProviderHomeScreenV2 },
+        { id: 'p-assets',      label: 'Assets',      sub: '02', Comp: ProviderAssetsScreenV2 },
+        { id: 'p-performance', label: 'Performance', sub: '03', Comp: ProviderPerformanceScreenV2 },
+        { id: 'p-earnings',    label: 'Earnings',    sub: '04', Comp: ProviderEarningsScreenV2 },
+        { id: 'p-shares',      label: 'Shares',      sub: '05', Comp: ProviderSharesScreenV2 },
+        { id: 'p-deployment',  label: 'Deployment',  sub: '06', Comp: ProviderDeploymentScreenV2 },
+        { id: 'p-maintenance', label: 'Maintenance', sub: '07', Comp: ProviderMaintenanceScreenV2 },
+      ],
+    },
+    {
+      key: 'financier', title: 'Financier', subtitle: '4 in code · 1 proposed · named-deal underwriter',
+      role: 'financier',
+      screens: [
+        { id: 'f-home',       label: 'Home',        sub: '01', Comp: FinancierHomeScreenV2 },
+        { id: 'f-deals',      label: 'Deals',       sub: '02', Comp: FinancierDealsScreenV2 },
+        { id: 'f-detail',     label: 'Deal Detail', sub: '03', Comp: FinancierDealDetailScreenV2 },
+        { id: 'f-tranche',    label: 'Tranche',     sub: 'P1', Comp: FinancierTrancheScreen, proposed: true },
+        { id: 'f-portfolio',  label: 'Portfolio',   sub: '04', Comp: FinancierPortfolioScreenV2 },
+      ],
+    },
+    {
+      key: 'installer', title: 'Installer', subtitle: '5 in code · 1 proposed · field crew',
+      role: 'installer',
+      screens: [
+        { id: 'i-home',          label: 'Home',          sub: '01', Comp: InstallerHomeScreenV2 },
+        { id: 'i-jobs-prop',     label: 'Jobs inbox',    sub: 'P1', Comp: InstallerJobsScreen, proposed: true },
+        { id: 'i-job',           label: 'Job Detail',    sub: '02', Comp: InstallerJobDetailScreenV2 },
+        { id: 'i-checklist',     label: 'Checklist',     sub: '03', Comp: InstallerChecklistScreenV2 },
+        { id: 'i-maintenance',   label: 'Maintenance',   sub: '04', Comp: InstallerMaintenanceScreenV2 },
+        { id: 'i-certification', label: 'Certification', sub: '05', Comp: InstallerCertificationScreenV2 },
+      ],
+    },
+    {
+      key: 'supplier', title: 'Supplier', subtitle: '5 screens · components & proof',
+      role: 'supplier',
+      screens: [
+        { id: 's-home',         label: 'Home',           sub: '01', Comp: SupplierHomeScreenV2 },
+        { id: 's-catalog',      label: 'Catalog',        sub: '02', Comp: SupplierCatalogScreenV2 },
+        { id: 's-orders',       label: 'Orders',         sub: '03', Comp: SupplierOrdersScreenV2 },
+        { id: 's-quoterequests', label: 'Quote Requests', sub: '04', Comp: SupplierQuoteRequestsScreenV2 },
+        { id: 's-reliability',  label: 'Reliability',    sub: '05', Comp: SupplierReliabilityScreenV2 },
+      ],
+    },
+  ];
+
+  // Map our app role names to the canvas's ROLES palette keys
+  const roleColorKey = {
+    resident: 'resident', owner: 'owner', provider: 'provider',
+    financier: 'financier', installer: 'installer', supplier: 'supplier',
+  };
+
+  function App() {
+    const [tweaks, setTweak] = useTweaks(/*EDITMODE-BEGIN*/{
+      "showLabels": true,
+      "compact": false
+    }/*EDITMODE-END*/);
+
+    // Compute lane heights/positions
+    const laneHeight = LANE_PAD_TOP + PH + LANE_PAD_BOTTOM;
+    const totalHeight = 220 + STAKEHOLDERS.length * (laneHeight + LANE_GAP);
+
+    const maxScreens = Math.max(...STAKEHOLDERS.map(s => s.screens.length));
+    const laneInnerWidth = maxScreens * (PW + COL_GAP) + 80;
+    const totalWidth = Math.max(3800, laneInnerWidth + 160);
+
+    return (
+      <WorldCanvas world={{ w: totalWidth, h: totalHeight }}>
+        {/* Title block */}
+        <div style={{ position: 'absolute', left: 80, top: 60, width: 1500, pointerEvents: 'none' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: TOKENS.accent }}>e.mappa · stakeholder workstation</div>
+          <div style={{ fontWeight: 800, fontSize: 72, letterSpacing: '-0.04em', color: TOKENS.ink, lineHeight: 1, marginTop: 6 }}>
+            Every screen, by stakeholder.
+          </div>
+          <div style={{ fontSize: 16, color: TOKENS.inkSoft, marginTop: 12, maxWidth: 980, lineHeight: 1.5 }}>
+            One swimlane per role. Each phone is the literal port of the matching <code style={{ background: '#FFF', padding: '2px 6px', borderRadius: 6, border: '1px solid rgba(71,23,8,0.12)', fontSize: 14 }}>components/&lt;role&gt;/&lt;Screen&gt;.tsx</code> — same panels, same copy, same conditional branches. Scroll inside a phone to see the rest of its content.
+          </div>
+        </div>
+
+        {/* Lanes */}
+        {STAKEHOLDERS.map((lane, laneIdx) => {
+          const y = 220 + laneIdx * (laneHeight + LANE_GAP);
+          const role = roleColorKey[lane.role];
+          return (
+            <React.Fragment key={lane.key}>
+              <SwimLane
+                x={60} y={y}
+                w={laneInnerWidth + 40}
+                h={laneHeight}
+                title={lane.title}
+                subtitle={lane.subtitle}
+                color={ROLES[role].color}
+                soft={ROLES[role].soft + 'B0'}
+              />
+              {lane.screens.map((s, i) => {
+                const Comp = s.Comp;
+                const x = 100 + i * (PW + COL_GAP);
+                const py = y + LANE_PAD_TOP;
+                return (
+                  <Phone
+                    key={s.id}
+                    id={s.id}
+                    role={role}
+                    x={x} y={py}
+                    label={s.label} sublabel={s.sub}
+                  >
+                    <Comp/>
+                  </Phone>
+                );
+              })}
+            </React.Fragment>
+          );
+        })}
+      </WorldCanvas>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+<script type="text/babel" data-presets="env,react">
+  function PanelHost() {
+    const [tweaks, setTweak] = useTweaks({ showLabels: true });
+    return (
+      <TweaksPanel title="Canvas tweaks">
+        <TweakSection title="Display">
+          <TweakToggle label="Lane labels" value={tweaks.showLabels} onChange={(v) => setTweak('showLabels', v)}/>
+        </TweakSection>
+      </TweaksPanel>
+    );
+  }
+  const panelMount = document.createElement('div');
+  document.body.appendChild(panelMount);
+  ReactDOM.createRoot(panelMount).render(<PanelHost/>);
+</script>
+</body>
+</html>

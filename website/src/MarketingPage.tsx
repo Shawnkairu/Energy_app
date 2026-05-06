@@ -4,7 +4,7 @@ import './marketing.css'
 
 export default function App() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="marketing-shell" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
       <main>
         <Hero />
@@ -52,28 +52,28 @@ const s = {
     boxShadow: '0 1px 0 rgba(255,255,255,0.6) inset',
   } as React.CSSProperties,
   section: (bg?: string): React.CSSProperties => ({
-    padding: '112px 0',
+    padding: '88px 0',
     background: bg || 'var(--white)',
   }),
   h2: {
-    fontSize: 'clamp(2rem, 4vw, 3rem)',
+    fontSize: 'clamp(1.75rem, 3.2vw, 2.45rem)',
     fontWeight: 800,
     lineHeight: 1.15,
     color: 'var(--navy)',
-    marginBottom: '18px',
+    marginBottom: '14px',
     letterSpacing: '-0.035em',
   } as React.CSSProperties,
   body: {
-    fontSize: '1.05rem',
-    lineHeight: 1.72,
+    fontSize: '0.98rem',
+    lineHeight: 1.66,
     color: 'var(--text-soft)',
   } as React.CSSProperties,
   card: {
     background: 'var(--white)',
-    borderRadius: '24px',
+    borderRadius: '18px',
     border: '1px solid var(--border)',
-    padding: '32px',
-    boxShadow: 'var(--shadow-soft)',
+    padding: '24px',
+    boxShadow: '0 12px 34px rgba(47, 51, 56, 0.07)',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
   } as React.CSSProperties,
 }
@@ -176,6 +176,276 @@ function IconBadge({ name }: { name: IconName }) {
     <span className="icon-card" aria-hidden="true">
       <Glyph name={name} />
     </span>
+  )
+}
+
+function ProductSuite() {
+  const cards = [
+    {
+      title: 'Accept prepaid solar demand',
+      body: 'Residents load balances through familiar payment behavior before allocation.',
+      className: 'suite-card tall wallet',
+      metric: 'KSh 7,667',
+      label: 'resident balance',
+    },
+    {
+      title: 'Operate shared rooftop supply',
+      body: 'Providers plug capacity into measured buildings with clear generated and sold kWh.',
+      className: 'suite-card wide flow',
+      metric: '2,435 kWh',
+      label: 'verified solar',
+    },
+    {
+      title: 'Control deployment gates',
+      body: 'Owners, installers, and suppliers move through readiness checks before go-live.',
+      className: 'suite-card gates',
+      metric: '83.9',
+      label: 'DRS score',
+    },
+    {
+      title: 'Settle only monetized energy',
+      body: 'Generated energy pays out only after a building actually buys and uses it.',
+      className: 'suite-card ledger',
+      metric: '80%',
+      label: 'sold coverage',
+    },
+    {
+      title: 'Keep every role isolated',
+      body: 'Residents, providers, owners, financiers, installers, and suppliers each get their own operating room.',
+      className: 'suite-card wide roles',
+      metric: '6',
+      label: 'stakeholder portals',
+    },
+  ];
+
+  return (
+    <section className="product-suite" aria-label="e.mappa product suite">
+      <div style={s.container}>
+        <div className="suite-heading">
+          <h2>Flexible operating rooms for every building energy model.</h2>
+          <p>
+            Start with prepaid solar for apartments. Grow into financing, fulfillment, ownership,
+            maintenance, and settlement, all on one orange-and-white truth layer.
+          </p>
+        </div>
+        <div className="suite-grid">
+          {cards.map((card) => (
+            <article key={card.title} className={card.className}>
+              <div>
+                <h3>{card.title}</h3>
+                <p>{card.body}</p>
+              </div>
+              <div className="suite-mini-ui" aria-hidden="true">
+                <strong>{card.metric}</strong>
+                <span>{card.label}</span>
+                <i />
+                <i />
+                <i />
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function RadicalHero() {
+  return (
+    <section className="radical-hero">
+      <div style={s.container} className="radical-hero-grid">
+        <div className="radical-hero-copy">
+          <div style={{ ...s.badge, background: 'rgba(224,120,86,0.12)', color: 'var(--peach-dark)', borderColor: 'rgba(224,120,86,0.2)' }}>
+            Pilot planned in Nyeri, Kenya · June 2026
+          </div>
+          <h1>Energy operating systems for apartment buildings.</h1>
+          <p className="hero-line">Map. Build. Empower.</p>
+          <p>
+            e.mappa turns a building into a measured energy economy: solar production, resident demand,
+            prepaid tokens, deployment readiness, ownership, compliance, and settlement all move through
+            one truth layer.
+          </p>
+          <div className="radical-hero-actions">
+            <a href="#waitlist" style={btnPrimary}>Join the waitlist →</a>
+            <a href="#how-it-works" style={btnSecondary}>See the system</a>
+          </div>
+          <div className="hero-proof-strip" aria-label="e.mappa stakeholder surfaces">
+            {['Residents', 'Providers', 'Owners', 'Financiers', 'Installers', 'Suppliers'].map((label) => (
+              <span key={label}>{label}</span>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
+function OperatingSystemScene() {
+  const layers = [
+    ['Physical layer', 'Rooftop access, panels, meters, inverter, battery, DB, and gateway.'],
+    ['Data layer', 'Production, apartment load, battery state, certification proof, and audit trail.'],
+    ['Economic layer', 'Prepaid tokens, monetized kWh, payout waterfall, ownership, and margins.'],
+    ['Role layer', 'Residents, providers, owners, financiers, installers, and suppliers see only their truth.'],
+  ];
+
+  return (
+    <section id="what-is-emappa" className="stripe-scene os-scene">
+      <div style={s.container} className="scene-grid">
+        <div className="scene-copy">
+          <div style={s.badge}>What is e.mappa</div>
+          <h2>A control plane for shared rooftop solar.</h2>
+          <p>
+            Stripe-like composition should not mean Stripe colors. For e.mappa, the product visual is the building:
+            hardware above, homes below, and a software/economic layer in the middle that makes every kWh legible.
+          </p>
+        </div>
+        <div className="layer-console">
+          {layers.map(([title, body], index) => (
+            <article key={title} style={{ ['--delay' as string]: `${index * 0.12}s` } as React.CSSProperties}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{title}</strong>
+              <p>{body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BuildingEconomyScene() {
+  return (
+    <section id="solar-tokens" className="stripe-scene economy-scene">
+      <div style={s.container}>
+        <div className="economy-stage">
+          <div className="scene-copy compact">
+            <div style={s.badge}>Solar tokens</div>
+            <h2>Prepaid energy that behaves like a product, not a bill.</h2>
+            <p>
+              Residents buy tokens before allocation. If solar is not available, there is fallback, not debt.
+              That single invariant keeps the system honest.
+            </p>
+          </div>
+          <div className="token-ledger-art">
+            <div className="ledger-phone">
+              <span>Resident wallet</span>
+              <strong>KSh 7,667</strong>
+              <small>solar balance</small>
+              <div className="wallet-bars"><i /><i /><i /></div>
+            </div>
+            <div className="ledger-rail">
+              {['M-Pesa', 'Tokens', 'Allocation', 'Savings'].map((item) => <span key={item}>{item}</span>)}
+            </div>
+            <div className="ledger-card">
+              <span>Monthly result</span>
+              <strong>KSh 622 saved</strong>
+              <small>from monetized building solar</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function StakeholderMarketScene() {
+  const roles = [
+    ['Residents', 'Buy tokens, consume solar, see savings.'],
+    ['Providers', 'Plug panels into verified demand.'],
+    ['Owners', 'Host rooftops and track readiness.'],
+    ['Financiers', 'Fund named building deals.'],
+    ['Installers', 'Certify proof before go-live.'],
+    ['Suppliers', 'Fulfill BOMs with warranty proof.'],
+  ];
+
+  return (
+    <section id="who-we-serve" className="stripe-scene stakeholder-scene">
+      <div style={s.container} className="stakeholder-stage">
+        <div className="scene-copy">
+          <div style={s.badge}>Who we serve</div>
+          <h2>One market, six isolated operating rooms.</h2>
+          <p>
+            The product does not show one dashboard to everyone. It gives each participant a role-specific surface
+            while the system reconciles data, gates, and settlement underneath.
+          </p>
+        </div>
+        <div className="market-orbit">
+          <div className="market-core">
+            <span>e.mappa</span>
+            <strong>truth layer</strong>
+          </div>
+          {roles.map(([role, body], index) => (
+            <article key={role} className={`market-role role-${index + 1}`}>
+              <strong>{role}</strong>
+              <span>{body}</span>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function DeploymentProofScene() {
+  const gates = [
+    ['Demand', 'Resident prepayment is visible before deployment.'],
+    ['Readiness', 'DRS gates supplier lock, install scheduling, and go-live.'],
+    ['Settlement', 'Only monetized solar creates payout.'],
+  ];
+
+  return (
+    <section id="deployment-proof" className="stripe-scene proof-scene">
+      <div style={s.container} className="scene-grid">
+        <div className="scene-copy">
+          <div style={s.badge}>Deployment discipline</div>
+          <h2>Deploy after proof, not optimism.</h2>
+          <p>
+            e.mappa is not a solar company with a prettier app. It is the operating discipline around building-level
+            energy economies: gates, proofs, settlement, and role isolation.
+          </p>
+        </div>
+        <div className="proof-board">
+          {gates.map(([title, body], index) => (
+            <article key={title}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{title}</strong>
+              <p>{body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function NetworkScene() {
+  return (
+    <section id="network" className="stripe-scene network-scene">
+      <div style={s.container} className="network-stage">
+        <div className="scene-copy compact">
+          <div style={s.badge}>Local network</div>
+          <h2>Clean energy infrastructure becomes local industry.</h2>
+          <p>
+            Electricians, fabricators, suppliers, and providers are not side notes. They are the buildout engine.
+          </p>
+        </div>
+        <div className="network-table">
+          {[
+            ['Electricians', 'Certification', 'Install proof and maintenance'],
+            ['Fabricators', 'Build-to-spec', 'Racks, enclosures, brackets'],
+            ['Suppliers', 'BOM fulfillment', 'Warranty, dispatch, delivery'],
+            ['Providers', 'Panel capacity', 'Measured output and payout'],
+          ].map(([role, status, detail]) => (
+            <article key={role}>
+              <strong>{role}</strong>
+              <span>{status}</span>
+              <small>{detail}</small>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -312,7 +582,7 @@ function Navbar() {
       <div style={{ ...s.container, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
         {/* Logo */}
         <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '0px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--navy)' }}>
-          <span style={{ color: '#b35433' }}>e</span>
+          <span style={{ color: 'var(--emappa-solar-strong)' }}>e</span>
           <span>.mappa</span>
         </a>
 
@@ -422,28 +692,35 @@ function Navbar() {
 /* ─── HERO ─── */
 function Hero() {
   return (
-    <section style={{
+    <section className="marketing-hero" style={{
       background:
-        'radial-gradient(circle at 82% 12%, rgba(224,120,86,0.22), transparent 24%), radial-gradient(circle at 12% 18%, rgba(162,191,217,0.28), transparent 26%), linear-gradient(180deg, #ffffff 0%, #f7f8fa 42%, #f2f4f7 100%)',
-      padding: '128px 0 104px',
+        'radial-gradient(circle at 86% 16%, rgba(224,120,86,0.18), transparent 26%), radial-gradient(circle at 12% 18%, rgba(162,191,217,0.2), transparent 26%), linear-gradient(180deg, #ffffff 0%, #f8fafb 48%, #f3f5f7 100%)',
+      padding: '104px 0 84px',
       position: 'relative',
       overflow: 'hidden',
       borderBottom: '1px solid rgba(74,92,122,0.08)',
     }}>
-      {/* Decorative blobs */}
       <div style={{ position: 'absolute', top: '-120px', right: '-60px', width: '420px', height: '420px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,120,86,0.22) 0%, rgba(224,120,86,0) 68%)' }} />
       <div style={{ position: 'absolute', bottom: '-120px', left: '-40px', width: '360px', height: '360px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(162,191,217,0.28) 0%, rgba(162,191,217,0) 70%)' }} />
       <div style={{ position: 'absolute', inset: '24px', borderRadius: '32px', border: '1px solid rgba(10,10,10,0.04)', pointerEvents: 'none' }} />
+      <div className="hero-background-system" aria-hidden="true">
+        <span className="system-thread one" />
+        <span className="system-thread two" />
+        <span className="system-thread three" />
+        <span className="system-node-label top">prepaid demand</span>
+        <span className="system-node-label middle">verified solar</span>
+        <span className="system-node-label bottom">clear settlement</span>
+      </div>
 
       <div style={{ ...s.container, position: 'relative', zIndex: 1 }}>
         <div className="hero-grid">
-          <div>
+          <div className="hero-copy-restored">
             <div style={{ ...s.badge, background: 'rgba(224,120,86,0.12)', color: 'var(--peach-dark)', borderColor: 'rgba(224,120,86,0.2)' }}>
               Pilot planned in Nyeri, Kenya · June 2026
             </div>
 
             <h1 style={{
-              fontSize: 'clamp(2.8rem, 6vw, 5.1rem)',
+              fontSize: 'clamp(2.45rem, 5.1vw, 4.25rem)',
               fontWeight: 800,
               color: 'var(--navy)',
               lineHeight: 1.02,
@@ -454,11 +731,11 @@ function Hero() {
               A cleaner electricity market for apartment buildings.
             </h1>
 
-            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--peach-dark)', marginBottom: '18px', letterSpacing: '-0.02em' }}>
+            <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--peach-dark)', marginBottom: '16px', letterSpacing: '-0.02em' }}>
               Map. Build. Empower.
             </p>
 
-            <p style={{ fontSize: '1.08rem', lineHeight: 1.78, color: 'var(--text-soft)', maxWidth: '660px', marginBottom: '40px' }}>
+            <p style={{ fontSize: '1rem', lineHeight: 1.68, color: 'var(--text-soft)', maxWidth: '640px', marginBottom: '32px' }}>
               Solar energy for apartment buildings, made accessible, affordable, and transparent. e.mappa will connect residents, energy providers,
               and building owners in one marketplace, supported by the electricians, fabricators, and suppliers who help the network come to life.
             </p>
@@ -472,7 +749,7 @@ function Hero() {
               </a>
             </div>
 
-            <div className="hero-stats" style={{ display: 'grid', gap: '18px', marginTop: '64px', paddingTop: '30px', borderTop: '1px solid rgba(74,92,122,0.12)', maxWidth: '720px' }}>
+            <div className="hero-stats" style={{ display: 'grid', gap: '16px', marginTop: '46px', paddingTop: '24px', borderTop: '1px solid rgba(74,92,122,0.12)', maxWidth: '720px' }}>
               {[
                 { stat: '30–40%', label: 'target savings vs grid prices' },
                 { stat: 'M-Pesa', label: 'native payment rail for token purchases' },
@@ -481,21 +758,6 @@ function Hero() {
                 <div key={stat}>
                   <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--navy)' }}>{stat}</div>
                   <div style={{ fontSize: '0.84rem', color: 'var(--slate)', marginTop: '6px', maxWidth: '180px' }}>{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="hero-panel-stack">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-              {[
-                ['Transparent pricing', 'Every kWh tracked'],
-                ['Shared rooftop infra', 'Lower onboarding friction'],
-                ['Energy choice', 'Cleaner supply without hardware ownership'],
-              ].map(([title, body]) => (
-                <div key={title} style={{ ...s.card, padding: '18px 16px', borderRadius: '18px' }}>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '8px' }}>{title}</div>
-                  <div style={{ fontSize: '0.82rem', lineHeight: 1.55, color: 'var(--slate)' }}>{body}</div>
                 </div>
               ))}
             </div>
@@ -623,18 +885,18 @@ function EnergyIndependence() {
           <div style={{
             borderRadius: '24px',
             padding: '56px 48px',
-            background: 'radial-gradient(circle at top right, rgba(224,120,86,0.26), transparent 26%), linear-gradient(155deg, #050505 0%, #111111 58%, var(--teal-darker) 100%)',
+            background: 'radial-gradient(circle at top right, rgba(224,120,86,0.18), transparent 28%), linear-gradient(155deg, #ffffff 0%, #f8fafc 58%, #eef2ff 100%)',
             minHeight: '360px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            boxShadow: '0 30px 80px rgba(10,10,10,0.28)',
+            boxShadow: '0 30px 80px rgba(15,23,42,0.12)',
           }}>
             <div style={{ marginBottom: '24px' }}><IconBadge name="building" /></div>
-            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Your building.</div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>Your building.</div>
             <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--peach)', lineHeight: 1.2 }}>Your energy.</div>
-            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: '20px' }}>Your choice.</div>
-            <p style={{ color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, fontSize: '0.95rem' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2, marginBottom: '20px' }}>Your choice.</div>
+            <p style={{ color: 'var(--slate)', lineHeight: 1.7, fontSize: '0.95rem' }}>
               Apartment residents in Kenya will be able to take control of their electricity,
               not by going off-grid, not by buying expensive equipment, but by joining a marketplace
               that will give them options no one has offered before.
@@ -770,83 +1032,252 @@ function WhoWeServe() {
 
 /* ─── HOW IT WORKS ─── */
 function HowItWorks() {
+  const hardwareNodes = [
+    ['Provider A solar array', 'Production data', 'sun' as IconName],
+    ['Provider A smart meter', 'Generation proof', 'hardware' as IconName],
+    ['Provider B solar array', 'Production data', 'sun' as IconName],
+    ['Hybrid inverter', 'Battery + MPPT', 'battery' as IconName],
+    ['Main distribution board', 'Building load routing', 'document' as IconName],
+    ['Grid CT / KPLC grid', 'Import / export data', 'plug' as IconName],
+    ['Resident smart meters', 'Consumption data', 'hardware' as IconName],
+    ['Apartments', 'Resident demand', 'home' as IconName],
+  ];
+  const leftActors = [
+    ['Residents', 'Buy tokens, consume energy, view kWh, savings, balance', 'home' as IconName],
+    ['Providers', 'Invest in panels, generate energy, view production and payouts', 'provider' as IconName],
+    ['Building owners', 'Provide rooftop access, view demand, receive royalty', 'building' as IconName],
+  ];
+  const rightActors = [
+    ['Suppliers', 'Supply panels, batteries, inverters, receive payments', 'plug' as IconName],
+    ['Electricians', 'Install, route, meter, maintain, certify workflow', 'wrench' as IconName],
+    ['Fabricators', 'Build mounts, rails, brackets, follow fabrication specs', 'hardware' as IconName],
+  ];
+  const dataEngine = [
+    ['Production ingestion', 'Provider output', 'network' as IconName],
+    ['Resident consumption', 'Apartment load', 'home' as IconName],
+    ['Token allocation', 'Prepaid accounting', 'payments' as IconName],
+    ['Audit trails', 'DRS evidence', 'document' as IconName],
+    ['Analytics', 'Real-time visibility', 'eye' as IconName],
+  ];
+  const appModules = [
+    ['Resident app', 'Token balance, kWh used, savings, payments', 'phone' as IconName],
+    ['Provider portal', 'Production, performance, payouts', 'provider' as IconName],
+    ['Building owner dashboard', 'Consumption, rooftop participation, royalty', 'building' as IconName],
+  ];
+  const operatingModules = [
+    ['Payments & settlement', 'Top-ups, payouts, billing, settlement logic', 'payments' as IconName],
+    ['Partner ops & compliance', 'Onboarding, certification workflows, install specs', 'shield' as IconName],
+  ];
+  const flowSteps = [
+    ['1', 'Data is measured across production, consumption, and the grid.', 'hardware' as IconName],
+    ['2', 'The operating layer ingests and validates data in real time.', 'network' as IconName],
+    ['3', 'Tokens are allocated fairly and transparently to residents.', 'payments' as IconName],
+    ['4', 'Stakeholders view live data via apps and dashboards.', 'phone' as IconName],
+    ['5', 'Payments settle and payouts are automated.', 'scale' as IconName],
+    ['6', 'Partners follow certified workflows and strict standards.', 'shield' as IconName],
+  ];
+
   return (
-    <section id="how-it-works" style={s.section()}>
+    <section id="how-it-works" className="layered-screen how-system-section">
       <div style={s.container}>
-        <div style={{ maxWidth: '560px', marginBottom: '56px' }}>
-          <div style={s.badge}>How It Works</div>
-          <h2 style={s.h2}>From rooftop to resident in five steps.</h2>
+        <div className="section-kicker-grid">
+          <div>
+            <div style={s.badge}>How It Works</div>
+            <h2 style={s.h2}>A building-level energy economy, mapped end to end.</h2>
+          </div>
+          <p style={s.body}>
+            Hardware, measured data, prepaid demand, stakeholder portals, and settlement move through one operating workflow. The graph below is modeled as a live system map: structured for clarity, not pasted as an image.
+          </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {[
-            { n: '1', title: 'Building owner will onboard', body: "A building owner will agree to host e.mappa infrastructure and will invest in the one-time rooftop setup: weatherproof junction box, microinverters, battery storage, production meter, data gateway, and panel mounting hardware. That shared junction box is what makes plug-in solar possible at the building level." },
-            { n: '2', title: 'Providers will plug in', body: "Solar providers will register on the platform, pay an onboarding fee, and connect their panels into the building's ready infrastructure instead of rebuilding the full system themselves. Each panel will be independently monitored. Each provider's generation will be tracked separately." },
-            { n: '3', title: 'Residents will buy tokens', body: "Residents will download the e.mappa app, buy solar tokens or choose a monthly subscription via M-Pesa, and start consuming solar energy once their building is live on the network." },
-            { n: '4', title: 'The allocation engine will run', body: "The platform will read total solar production from all providers, read each apartment's consumption, and attribute solar credits proportionally. Excess generation will charge the building's battery for evening and backup use." },
-            { n: '5', title: 'Everyone will get paid', body: "Providers will receive automated M-Pesa payouts based on their generation. Residents will see their savings in real time. The building owner will receive their revenue share. e.mappa will retain a platform margin on every transaction." },
-          ].map(({ n, title, body }, idx, arr) => (
-            <div key={n} style={{ display: 'flex', gap: '24px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                  background: 'linear-gradient(135deg, var(--teal-darker), var(--teal))',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontWeight: 700, fontSize: '0.9rem',
-                }}>{n}</div>
-                {idx < arr.length - 1 && (
-                  <div style={{ width: '2px', flex: 1, background: 'var(--border)', margin: '6px 0' }} />
-                )}
-              </div>
-              <div style={{ paddingBottom: idx < arr.length - 1 ? '36px' : 0, paddingTop: '8px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--navy)', marginBottom: '8px' }}>{title}</h3>
-                <p style={{ ...s.body, fontSize: '0.95rem' }}>{body}</p>
+        <div className="reference-workflow-shell">
+          <svg className="reference-wire-layer" viewBox="0 0 1400 760" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <marker id="referenceArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L8,4 L0,8 Z" />
+              </marker>
+            </defs>
+            <path className="ref-wire measured" d="M306 160 H1198" />
+            <path className="ref-wire measured" d="M700 160 V278" />
+            <path className="ref-wire measured" d="M700 590 V690" />
+            <path className="ref-wire measured" d="M276 350 H420" />
+            <path className="ref-wire measured" d="M276 463 H420" />
+            <path className="ref-wire measured" d="M276 576 H420" />
+            <path className="ref-wire ops" d="M982 350 H1112" />
+            <path className="ref-wire ops" d="M982 463 H1112" />
+            <path className="ref-wire ops" d="M982 576 H1112" />
+            <path className="ref-wire payout" d="M276 510 H350 V620 H420" />
+            <path className="ref-wire payout" d="M982 522 H1060 V410 H1112" />
+            <text className="ref-wire-label" x="660" y="218">Measured data</text>
+            <text className="ref-wire-label muted" x="330" y="332">App / dashboard</text>
+            <text className="ref-wire-label muted" x="1015" y="332">Onboarding / certification / specs</text>
+            <text className="ref-wire-label payout-label" x="1018" y="506">Payments / payouts</text>
+          </svg>
+
+          <aside className="reference-brand-panel">
+            <strong>Building energy workflow</strong>
+            <em>Measured. Transparent. Local.</em>
+            <p>Coordinates hardware data, token allocation, stakeholder portals, partner proof, and settlement across one shared building economy.</p>
+            <div className="reference-legend">
+              <span><i />Measured data flow</span>
+              <span><i />Payments / payouts flow</span>
+              <span><i />Partner ops / compliance flow</span>
+            </div>
+          </aside>
+
+          <section className="reference-hardware-layer">
+            <h3>Technical / hardware layer - power & metering architecture</h3>
+            <div className="reference-hardware-track">
+              {hardwareNodes.map(([title, body, icon], index) => (
+                <article key={title}>
+                  <IconBadge name={icon as IconName} />
+                  <div>
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </div>
+                  {index < hardwareNodes.length - 1 && <b aria-hidden="true">→</b>}
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="reference-actors reference-left-actors">
+            {leftActors.map(([title, body, icon]) => (
+              <article key={title}>
+                <IconBadge name={icon as IconName} />
+                <div>
+                  <strong>{title}</strong>
+                  <span>{body}</span>
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <section className="reference-core">
+            <div className="reference-core-title">
+              <strong>Operating layer</strong>
+              <span>Data, apps, payments, partner ops</span>
+            </div>
+            <div className="reference-core-block">
+              <h3>A. Data engine</h3>
+              <div className="reference-module-grid five">
+                {dataEngine.map(([title, body, icon]) => (
+                  <article key={title}>
+                    <IconBadge name={icon as IconName} />
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </article>
+                ))}
               </div>
             </div>
-          ))}
+            <div className="reference-core-block">
+              <h3>B. Apps & dashboards</h3>
+              <div className="reference-module-grid three">
+                {appModules.map(([title, body, icon]) => (
+                  <article key={title}>
+                    <IconBadge name={icon as IconName} />
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="reference-core-bottom">
+              {operatingModules.map(([title, body, icon], index) => (
+                <div className="reference-core-block" key={title}>
+                  <h3>{index === 0 ? 'C. Payments & settlement' : 'D. Partner ops & compliance'}</h3>
+                  <article>
+                    <IconBadge name={icon as IconName} />
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </article>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="reference-actors reference-right-actors">
+            {rightActors.map(([title, body, icon]) => (
+              <article key={title}>
+                <IconBadge name={icon as IconName} />
+                <div>
+                  <strong>{title}</strong>
+                  <span>{body}</span>
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <section className="reference-flow-rail">
+            <strong>How it works</strong>
+            {flowSteps.map(([number, body, icon]) => (
+              <article key={number}>
+                <IconBadge name={icon as IconName} />
+                <span>{number}. {body}</span>
+              </article>
+            ))}
+            <div>
+              <strong>Result</strong>
+              <span>A trusted, transparent, repeatable energy economy for shared buildings.</span>
+            </div>
+          </section>
         </div>
       </div>
     </section>
   )
 }
 
+function OperatingLayerPreview() {
+  const cards = [
+    ['Data', 'Production, consumption, token allocation'],
+    ['Apps', 'Role-specific dashboards and mobile views'],
+    ['Settlement', 'Prepaid revenue waterfall and payouts'],
+    ['Compliance', 'DRS gates, certification, audit trail'],
+  ];
+
+  return (
+    <div className="operating-layer-preview">
+      <div className="preview-orbit" aria-hidden="true" />
+      <div className="preview-core-card">
+        <span>e.mappa OS</span>
+        <strong>One building. Many counterparties. One truth layer.</strong>
+      </div>
+      <div className="preview-card-grid">
+        {cards.map(([title, body]) => (
+          <article key={title}>
+            <span>{title}</span>
+            <strong>{body}</strong>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── THE MARKETPLACE ─── */
 function TheMarketplace() {
   return (
-    <section id="marketplace" style={{ ...s.section('var(--navy)') }}>
+    <section id="marketplace" className="marketplace-layer-section">
       <div style={s.container}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }} className="two-col">
           <div>
-            <div style={{ ...s.badge, background: 'rgba(162,191,217,0.14)', color: 'var(--teal)', borderColor: 'rgba(162,191,217,0.2)' }}>
+            <div style={{ ...s.badge, background: 'rgba(162,191,217,0.18)', color: 'var(--emappa-sky-strong)', borderColor: 'rgba(162,191,217,0.28)' }}>
               The Marketplace
             </div>
-            <h2 style={{ ...s.h2, color: '#fff' }}>We will not be a solar company. We will be the marketplace solar companies use.</h2>
-            <p style={{ ...s.body, color: 'rgba(255,255,255,0.74)', marginBottom: '20px' }}>
+            <h2 style={s.h2}>We will not be a solar company. We will be the marketplace solar companies use.</h2>
+            <p style={{ ...s.body, marginBottom: '20px' }}>
               A solar company owns panels, manages installations, and sells electricity. e.mappa will own the
               shared infrastructure layer and the software that will let multiple solar companies operate
               on the same rooftop, serve the same residents, and compete on reliability and output.
             </p>
-            <p style={{ ...s.body, color: 'rgba(255,255,255,0.74)' }}>
+            <p style={s.body}>
               Think of it like Airbnb for rooftop solar. Airbnb does not own apartments, it owns the marketplace.
               e.mappa will not own solar panels, it will own the marketplace connecting generation capacity
               to people who need affordable electricity.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            {[
-              { num: '∞', label: 'Scalable', sub: "Providers will deploy their own capital. e.mappa will earn a margin on every transaction, in every building, indefinitely." },
-              { num: '0', label: 'Panel ownership', sub: "e.mappa will deploy software and infrastructure. Providers will bring panels. No capital tied up in hardware." },
-              { num: 'Any', label: 'Energy source', sub: "Architecture is energy-agnostic by design. Solar first, ready for wind, biogas, and beyond." },
-              { num: '1', label: 'Platform. Many buildings.', sub: "The same allocation logic, payment rail, and dashboards will work across every building on the network." },
-            ].map(({ num, label, sub }) => (
-              <div key={label} style={{ borderRadius: '16px', padding: '24px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--teal)', marginBottom: '4px' }}>{num}</div>
-                <div style={{ fontWeight: 700, color: '#fff', marginBottom: '8px', fontSize: '0.95rem' }}>{label}</div>
-                <p style={{ fontSize: '0.825rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.5)' }}>{sub}</p>
-              </div>
-            ))}
-          </div>
+          <OperatingLayerPreview />
         </div>
       </div>
     </section>
@@ -986,29 +1417,30 @@ function NetworkSection() {
         </div>
 
         <div style={{
-          background: 'radial-gradient(circle at top right, rgba(224,120,86,0.18), transparent 24%), linear-gradient(155deg, #050505 0%, #121212 72%, #1b1b1b 100%)',
+          background: 'radial-gradient(circle at top right, rgba(224,120,86,0.18), transparent 24%), linear-gradient(155deg, #ffffff 0%, var(--emappa-cream) 62%, var(--emappa-sky-soft) 100%)',
           borderRadius: '28px',
           padding: '40px',
-          color: '#fff',
+          color: 'var(--navy)',
           marginBottom: '28px',
-          boxShadow: '0 30px 80px rgba(10,10,10,0.2)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-layer)',
         }}>
           <div style={{ maxWidth: '640px', marginBottom: '28px' }}>
-            <div style={{ ...s.badge, background: 'rgba(255,255,255,0.06)', color: '#fff', borderColor: 'rgba(255,255,255,0.12)' }}>What This Means At Scale</div>
+            <div style={s.badge}>What This Means At Scale</div>
             <h3 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.04em', marginBottom: '12px' }}>
               Clean energy infrastructure becomes local industry.
             </h3>
-            <p style={{ fontSize: '1rem', lineHeight: 1.72, color: 'rgba(255,255,255,0.72)' }}>
+            <p style={{ ...s.body, fontSize: '1rem' }}>
               As the platform scales, so will the local workforce, the fabrication base, and the pool of people earning from distributed generation.
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             {scalePoints.map(({ number, label, body }) => (
-              <div key={number} style={{ borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '22px' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.04em', marginBottom: '2px' }}>{number}</div>
-                <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.58)', marginBottom: '12px' }}>{label}</div>
-                <p style={{ fontSize: '0.92rem', lineHeight: 1.66, color: 'rgba(255,255,255,0.76)' }}>{body}</p>
+              <div key={number} style={{ borderRadius: '20px', background: 'rgba(255,255,255,0.72)', border: '1px solid var(--border)', padding: '22px', boxShadow: '0 14px 36px rgba(47,51,56,0.07)' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.04em', marginBottom: '2px', color: 'var(--emappa-solar-strong)' }}>{number}</div>
+                <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--emappa-sky-strong)', marginBottom: '12px', fontWeight: 800 }}>{label}</div>
+                <p style={{ ...s.body, fontSize: '0.92rem' }}>{body}</p>
               </div>
             ))}
           </div>
@@ -1284,26 +1716,33 @@ function InvestorsSection() {
   return (
     <section id="investors" style={s.section()}>
       <div style={s.container}>
-        <div style={{ background: 'var(--navy)', borderRadius: '24px', padding: '72px 64px', textAlign: 'center' }}>
+        <div style={{
+          background: 'radial-gradient(circle at 18% 12%, rgba(162,191,217,0.24), transparent 22rem), radial-gradient(circle at 86% 10%, rgba(224,120,86,0.16), transparent 20rem), linear-gradient(180deg, #ffffff 0%, var(--emappa-cream) 100%)',
+          border: '1px solid var(--border)',
+          borderRadius: '28px',
+          padding: '72px 64px',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-layer)',
+        }}>
           <div style={{ ...s.badge, display: 'inline-flex', background: 'rgba(162,191,217,0.14)', color: 'var(--teal)', borderColor: 'rgba(162,191,217,0.2)' }}>
             Investors & Partners
           </div>
-          <h2 style={{ ...s.h2, color: '#fff', maxWidth: '640px', margin: '0 auto 20px' }}>
+          <h2 style={{ ...s.h2, maxWidth: '640px', margin: '0 auto 20px' }}>
             e.mappa is being designed to become the energy operating system for urban Africa.
           </h2>
-          <p style={{ ...s.body, color: 'rgba(255,255,255,0.74)', maxWidth: '580px', margin: '0 auto 16px' }}>
+          <p style={{ ...s.body, maxWidth: '580px', margin: '0 auto 16px' }}>
             We plan to run our first pilot in Nyeri, Kenya, in June 2026, and build toward scale across East Africa and beyond if the pilot succeeds.
             The platform is being designed to be energy-agnostic, starting with solar first, and ready for any
             clean energy source tomorrow.
           </p>
-          <p style={{ ...s.body, color: 'rgba(255,255,255,0.74)', maxWidth: '580px', margin: '0 auto 40px' }}>
+          <p style={{ ...s.body, maxWidth: '580px', margin: '0 auto 40px' }}>
             We believe the most durable businesses in the world are built on things people cannot live without.
             Electricity is not optional.
           </p>
-          <a href="mailto:shawn.kairu@duke.edu" style={{ ...btnPrimary, background: 'var(--peach)', color: 'var(--navy)', padding: '14px 40px', fontSize: '1rem' }}>
+          <a href="mailto:shawn.kairu@duke.edu" style={{ ...btnPrimary, padding: '14px 40px', fontSize: '1rem' }}>
             Contact us →
           </a>
-          <p style={{ marginTop: '24px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)' }}>
+          <p style={{ marginTop: '24px', fontSize: '0.8rem', color: 'var(--slate)' }}>
             Impact investors · Development finance institutions · Energy funds · Strategic partners
           </p>
         </div>
@@ -1320,7 +1759,7 @@ function Footer() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '32px', marginBottom: '40px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--navy)', marginBottom: '10px' }}>
-              <span style={{ color: '#b35433' }}>e</span>
+              <span style={{ color: 'var(--emappa-solar-strong)' }}>e</span>
               <span>.mappa</span>
             </div>
             <p style={{ fontSize: '0.9rem', color: 'var(--slate)', maxWidth: '220px' }}>Energy by the people. For the people.</p>

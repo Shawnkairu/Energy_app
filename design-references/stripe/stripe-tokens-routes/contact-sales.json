@@ -1,0 +1,158 @@
+{
+  "url": "https://stripe.com/contact/sales",
+  "path": "/contact/sales",
+  "added": {
+    "primitive": {
+      "radius": {
+        "r5": {
+          "$value": "50px"
+        },
+        "r6": {
+          "$value": "100px"
+        }
+      }
+    }
+  },
+  "changed": {
+    "primitive": {
+      "color": {
+        "brand": {
+          "primary": {
+            "$value": "#635bff"
+          },
+          "secondary": {
+            "$value": "#f6f9fc"
+          }
+        },
+        "neutral": {
+          "n100": {
+            "$value": "#425466"
+          },
+          "n200": {
+            "$value": "#000000"
+          },
+          "n300": {
+            "$value": "#545454"
+          },
+          "n400": {
+            "$value": "#ccd4dc"
+          },
+          "n500": {
+            "$value": "#efefef"
+          },
+          "n600": {
+            "$value": "#808080"
+          },
+          "n700": {
+            "$value": "#707f98"
+          }
+        },
+        "background": {
+          "bg0": {
+            "$value": "#f6f9fc"
+          },
+          "bg1": {
+            "$value": "#ffffff"
+          }
+        },
+        "text": {
+          "text1": {
+            "$value": "#425466"
+          },
+          "text2": {
+            "$value": "#0000ee"
+          },
+          "text3": {
+            "$value": "#635bff"
+          },
+          "text4": {
+            "$value": "#0a2540"
+          },
+          "text5": {
+            "$value": "#ccd4dc"
+          },
+          "text6": {
+            "$value": "#3f4b66"
+          },
+          "text7": {
+            "$value": "#ffffff"
+          },
+          "text8": {
+            "$value": "#707f98"
+          },
+          "text9": {
+            "$value": "#545454"
+          }
+        }
+      },
+      "spacing": {
+        "s1": {
+          "$value": "28px"
+        },
+        "s2": {
+          "$value": "32px"
+        },
+        "s3": {
+          "$value": "69px"
+        },
+        "s4": {
+          "$value": "84px"
+        },
+        "s5": {
+          "$value": "88px"
+        },
+        "s6": {
+          "$value": "92px"
+        },
+        "s7": {
+          "$value": "112px"
+        },
+        "s8": {
+          "$value": "425px"
+        }
+      },
+      "radius": {
+        "r0": {
+          "$value": "2px"
+        },
+        "r1": {
+          "$value": "5px"
+        },
+        "r3": {
+          "$value": "17px"
+        },
+        "r4": {
+          "$value": "36px"
+        }
+      },
+      "shadow": {
+        "sh0": {
+          "$value": "rgb(77, 144, 254) 0px 0px 0px 2px, rgba(255, 255, 255, 0.9) 0px 0px 0px 2px inset"
+        },
+        "sh1": {
+          "$value": "rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px"
+        }
+      },
+      "fontFamily": {
+        "f1": {
+          "$value": "Times New Roman"
+        },
+        "f2": {
+          "$value": "Arial"
+        }
+      }
+    },
+    "semantic": {
+      "typography": {
+        "body": {
+          "$value": {
+            "fontFamily": "sohne-var",
+            "fontSize": "32px",
+            "fontWeight": "700",
+            "lineHeight": "normal"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "url": "https://stripe.com/newsroom/news/stripe-openai-instant-checkout",
+  "path": "/newsroom/news/stripe-openai-instant-checkout",
+  "added": {},
+  "changed": {
+    "primitive": {
+      "color": {
+        "brand": {
+          "primary": {
+            "$value": "#0a2540"
+          },
+          "secondary": {
+            "$value": "#e8e9ff"
+          }
+        },
+        "neutral": {
+          "n100": {
+            "$value": "#425466"
+          },
+          "n200": {
+            "$value": "#000000"
+          },
+          "n300": {
+            "$value": "#727f96"
+          },
+          "n400": {
+            "$value": "#ffffff"
+          },
+          "n500": {
+            "$value": "#667691"
+          }
+        },
+        "background": {
+          "bg0": {
+            "$value": "#ffffff"
+          },
+          "bg1": {
+            "$value": "#f8fafd"
+          },
+          "bg2": {
+            "$value": "#f6f9fc"
+          }
+        },
+        "text": {
+          "text1": {
+            "$value": "#425466"
+          },
+          "text2": {
+            "$value": "#0000ee"
+          },
+          "text3": {
+            "$value": "#0a2540"
+          },
+          "text4": {
+            "$value": "#ffffff"
+          },
+          "text5": {
+            "$value": "#533afd"
+          },
+          "text6": {
+            "$value": "#061b31"
+          },
+          "text7": {
+            "$value": "#3c4f69"
+          },
+          "text8": {
+            "$value": "#667691"
+          },
+          "text9": {
+            "$value": "#031323"
+          }
+        }
+      },
+      "spacing": {
+        "s1": {
+          "$value": "20px"
+        },
+        "s2": {
+          "$value": "24px"
+        },
+        "s3": {
+          "$value": "29px"
+        },
+        "s4": {
+          "$value": "32px"
+        },
+        "s5": {
+          "$value": "40px"
+        },
+        "s6": {
+          "$value": "48px"
+        },
+        "s7": {
+          "$value": "84px"
+        },
+        "s8": {
+          "$value": "100px"
+        },
+        "s9": {
+          "$value": "128px"
+        }
+      },
+      "radius": {
+        "r0": {
+          "$value": "1px"
+        },
+        "r1": {
+          "$value": "4px"
+        },
+        "r3": {
+          "$value": "17px"
+        }
+      },
+      "shadow": {
+        "sh0": {
+          "$value": "rgba(0, 0, 0, 0.1) 0px 18px 36px -18px, rgba(50, 50, 93, 0.25) 0px 30px 45px -30px"
+        },
+        "sh1": {
+          "$value": "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px"
+        }
+      },
+      "fontFamily": {
+        "f1": {
+          "$value": "Times New Roman"
+        },
+        "f2": {
+          "$value": "Arial"
+        }
+      }
+    },
+    "semantic": {
+      "typography": {
+        "body": {
+          "$value": {
+            "fontFamily": "sohne-var",
+            "fontSize": "56px",
+            "fontWeight": "425",
+            "lineHeight": "67.2px"
+          }
+        }
+      }
+    }
+  }
+}

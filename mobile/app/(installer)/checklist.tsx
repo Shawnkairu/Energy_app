@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { InstallerChecklistScreen } from "../../components/installer/InstallerScreens";
 
-export default function InstallerChecklist() {
-  return <RoleScreen role="installer" section="Checklist" />;
-}
+export default InstallerChecklistScreen;

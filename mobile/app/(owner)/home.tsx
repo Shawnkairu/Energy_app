@@ -1,5 +1,3 @@
-import { RoleScreen } from "../../components/RoleScreen";
+import { OwnerHomeScreen } from "../../components/owner/OwnerScreens";
 
-export default function OwnerHome() {
-  return <RoleScreen role="owner" section="Home" />;
-}
+export default OwnerHomeScreen;

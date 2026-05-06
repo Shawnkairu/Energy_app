@@ -1,29 +1,29 @@
 # User Flows
 
-## Resident
+> **Pilot mode:** verification is via **email OTP** (no SMS), residents **pledge** instead of paying, energy data is **synthesized**, and roofs are captured via **owner-traced or auto-suggested polygons**. See [PILOT_SCOPE.md](PILOT_SCOPE.md) and [IA_SPEC.md](IA_SPEC.md) for the canonical screen-by-screen layout.
 
-Join building by QR/code, verify phone, preload solar tokens, understand solar-first/battery-second/grid-fallback allocation, use the home dashboard, then optionally buy ownership shares after trust is established.
+For the canonical screen layout, **always defer to [IA_SPEC.md](IA_SPEC.md)**. The flows below describe the sequenced actions a user takes through those screens.
 
-## Building Owner
+## Resident (4 screens: Home / Energy / Wallet / Profile)
 
-List building, submit basics, compare current situation with e.mappa, request inspection, receive DRS, drive resident pre-onboarding, approve terms, track deployment, and monitor live utilization and royalties.
+Onboard via email OTP, enter building invite code, confirm building. Land on Home (Tokens) and pledge from there. Energy tab shows usage always; generation panel appears only if shares ≥ 1. Wallet aggregates pledges and (if any) ownership earnings. Optional path: buy a share via Wallet's marketplace embed.
 
-## Provider
+## Building Owner (4 screens: Home / Energy / Wallet / Profile)
 
-Sign up, review qualified projects, commit panel capacity, accept monetized-kWh payout terms, optionally sell shares, coordinate installation, and track live asset performance.
+Onboard via email OTP, submit building basics, **confirm or trace the roof polygon** (Microsoft footprint auto-suggest → owner trace → manual sqm fallback), preview owner royalty terms. Land on Home (Project) which surfaces DRS, blockers, deployment progress, pledged demand, and embedded actions (resident roster, compare-bill, approve-terms, deployment detail).
 
-## Financier
+## Provider (5 screens: Discover / Inventory / Generation / Wallet / Profile)
 
-Sign up, browse named building deals, enter a deal room, review DRS and risk cases, commit capital by milestone, monitor activation gates, and track projected vs actual payback.
+Provider role merges what was previously "Provider" and "Supplier" — the same business often supplies both panels and infrastructure. Onboard with business basics including `business_type` (panels / infrastructure / both). Discover surfaces Airbnb-style project cards filtered to deals needing equipment they sell. Inventory tracks SKUs (segmented by panels vs infra), open quote requests, fulfilled orders, reliability score. Generation is share-gated: visible only on arrays where the provider still holds shares — once residents buy them out, the provider receives royalty payouts but loses live generation visibility for that array.
 
-## Electrician / Labor
+## Financier (4 screens: Discover / Portfolio / Wallet / Profile)
 
-Sign up, complete certification, accept jobs, perform site inspection, complete installation checklist, submit verification photos/readings, and respond to maintenance tickets.
+Onboard with investor profile (institution / individual, target deal size, target return). Discover is Airbnb-inspired (filter, scroll project cards) and Portfolio is Robinhood-inspired (positions, compounding curve, IRR). Pledge capital from a deal room (embedded from Discover or Portfolio).
 
-## Supplier
+## Electrician (5 screens: Discover / Jobs / Wallet / Compliance / Profile)
 
-Sign up, maintain catalog, receive BOM requests, submit quotes, receive purchase orders, confirm fulfillment, and build reliability history.
+Renamed from "Installer / Labor". Onboard with personal basics + scope (install / inspection / maintenance) and optional certification upload. Discover lists projects needing electrician work. Jobs tracks active and completed work with embedded checklists, photo capture, readings, and sign-off. Compliance manages certifications (status, expiry, renewals) and training courses.
 
-## Admin
+## Admin (mobile: 3 screens — Alerts / Projects / Profile; cockpit: full ops surface)
 
-Monitor pipeline, DRS distribution, blocked projects, settlement data, counterparty health, alerts, governance actions, and DRS prediction vs live utilization.
+Mobile admin is a thin read-only view; full admin (DRS gate toggles, settlement runs, queue management, security findings) lives in the cockpit web app, not bound by the 5-screen rule.

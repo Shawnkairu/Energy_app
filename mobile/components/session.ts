@@ -2,9 +2,13 @@ import type { StakeholderRole } from "@emappa/shared";
 
 const SESSION_KEY = "emappa.mobile.session";
 
-interface PilotSession {
+let inMemorySession: PilotSession | null = null;
+
+export interface PilotSession {
   phone: string;
   role?: StakeholderRole;
+  token?: string;
+  buildingId?: string | null;
   createdAt: string;
 }
 
@@ -23,13 +27,15 @@ export function saveSelectedRole(role: StakeholderRole) {
 export function readPilotSession() {
   try {
     const raw = globalThis.localStorage?.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as PilotSession) : null;
+    return raw ? (JSON.parse(raw) as PilotSession) : inMemorySession;
   } catch {
-    return null;
+    return inMemorySession;
   }
 }
 
 function writeSession(session: PilotSession) {
+  inMemorySession = session;
+
   try {
     globalThis.localStorage?.setItem(SESSION_KEY, JSON.stringify(session));
   } catch {
