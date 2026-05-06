@@ -1,145 +1,337 @@
-import { Text, View } from "react-native";
-import type { ProjectedBuilding } from "@emappa/shared";
-import { DrsCard } from "../DrsCard";
-import { MetricCard } from "../MetricCard";
-import { RoleDashboardScaffold } from "../roles/RoleDashboardScaffold";
-import { GateList, GlassCard, Label, SectionBrief, Value, colors } from "../roles/RoleCards";
+import { useCallback, type ReactNode } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import type { BuildingRecord, User } from "@emappa/shared";
+import { AppMark, colors, GlassCard, Label, PaletteCard, Pill, Surface, typography, Value } from "@emappa/ui";
+import { useAuth } from "../AuthContext";
+import { useApi } from "../../lib/api";
+import { useApiData } from "../../lib/useApiData";
 
-const actions = ["Review DRS", "Pause settlement", "Resolve alert"];
+type AdminProject = BuildingRecord & {
+  prepaidCommittedKes?: number;
+};
 
-function AdminScreen({ section }: { section: string }) {
-  const meta = adminScreenMeta[section] ?? adminScreenMeta.Home;
+type AdminAlert = {
+  id: string;
+  title: string;
+  detail: string;
+  tone: "bad" | "warn" | "neutral";
+  project: AdminProject;
+};
+
+function AdminDataScreen({
+  section,
+  title,
+  subtitle,
+  children,
+}: {
+  section: string;
+  title: string;
+  subtitle: string;
+  children: (data: { projects: AdminProject[]; alerts: AdminAlert[] }) => ReactNode;
+}) {
+  const { session } = useAuth();
+  const api = useApi();
+  const loadProjects = useCallback(() => api.listProjects() as unknown as Promise<AdminProject[]>, [session?.token]);
+  const { data, error, isLoading } = useApiData(loadProjects, [session?.token]);
+
+  if (isLoading) {
+    return <AdminState title="Loading admin data" body="Fetching the read-only mobile admin feed." />;
+  }
+
+  if (error) {
+    return <AdminState title="Admin data unavailable" body={error.message} />;
+  }
+
+  const projects = data ?? [];
+  const alerts = projects.flatMap(projectAlerts);
 
   return (
-    <RoleDashboardScaffold
-      role="admin"
-      cohesionRole="admin"
-      section={section}
-      title={meta.title}
-      subtitle={meta.subtitle}
-      actions={meta.actions}
-      renderHero={(building) => ({
-        label: "Active alerts",
-        value: `${building.roleViews.admin.alertCount}`,
-        sub: "Internal governance",
-        accent: colors.border,
-      })}
-      renderPanels={(building) => {
-        const view = building.roleViews.admin;
-        return (
-          <>
-            <SectionBrief
-              stripedRows
-              eyebrow="Internal ops screen"
-              title={adminBriefs[section]?.title ?? "Governance command."}
-              body={adminBriefs[section]?.body ?? "Admin mobile is internal only; public web portals remain stakeholder-scoped for non-e.mappa roles."}
-              rows={[
-                { label: "Settlement", value: view.settlementHealth, note: "Untrusted settlement data blocks go-live." },
-                { label: "Blockers", value: `${view.blockedReasonCount}`, note: "DRS kill switches and governance alerts stay visible to ops." },
-                { label: "Surface", value: "Cockpit", note: "Admin parity belongs in the internal cockpit, not public stakeholder web portals." },
-              ]}
-            />
-            <AdminSectionPanels section={section} building={building} />
-          </>
-        );
-      }}
-    />
+    <Surface>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <Header section={section} title={title} subtitle={subtitle} />
+        {children({ projects, alerts })}
+      </ScrollView>
+    </Surface>
   );
 }
 
-function AdminSectionPanels({ section, building }: { section: string; building: ProjectedBuilding }) {
-  const view = building.roleViews.admin;
+function AdminState({ title, body }: { title: string; body: string }) {
+  return (
+    <Surface>
+      <View style={styles.center}>
+        <AppMark size={52} />
+        <Text style={styles.stateTitle}>{title}</Text>
+        <Text style={styles.stateBody}>{body}</Text>
+      </View>
+    </Surface>
+  );
+}
 
-  if (section === "Projects") {
-    return (
-      <>
-        <DrsCard drs={building.drs} />
-        <GateList gates={view.gates} />
-        <MetricCard label="Project stage" value={building.project.stage} detail="Internal pipeline state" />
-      </>
-    );
-  }
-
-  if (section === "Alerts") {
-    return (
-      <>
-        <GlassCard>
-          <Label>Settlement health</Label>
-          <Value>{view.settlementHealth}</Value>
-          <Text style={{ color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: 8 }}>
-            {view.alertCount} active alert(s). {view.blockedReasonCount} deployment blocker(s).
-          </Text>
-        </GlassCard>
-        <SectionBrief
-          stripedRows
-          eyebrow="Governance action"
-          title="Alerts pause unsafe activation."
-          body="Ops can hold settlement or go-live when readiness, monitoring, or settlement data is not trusted."
-          rows={[
-            { label: "DRS reasons", value: `${building.drs.reasons.length}`, note: building.drs.reasons[0] ?? "No open kill switch reasons." },
-            { label: "Settlement data", value: building.project.drs.settlementDataTrusted ? "Trusted" : "Paused", note: "Untrusted settlement data blocks go-live." },
-            { label: "Monitoring", value: building.project.drs.monitoringConnectivityResolved ? "Resolved" : "Blocked", note: "Connectivity is a deployment kill switch." },
-          ]}
-        />
-      </>
-    );
-  }
-
+function Header({ section, title, subtitle }: { section: string; title: string; subtitle: string }) {
   return (
     <>
-      <DrsCard drs={building.drs} />
-      <GlassCard>
-        <Label>Settlement health</Label>
-        <Value>{view.settlementHealth}</Value>
-        <Text style={{ color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: 8 }}>
-          {view.alertCount} active alert(s). {view.blockedReasonCount} deployment blocker(s).
-        </Text>
-      </GlassCard>
+      <View style={styles.topRow}>
+        <View>
+          <Pill>{section}</Pill>
+          <Text style={styles.kicker}>admin workspace</Text>
+        </View>
+        <AppMark />
+      </View>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.subtitle}>{subtitle}</Text>
     </>
   );
 }
 
-const adminBriefs: Record<string, { title: string; body: string }> = {
-  Home: {
-    title: "Pipeline and settlement integrity in one ops view.",
-    body: "Admin mobile is for internal triage across DRS, settlement, alerts, and governance.",
-  },
-  Projects: {
-    title: "Projects are judged by readiness, not hype.",
-    body: "Project views surface DRS distribution, deployment blockers, and live utilization against prediction.",
-  },
-  Alerts: {
-    title: "Alerts protect payout truth.",
-    body: "Ops can pause settlement or go-live when data, monitoring, or counterparty proof is not trusted.",
-  },
-};
+function SummaryRail({ projects, alerts }: { projects: AdminProject[]; alerts: AdminAlert[] }) {
+  return (
+    <View style={styles.summaryRail}>
+      <PaletteCard borderRadius={24} padding={14} style={styles.summaryCard}>
+        <Label>Projects</Label>
+        <Value>{String(projects.length)}</Value>
+        <Text style={styles.smallText}>Portfolio records visible to this admin.</Text>
+      </PaletteCard>
+      <PaletteCard borderRadius={24} padding={14} style={styles.summaryCard}>
+        <Label>Alerts</Label>
+        <Value>{String(alerts.length)}</Value>
+        <Text style={styles.smallText}>Read-only ops signals from project records.</Text>
+      </PaletteCard>
+    </View>
+  );
+}
 
-const adminScreenMeta: Record<string, { title: string; subtitle: string; actions: string[] }> = {
-  Home: {
-    title: "Ops Command",
-    subtitle: "Internal command for DRS distribution, settlement integrity, alerts, and governance.",
-    actions,
-  },
-  Projects: {
-    title: "Project Pipeline",
-    subtitle: "Judge projects by readiness, blockers, stage, and utilization against prediction.",
-    actions: ["Review project", "DRS blockers", "Stage audit"],
-  },
-  Alerts: {
-    title: "Governance Alerts",
-    subtitle: "Pause unsafe go-live or settlement when proof, monitoring, or data trust fails.",
-    actions: ["Resolve alert", "Pause settlement", "Audit proof"],
-  },
-};
+function ProjectList({ projects }: { projects: AdminProject[] }) {
+  if (projects.length === 0) {
+    return <EmptyCard title="No projects returned" body="The API returned an empty project portfolio for this admin account." />;
+  }
+
+  return (
+    <>
+      {projects.map((project) => (
+        <GlassCard key={project.id}>
+          <View style={styles.cardHeader}>
+            <View style={{ flex: 1 }}>
+              <Label>{project.stage}</Label>
+              <Text style={styles.cardTitle}>{project.name}</Text>
+              <Text style={styles.cardBody}>{project.address}</Text>
+            </View>
+            <Pill tone={project.dataSource === "measured" ? "good" : "warn"}>{project.dataSource}</Pill>
+          </View>
+          <Row label="Units" value={String(project.unitCount)} />
+          <Row label="Kind" value={project.kind.replace("_", " ")} />
+          <Row label="Roof" value={formatRoof(project)} />
+          <Row label="Prepaid" value={formatKes(project.prepaidCommittedKes ?? 0)} />
+        </GlassCard>
+      ))}
+    </>
+  );
+}
+
+function AlertList({ alerts }: { alerts: AdminAlert[] }) {
+  if (alerts.length === 0) {
+    return <EmptyCard title="No open mobile alerts" body="The current project feed has no admin-visible mobile alerts." />;
+  }
+
+  return (
+    <>
+      {alerts.map((alert) => (
+        <GlassCard key={alert.id}>
+          <View style={styles.cardHeader}>
+            <View style={{ flex: 1 }}>
+              <Label>{alert.project.name}</Label>
+              <Text style={styles.cardTitle}>{alert.title}</Text>
+            </View>
+            <Pill tone={alert.tone}>{alert.tone === "bad" ? "blocked" : "review"}</Pill>
+          </View>
+          <Text style={styles.cardBody}>{alert.detail}</Text>
+        </GlassCard>
+      ))}
+    </>
+  );
+}
+
+function EmptyCard({ title, body }: { title: string; body: string }) {
+  return (
+    <GlassCard>
+      <Label>Read-only</Label>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardBody}>{body}</Text>
+    </GlassCard>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={styles.rowValue}>{value}</Text>
+    </View>
+  );
+}
+
+function projectAlerts(project: AdminProject): AdminAlert[] {
+  const alerts: AdminAlert[] = [];
+
+  if (project.stage === "listed" || project.stage === "qualifying") {
+    alerts.push({
+      id: `${project.id}-stage`,
+      title: "Project not deployment-ready",
+      detail: `${project.name} is still ${project.stage}; funding and deployment should stay gated until readiness advances.`,
+      tone: "bad",
+      project,
+    });
+  }
+
+  if (project.dataSource !== "measured") {
+    alerts.push({
+      id: `${project.id}-data`,
+      title: "Measured data not confirmed",
+      detail: `Current data source is ${project.dataSource}; admin mobile keeps this visible without changing project state.`,
+      tone: "warn",
+      project,
+    });
+  }
+
+  if (!project.roofAreaM2 || !project.roofSource) {
+    alerts.push({
+      id: `${project.id}-roof`,
+      title: "Roof evidence incomplete",
+      detail: "Roof area or source is missing from the project record.",
+      tone: "warn",
+      project,
+    });
+  }
+
+  return alerts;
+}
+
+function formatRoof(project: AdminProject) {
+  if (!project.roofAreaM2 || !project.roofSource) {
+    return "Incomplete";
+  }
+
+  return `${Math.round(project.roofAreaM2)} m2, ${project.roofSource.replace("_", " ")}`;
+}
+
+function formatKes(amount: number) {
+  return `KSh ${Math.round(amount).toLocaleString("en-KE")}`;
+}
 
 export function AdminHomeScreen() {
-  return <AdminScreen section="Home" />;
+  return <AdminProjectsScreen />;
 }
 
 export function AdminProjectsScreen() {
-  return <AdminScreen section="Projects" />;
+  return (
+    <AdminDataScreen
+      section="Projects"
+      title="Project Pipeline"
+      subtitle="Read-only portfolio scan for readiness, data provenance, roof evidence, and prepaid commitments."
+    >
+      {({ projects, alerts }) => (
+        <>
+          <SummaryRail projects={projects} alerts={alerts} />
+          <ProjectList projects={projects} />
+        </>
+      )}
+    </AdminDataScreen>
+  );
 }
 
 export function AdminAlertsScreen() {
-  return <AdminScreen section="Alerts" />;
+  return (
+    <AdminDataScreen
+      section="Alerts"
+      title="Operational Alerts"
+      subtitle="Mobile admin surfaces project records that need cockpit review; it does not mutate project state."
+    >
+      {({ projects, alerts }) => (
+        <>
+          <SummaryRail projects={projects} alerts={alerts} />
+          <AlertList alerts={alerts} />
+        </>
+      )}
+    </AdminDataScreen>
+  );
 }
+
+export function AdminProfileScreen() {
+  const { session } = useAuth();
+  const api = useApi();
+  const loadUser = useCallback(() => api.me() as Promise<User>, [session?.token]);
+  const { data: user, error, isLoading } = useApiData(loadUser, [session?.token]);
+
+  if (isLoading) {
+    return <AdminState title="Loading profile" body="Fetching the authenticated admin profile." />;
+  }
+
+  if (error) {
+    return <AdminState title="Profile unavailable" body={error.message} />;
+  }
+
+  return (
+    <Surface>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <Header
+          section="Profile"
+          title={user?.displayName ?? "Admin Profile"}
+          subtitle="Read-only account identity for the signed-in mobile admin."
+        />
+        <GlassCard>
+          <Label>Account</Label>
+          <Row label="Email" value={user?.email ?? "Unavailable"} />
+          <Row label="Role" value={user?.role ?? "Unavailable"} />
+          <Row label="Phone" value={user?.phone ?? "Unavailable"} />
+          <Row label="Onboarding" value={user?.onboardingComplete ? "Complete" : "Pending"} />
+        </GlassCard>
+        <GlassCard>
+          <Label>Session</Label>
+          <Row label="User ID" value={user?.id ?? "Unavailable"} />
+          <Row label="Building scope" value={user?.buildingId ?? "Portfolio"} />
+          <Row label="Last seen" value={user?.lastSeenAt ? new Date(user.lastSeenAt).toLocaleString() : "Unavailable"} />
+        </GlassCard>
+      </ScrollView>
+    </Surface>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: { paddingBottom: 34 },
+  center: { flex: 1, justifyContent: "center" },
+  stateTitle: { color: colors.text, fontSize: typography.title, fontWeight: "600", letterSpacing: -0.45, marginTop: 18 },
+  stateBody: { color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8 },
+  topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 22 },
+  kicker: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 0.7,
+    marginTop: 10,
+    textTransform: "uppercase",
+  },
+  title: {
+    color: colors.text,
+    fontSize: typography.hero,
+    fontWeight: "600",
+    letterSpacing: -0.9,
+    lineHeight: typography.hero + 8,
+    marginTop: 20,
+  },
+  subtitle: { color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 9, marginBottom: 16 },
+  summaryRail: { flexDirection: "row", gap: 10, marginBottom: 16 },
+  summaryCard: { flex: 1, minHeight: 118 },
+  smallText: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 6 },
+  cardHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 12 },
+  cardTitle: { color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.4, marginTop: 6 },
+  cardBody: { color: colors.muted, lineHeight: 22, marginTop: 8 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 10,
+  },
+  rowLabel: { color: colors.muted, flex: 1 },
+  rowValue: { color: colors.text, flex: 1.2, fontWeight: "600", textAlign: "right" },
+});
