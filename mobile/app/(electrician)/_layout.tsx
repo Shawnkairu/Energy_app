@@ -3,8 +3,8 @@ import { RoleGuard } from "../../components/RoleGuard";
 
 export default function InstallerLayout() {
   return (
-    <RoleGuard role="installer">
-      <RoleTabs role="installer" />
+    <RoleGuard role="electrician">
+      <RoleTabs role="electrician" />
     </RoleGuard>
   );
 }

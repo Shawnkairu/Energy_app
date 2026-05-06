@@ -1,3 +1,5 @@
-import { InstallerChecklistScreen } from "../../components/installer/InstallerScreens";
+import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
 
-export default InstallerChecklistScreen;
+export default function ElectricianJobsScreen() {
+  return <ContributorIaScreen role="electrician" section="jobs" />;
+}

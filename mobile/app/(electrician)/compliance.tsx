@@ -1,3 +1,5 @@
-import { InstallerCertificationScreen } from "../../components/installer/InstallerScreens";
+import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
 
-export default InstallerCertificationScreen;
+export default function ElectricianComplianceScreen() {
+  return <ContributorIaScreen role="electrician" section="compliance" />;
+}

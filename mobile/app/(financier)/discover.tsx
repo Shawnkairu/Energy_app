@@ -1,3 +1,5 @@
-import { FinancierHomeScreen } from "../../components/financier/FinancierScreens";
+import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
 
-export default FinancierHomeScreen;
+export default function FinancierDiscoverScreen() {
+  return <ContributorIaScreen role="financier" section="discover" />;
+}

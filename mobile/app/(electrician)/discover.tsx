@@ -1,3 +1,5 @@
-import { InstallerHomeScreen } from "../../components/installer/InstallerScreens";
+import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
 
-export default InstallerHomeScreen;
+export default function ElectricianDiscoverScreen() {
+  return <ContributorIaScreen role="electrician" section="discover" />;
+}
