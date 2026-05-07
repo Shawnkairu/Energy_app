@@ -57,6 +57,14 @@ type ViewState =
   | { kind: "portal"; role: PublicRole; tab: string };
 
 export function App() {
+  if (isWebsiteDisabled()) {
+    return <WebsiteDisabled />;
+  }
+
+  return <WebsiteApp />;
+}
+
+function WebsiteApp() {
   const [session, setSession] = useState<WebSession | null>(() => readSession());
   const [project, setProject] = useState<ProjectedBuilding | null>(null);
   const [portalData, setPortalData] = useState<PortalData | null>(null);
@@ -156,6 +164,27 @@ export function App() {
       </button>
     </>
   );
+}
+
+function WebsiteDisabled() {
+  return (
+    <main className="website-disabled" aria-labelledby="website-disabled-title">
+      <section className="website-disabled-card">
+        <span className="website-disabled-mark">e</span>
+        <p className="website-disabled-eyebrow">e.mappa web</p>
+        <h1 id="website-disabled-title">Website temporarily offline.</h1>
+        <p>
+          We are making updates to the web experience. Mobile, backend services,
+          and internal operations remain separate from this temporary pause.
+        </p>
+      </section>
+    </main>
+  );
+}
+
+function isWebsiteDisabled() {
+  const value = import.meta.env.VITE_WEBSITE_DISABLED;
+  return value === "true" || value === "1";
 }
 
 function parseLocation(session: WebSession | null): ViewState {
