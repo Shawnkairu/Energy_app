@@ -1,11 +1,10 @@
 import { Text, View } from "react-native";
 import { GlassCard, Label, PrimaryButton, colors, typography } from "@emappa/ui";
-import { OwnerBriefCard, OwnerScreenShell, OwnerWireframeWell } from "./OwnerShared";
+import { OwnerBriefCard, OwnerIntroCard, OwnerScreenShell, OwnerWireframeWell } from "./OwnerShared";
 
 export function OwnerListBuildingScreen() {
   return (
     <OwnerScreenShell
-      showHandoffRibbon
       section="Onboard"
       title="List your Building"
       subtitle="Tell e.mappa about the building so qualification can begin. Required before DRS, supplier, and installer steps unlock."
@@ -20,15 +19,11 @@ export function OwnerListBuildingScreen() {
     >
       {() => (
         <>
-          <GlassCard>
-            <Label>What e.mappa needs</Label>
-            <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "600", letterSpacing: -0.5, marginTop: 6 }}>
-              Just the basics. Inspection captures the rest.
-            </Text>
-            <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 8 }}>
-              No counterparty data yet — this is the owner's self-declared snapshot. e.mappa verifies during inspection.
-            </Text>
-          </GlassCard>
+          <OwnerIntroCard
+            eyebrow="What e.mappa needs"
+            title="Just the basics. Inspection captures the rest."
+            detail="No counterparty data yet — this is the owner's self-declared snapshot. e.mappa verifies during inspection."
+          />
           <GlassCard>
             <Label>Building basics</Label>
             {[

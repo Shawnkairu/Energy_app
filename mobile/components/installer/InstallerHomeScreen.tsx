@@ -6,6 +6,7 @@ import {
   InstallerFieldRow,
   InstallerMetricCard,
   InstallerScaffold,
+  StatusOrb,
   Label,
   Pill,
   GlassCard,
@@ -15,13 +16,19 @@ export function InstallerHomeScreen() {
   return (
     <InstallerScaffold
       section="Home"
-      title="Today's Field Board"
-      subtitle="A calm snapshot for the crew: active site, lead gate, proof progress, and post-live risk."
-      actions={["Review site", "Capture proof", "Sync crew"]}
+      title="Today"
+      subtitle="One site. One next step."
+      actions={["Capture proof", "Crew queue", "Lead card"]}
       hero={(building) => ({
-        label: "Active proof",
+        label: building.project.name,
         value: `${building.roleViews.installer.checklistComplete}/${building.roleViews.installer.checklistTotal}`,
-        sub: "Commissioning items closed for the active building",
+        sub: "Checklist complete",
+        tone:
+          building.roleViews.installer.checklistComplete === building.roleViews.installer.checklistTotal
+            ? "good"
+            : building.roleViews.installer.certified
+              ? "warn"
+              : "bad",
       })}
     >
       {(building) => {
@@ -31,26 +38,26 @@ export function InstallerHomeScreen() {
         return (
           <>
             <InstallerBrief
-              eyebrow="Today"
-              title={`${building.project.name} is the crew's current site.`}
-              body="Home is only the field dashboard snapshot: what building the crew is on, whether the lead can dispatch, and what proof still affects activation."
+              eyebrow="Active job"
+              title={building.project.name}
+              body={building.project.locationBand}
               rows={[
                 {
-                  label: "Lead gate",
+                  label: "Lead",
                   value: view.certified ? "Ready" : "Blocked",
-                  note: "Certified lead electrician is required before scheduling.",
+                  note: "Certified lead required.",
                   tone: view.certified ? "good" : "bad",
                 },
                 {
-                  label: "Proof count",
+                  label: "Proof",
                   value: `${view.checklistComplete}/${view.checklistTotal}`,
-                  note: "Only the active go-live proof count is surfaced here.",
+                  note: "Photos, readings, connectivity.",
                   tone: view.checklistComplete === view.checklistTotal ? "good" : "warn",
                 },
                 {
                   label: "DRS",
                   value: building.drs.label,
-                  note: "Installer work advances only when readiness gates allow it.",
+                  note: "Readiness gate.",
                   tone: building.drs.decision === "approve" ? "good" : building.drs.decision === "review" ? "warn" : "bad",
                 },
               ]}
@@ -70,10 +77,10 @@ export function InstallerHomeScreen() {
                       lineHeight: typography.title + 4,
                     }}
                   >
-                    Field rhythm for this visit
+                    Field board
                   </Text>
                   <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 7 }}>
-                    Keep the crew pointed at site proof and activation blockers, not repeated admin queues.
+                    Task-first closeout.
                   </Text>
                 </View>
                 <Pill tone={drs.monitoringConnectivityResolved && drs.settlementDataTrusted ? "good" : "warn"}>
@@ -82,9 +89,9 @@ export function InstallerHomeScreen() {
               </View>
               <View style={{ gap: 10, marginTop: 16 }}>
                 {[
-                  ["Site focus", building.project.locationBand, "Named building job, not pooled work."],
-                  ["Next proof", drs.meterInverterMatchResolved ? "Connectivity" : "Meter map", "Capture the artifact that unblocks ops review."],
-                  ["Closeout risk", view.maintenanceTickets === 0 ? "None open" : `${view.maintenanceTickets} service item`, "Post-live tickets stay visible without crowding commissioning."],
+                  ["Site", building.project.locationBand, "Named building."],
+                  ["Next", drs.meterInverterMatchResolved ? "Connectivity" : "Meter map", "Capture the unblocker."],
+                  ["Risk", view.maintenanceTickets === 0 ? "Clear" : `${view.maintenanceTickets} ticket`, "Service stays visible."],
                 ].map(([label, value, note]) => (
                   <InstallerFieldRow key={label}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
@@ -110,19 +117,34 @@ export function InstallerHomeScreen() {
             <View style={{ flexDirection: "row", gap: 12 }}>
               <View style={{ flex: 1 }}>
                 <InstallerMetricCard
-                  label="Installer readiness"
+                  label="Readiness"
                   value={`${building.drs.components.installerReadiness}`}
-                  detail="DRS installer/labor component for the active building."
+                  detail="Installer gate."
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <InstallerMetricCard
-                  label="Open service risk"
+                  label="Service"
                   value={`${view.maintenanceTickets}`}
-                  detail="Post-live items that can affect monitoring trust."
+                  detail="Open tickets."
                 />
               </View>
             </View>
+
+            <GlassCard>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                <StatusOrb tone={view.certified ? "good" : "bad"} />
+                <View style={{ flex: 1 }}>
+                  <Label>Dispatch</Label>
+                  <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "800", letterSpacing: -0.5, marginTop: 5 }}>
+                    {view.certified ? "Crew can move." : "Lead missing."}
+                  </Text>
+                  <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 5 }}>
+                    License clears the schedule.
+                  </Text>
+                </View>
+              </View>
+            </GlassCard>
           </>
         );
       }}

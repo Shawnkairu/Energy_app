@@ -1,14 +1,12 @@
-import { Text, View } from "react-native";
-import { GlassCard, Label, PrimaryButton, colors, typography } from "@emappa/ui";
-import { OwnerBriefCard, OwnerScreenShell } from "./OwnerShared";
+import { PrimaryButton } from "@emappa/ui";
+import { OwnerBriefCard, OwnerIntroCard, OwnerProfileCard, OwnerScreenShell } from "./OwnerShared";
 
 export function OwnerAccountScreen() {
   return (
     <OwnerScreenShell
-      showHandoffRibbon
       section="Profile"
-      title="Owner Settings"
-      subtitle="Owner identity, building access, contacts, and notification preferences. Private to this owner session."
+      title="Owner settings"
+      subtitle="Identity, access, notifications. Private to this owner session."
       actions={["Edit details", "Manage access", "Sign out"]}
       hero={(building) => ({
         label: "Signed in as",
@@ -18,8 +16,9 @@ export function OwnerAccountScreen() {
         status: "verified",
       })}
     >
-      {() => (
+      {(building) => (
         <>
+          <OwnerProfileCard building={building} />
           <OwnerBriefCard
             eyebrow="Owner identity"
             title="Verified once, used everywhere."
@@ -29,15 +28,13 @@ export function OwnerAccountScreen() {
               { label: "Contacts", value: "masked", note: "Installer and financier routes messages without exposing personal phones on-screen.", tone: "neutral" },
             ]}
           />
-          <GlassCard>
-            <Label>Account actions</Label>
-            <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8 }}>
-              Wireframe: edit profile, delegate access, and session controls match the design-handoff owner profile surface.
-            </Text>
-            <View style={{ marginTop: 14, gap: 10 }}>
-              <PrimaryButton>Manage notification cadence</PrimaryButton>
-            </View>
-          </GlassCard>
+          <OwnerIntroCard
+            eyebrow="Account"
+            title="Actions"
+            detail="Edit profile, delegate access, and session controls for this demo owner surface."
+          >
+            <PrimaryButton>Manage notification cadence</PrimaryButton>
+          </OwnerIntroCard>
         </>
       )}
     </OwnerScreenShell>

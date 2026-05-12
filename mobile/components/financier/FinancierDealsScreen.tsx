@@ -1,36 +1,49 @@
-import { BuildingPulse, KillSwitchBanner } from "../design-handoff";
-import { FinancierBriefCard, FinancierScreenShell, DealPipelineCard, formatKes, formatPercent } from "./FinancierShared";
+import {
+  BuildingSnapshotCard,
+  DealPipelineCard,
+  FinancierBriefCard,
+  FinancierScreenShell,
+  MetricRail,
+  formatKesShort,
+  formatPercent,
+} from "./FinancierShared";
 
 export function FinancierDealsScreen() {
   return (
     <FinancierScreenShell
-      section="Deals"
-      title="Named Building Deals"
-      subtitle="A compact pipeline of building-specific raises, sorted around readiness and remaining capital."
-      actions={["Browse deals", "Compare DRS", "Review raise"]}
+      section="Discover"
+      title="Deal cards"
+      subtitle="Readiness first. Raise second."
+      actions={["Cards", "DRS", "Open raise"]}
       hero={({ projects }) => ({
         label: "Active raises",
         value: String(projects.length),
-        sub: "Sorted by readiness and remaining capital.",
+        sub: "Building-specific opportunities.",
       })}
     >
       {({ primary, projects }) => (
         <>
-          <BuildingPulse role="financier" building={primary} />
-          <KillSwitchBanner building={primary} />
+          <BuildingSnapshotCard building={primary} />
+          <MetricRail
+            items={[
+              { label: "Lead DRS", value: `${primary.drs.score}/100`, note: primary.drs.decision },
+              { label: "Funded", value: formatPercent(primary.roleViews.financier.fundingProgress), note: "Current raise" },
+              { label: "Open", value: formatKesShort(primary.roleViews.financier.remainingCapitalKes), note: "Capital gap" },
+            ]}
+          />
           <DealPipelineCard projects={projects} />
           <FinancierBriefCard
-            eyebrow="Screening focus"
-            title="Funding follows readiness, not deal hype."
-            body="The deal list keeps DRS, prepaid demand, supplier readiness, and the remaining raise in front of the financier before any commitment."
+            eyebrow="Screening"
+            title="No hype card."
+            body="Each card shows named exposure, DRS, and open capital."
             rows={[
-              { label: "Current lead", value: primary.project.name, note: `${primary.project.locationBand}; ${primary.project.units} apartments.` },
+              { label: "Lead", value: primary.project.name, note: `${primary.project.locationBand}; ${primary.project.units} apartments.` },
               {
-                label: "Funding progress",
+                label: "Funded",
                 value: formatPercent(primary.roleViews.financier.fundingProgress),
-                note: `${formatKes(primary.roleViews.financier.remainingCapitalKes)} remains to close this raise.`,
+                note: `${formatKesShort(primary.roleViews.financier.remainingCapitalKes)} open.`,
               },
-              { label: "DRS gate", value: `${primary.drs.score}/100`, note: primary.drs.label ?? "Deployment readiness controls capital release." },
+              { label: "Gate", value: `${primary.drs.score}/100`, note: primary.drs.label ?? "Readiness gate." },
             ]}
           />
         </>

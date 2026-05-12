@@ -1,5 +1,5 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { InstallerEarningsScreen } from "../../components/installer/InstallerScreens";
 
 export default function ElectricianWalletScreen() {
-  return <ContributorIaScreen role="electrician" section="wallet" />;
+  return <InstallerEarningsScreen />;
 }

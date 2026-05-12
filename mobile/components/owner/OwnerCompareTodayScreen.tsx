@@ -1,11 +1,10 @@
 import { Text, View } from "react-native";
 import { GlassCard, Label, colors, typography } from "@emappa/ui";
-import { OwnerBriefCard, OwnerScreenShell } from "./OwnerShared";
+import { OwnerBriefCard, OwnerIntroCard, OwnerScreenShell } from "./OwnerShared";
 
 export function OwnerCompareTodayScreen() {
   return (
     <OwnerScreenShell
-      showHandoffRibbon
       section="Compare"
       title="Today vs e.mappa"
       subtitle="A side-by-side of the building's current grid spend and the projected outcome under prepaid solar. No commitments here."
@@ -20,15 +19,25 @@ export function OwnerCompareTodayScreen() {
     >
       {() => (
         <>
-          <GlassCard>
-            <Label>How to read this</Label>
-            <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "600", marginTop: 6 }}>A range, not a guarantee.</Text>
-            <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 8 }}>
-              Numbers below assume 80% participation and median utilization. Both move with deployment readiness and resident sign-up.
-            </Text>
-          </GlassCard>
+          <OwnerIntroCard
+            eyebrow="How to read this"
+            title="A range, not a guarantee."
+            detail="Numbers below assume 80% participation and median utilization. Both move with deployment readiness and resident sign-up."
+          />
           <GlassCard>
             <Label>Side-by-side</Label>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: typography.heading,
+                fontWeight: "600",
+                letterSpacing: -0.35,
+                marginTop: 5,
+                lineHeight: typography.heading + 4,
+              }}
+            >
+              Grid today vs prepaid solar
+            </Text>
             <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
               <View style={{ flex: 1, borderRadius: 16, borderWidth: 1, borderColor: colors.border, padding: 12, backgroundColor: colors.panelSoft }}>
                 <Text style={{ color: colors.muted, fontSize: typography.micro, fontWeight: "700", letterSpacing: 1, textTransform: "uppercase" }}>

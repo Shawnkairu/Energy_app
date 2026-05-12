@@ -1,80 +1,83 @@
 import { Text, View } from "react-native";
-import { GlassCard, Label, Pill, colors } from "@emappa/ui";
-import { ResidentRuleCard } from "../resident/ResidentShared";
-import { ProposedPageChrome } from "./ProposedPageChrome";
+import { radius, shadows, spacing, typography } from "@emappa/ui";
+import {
+  colors,
+  GlassCard,
+  InstallerBrief,
+  InstallerScaffold,
+  Label,
+  Pill,
+  StatusDot,
+} from "../installer/InstallerShared";
 
 const JOBS = [
-  { name: "Riverside Apartments", stage: "Active install", next: "Ops signoff", pill: "on site", tone: "good" as const },
-  { name: "Highridge Court", stage: "Scheduled", next: "Site survey", pill: "queued", tone: "neutral" as const },
-  { name: "Tatu Heights", stage: "Awaiting lead", next: "Assign lead", pill: "blocked", tone: "warn" as const },
-  { name: "Brookside Suites", stage: "Inspection", next: "Photos", pill: "today", tone: "neutral" as const },
+  { name: "Riverside Apartments", stage: "Install", next: "Signoff", pill: "site", tone: "good" as const, ready: true },
+  { name: "Highridge Court", stage: "Survey", next: "Access", pill: "queue", tone: "neutral" as const, ready: true },
+  { name: "Tatu Heights", stage: "Lead", next: "License", pill: "hold", tone: "warn" as const, ready: false },
+  { name: "Brookside Suites", stage: "Inspect", next: "Photos", pill: "today", tone: "neutral" as const, ready: true },
 ];
 
 export function InstallerJobsInboxScreen() {
   return (
-    <ProposedPageChrome
+    <InstallerScaffold
       section="Jobs"
-      workspace="installer workspace"
-      title="Jobs Inbox"
-      subtitle="The crew job queue across buildings: today's site, what is next, and what is blocked."
-      actions={["Accept job", "Reschedule", "Filter"]}
-      hero={{
-        label: "Active queue",
+      title="Job Queue"
+      subtitle="Pick the next site."
+      actions={["Accept job", "Lead card", "Profile"]}
+      hero={() => ({
+        label: "Queue",
         value: `${JOBS.length}`,
-        sub: "1 live install, 2 queued, 1 blocked on lead electrician.",
-        status: "on schedule",
-        statusTone: "good",
-      }}
+        sub: "One site active",
+        tone: "good",
+      })}
     >
-      <GlassCard>
-        <Label>All jobs</Label>
-        <Text style={{ color: colors.text, fontSize: 17, fontWeight: "600", marginTop: 6 }}>By urgency</Text>
-        <View style={{ marginTop: 10 }}>
-          {JOBS.map((j, i) => (
-            <View
-              key={j.name}
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                paddingVertical: 11,
-                alignItems: "center",
-                borderTopWidth: i === 0 ? 0 : 1,
-                borderTopColor: colors.border,
-              }}
-            >
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  backgroundColor: colors.panelSoft,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>{j.name.slice(0, 1)}</Text>
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ color: colors.text, fontSize: 12, fontWeight: "600" }}>{j.name}</Text>
-                <Text style={{ color: colors.muted, fontSize: 10.5, marginTop: 2 }}>
-                  {j.stage} · next: {j.next}
-                </Text>
-              </View>
-              <Pill tone={j.tone}>{j.pill}</Pill>
+      {() => (
+        <>
+          <GlassCard>
+            <Label>Jobs</Label>
+            <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "800", letterSpacing: -0.5, marginTop: 6 }}>
+              By urgency
+            </Text>
+            <View style={{ gap: spacing.sm, marginTop: spacing.lg }}>
+              {JOBS.map((job) => (
+                <View
+                  key={job.name}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: radius.lg,
+                    backgroundColor: colors.white,
+                    padding: spacing.md,
+                    ...shadows.soft,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
+                    <StatusDot complete={job.ready} />
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={{ color: colors.text, fontSize: typography.body, fontWeight: "800" }}>{job.name}</Text>
+                      <Text style={{ color: colors.muted, fontSize: typography.small, marginTop: 3 }}>
+                        {job.stage} · {job.next}
+                      </Text>
+                    </View>
+                    <Pill tone={job.tone}>{job.pill}</Pill>
+                  </View>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
-      </GlassCard>
-      <ResidentRuleCard
-        eyebrow="Acceptance rule"
-        title="Do not accept what you cannot dispatch."
-        body="Lead electrician eligibility is a kill switch. Confirm certification before accepting."
-        rows={[
-          { label: "Lead electrician", value: "verified for 1 of 4", note: "3 jobs need a certified lead before scheduling can open.", tone: "warn" },
-          { label: "Site access", value: "verified for 2 of 4", note: "Owner permission gates roof + meter-room access.", tone: "warn" },
-          { label: "Monitoring", value: "online for 1 live job", note: "Live ops requires connectivity stays online.", tone: "good" },
-        ]}
-      />
-    </ProposedPageChrome>
+          </GlassCard>
+
+          <InstallerBrief
+            eyebrow="Accept rule"
+            title="Only dispatch ready crews."
+            body="Lead, access, monitoring."
+            rows={[
+              { label: "Lead", value: "1/4", note: "Certified lead required.", tone: "warn" },
+              { label: "Access", value: "2/4", note: "Roof + meter room.", tone: "warn" },
+              { label: "Monitoring", value: "1 live", note: "Telemetry online.", tone: "good" },
+            ]}
+          />
+        </>
+      )}
+    </InstallerScaffold>
   );
 }

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { GlassCard, Label, PrimaryButton, colors, typography } from "@emappa/ui";
+import { GlassCard, Label, PrimaryButton, colors, spacing, typography } from "@emappa/ui";
 
 /** Step 1 handoff — join before verify (`shared-screens` flow: join → OTP → role). */
 export default function JoinBuilding() {
@@ -11,13 +11,13 @@ export default function JoinBuilding() {
       <Text style={styles.kicker}>Join</Text>
       <Text style={styles.title}>Join your building</Text>
       <Text style={styles.subtitle}>
-        Scan the building's QR code or enter the join code your owner shared. One household, one resident session.
+        Scan the building QR or enter the join code from your owner. One household ties to one resident session.
       </Text>
       <GlassCard>
         <Label>Step 1 of 3</Label>
         <Text style={styles.cardTitle}>Scan or enter code</Text>
         <View style={styles.viewfinder}>
-          <Text style={styles.viewfinderLabel}>QR scanner viewfinder</Text>
+          <Text style={styles.viewfinderLabel}>Demo — QR scan opens here in production builds</Text>
         </View>
         <Text style={styles.or}>or</Text>
         <Label>Building join code</Label>
@@ -26,7 +26,12 @@ export default function JoinBuilding() {
         </View>
         <Text style={styles.hint}>Provided by your building owner or property manager.</Text>
         <View style={{ marginTop: 14 }}>
-          <PrimaryButton onPress={() => router.push("/(auth)/verify-phone")}>Continue</PrimaryButton>
+          <PrimaryButton
+            onPress={() => router.push("/(auth)/verify-phone")}
+            accessibilityLabel="Continue to phone verification"
+          >
+            Continue
+          </PrimaryButton>
         </View>
       </GlassCard>
     </View>
@@ -34,7 +39,7 @@ export default function JoinBuilding() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  root: { flex: 1, paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
   kicker: {
     color: colors.muted,
     fontSize: typography.micro,

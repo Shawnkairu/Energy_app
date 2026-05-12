@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, Text, View, type DimensionValue } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } from "react-native";
 import { getRoleHome } from "@emappa/api-client";
 import type { DeploymentDecision, ProjectedBuilding } from "@emappa/shared";
 import {
@@ -59,7 +59,7 @@ export function OwnerScreenShell({
   if (!building) {
     return (
       <Surface>
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 20 }}>
           <AppMark size={52} />
           <Text
             style={{
@@ -87,7 +87,13 @@ export function OwnerScreenShell({
     <Surface>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: spacing.xxl + 8, flexGrow: 1, backgroundColor: colors.sky }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          paddingBottom: spacing.xxl + 8,
+          flexGrow: 1,
+          backgroundColor: colors.sky,
+        }}
       >
         {showHandoffRibbon ? <ProposedFlowRibbon /> : null}
         <View
@@ -99,18 +105,28 @@ export function OwnerScreenShell({
           }}
         >
           <View>
-            <Pill>{section}</Pill>
+            <Text
+              style={{
+                color: officialPalette.deepWood,
+                fontSize: typography.micro,
+                fontWeight: "800",
+                letterSpacing: 0.75,
+                textTransform: "uppercase",
+              }}
+            >
+              {section}
+            </Text>
             <Text
               style={{
                 color: colors.muted,
                 fontSize: typography.micro,
-                fontWeight: "500",
-                letterSpacing: 0.7,
-                marginTop: 10,
+                fontWeight: "700",
+                letterSpacing: 0.65,
+                marginTop: 8,
                 textTransform: "uppercase",
               }}
             >
-              Owner private app
+              Owner workspace
             </Text>
           </View>
           <AppMark />
@@ -118,16 +134,16 @@ export function OwnerScreenShell({
         <Text
           style={{
             color: colors.text,
-            fontSize: typography.hero + 6,
-            fontWeight: "600",
-            letterSpacing: -1.2,
-            lineHeight: typography.hero + 14,
-            marginTop: 20,
+            fontSize: typography.hero + 3,
+            fontWeight: "800",
+            letterSpacing: -1,
+            lineHeight: typography.hero + 9,
+            marginTop: 12,
           }}
         >
           {title}
         </Text>
-        <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 10, marginBottom: 20 }}>
+        <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 8, marginBottom: spacing.lg, maxWidth: 320 }}>
           {subtitle}
         </Text>
 
@@ -139,6 +155,81 @@ export function OwnerScreenShell({
         <OwnerActivityCard activity={activity} />
       </ScrollView>
     </Surface>
+  );
+}
+
+/** Section opener inside a GlassCard (matches resident scaffold card typography). */
+export function OwnerIntroCard({
+  eyebrow,
+  title,
+  detail,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  detail?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <GlassCard>
+      <Label>{eyebrow}</Label>
+      <Text
+        style={{
+          color: colors.text,
+          fontSize: typography.heading,
+          fontWeight: "600",
+          letterSpacing: -0.35,
+          marginTop: 5,
+          lineHeight: typography.heading + 4,
+        }}
+      >
+        {title}
+      </Text>
+      {detail ? (
+        <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 17, marginTop: 6 }}>{detail}</Text>
+      ) : null}
+      {children ? <View style={{ marginTop: spacing.md }}>{children}</View> : null}
+    </GlassCard>
+  );
+}
+
+/** Profile/header card aligned with resident `ResidentProfileScreen` trust card pattern. */
+export function OwnerProfileCard({ building }: { building: ProjectedBuilding }) {
+  const view = building.roleViews.owner;
+  const letter = (building.project.name.trim().slice(0, 1) || "?").toUpperCase();
+  const sessionReady = building.drs.decision === "approve";
+
+  return (
+    <PaletteCard
+      borderRadius={34}
+      padding={20}
+      style={{ ...profileStyles.surface, backgroundColor: `${officialPalette.furCream}F0` }}
+    >
+      <View style={profileStyles.profileRow}>
+        <View style={profileStyles.avatar}>
+          <Text style={profileStyles.avatarText}>{letter}</Text>
+          <View style={profileStyles.badge}>
+            <Text style={profileStyles.badgeText}>O</Text>
+          </View>
+        </View>
+        <View style={profileStyles.profileStats}>
+          <OwnerProfileStat value={String(building.project.units)} label="Units" />
+          <OwnerProfileStat value={stageLabel(building.project.stage)} label="Stage" />
+          <OwnerProfileStat value={sessionReady ? "Clear" : "Review"} label="DRS" />
+        </View>
+      </View>
+      <Text style={profileStyles.name}>{building.project.name}</Text>
+      <Text style={profileStyles.location}>{building.project.locationBand}</Text>
+      <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 16, marginTop: 12 }}>
+        {formatPercent(view.residentParticipation)} resident participation · {view.prepaidMonthsCovered} prepaid month(s) covered.
+      </Text>
+      <View style={[profileStyles.insetWell, { marginTop: spacing.md }]}>
+        <Text style={{ color: colors.text, fontSize: typography.small, fontWeight: "600" }}>Privacy boundary</Text>
+        <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 16, marginTop: 5 }}>
+          {building.transparency?.privacyNote ?? "Owner views show building-level signals only."}
+        </Text>
+      </View>
+    </PaletteCard>
   );
 }
 
@@ -187,37 +278,54 @@ export function OwnerBriefCard({
   return (
     <GlassCard>
       <Label>{eyebrow}</Label>
-      <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "600", letterSpacing: -0.5, marginTop: 6 }}>
+      <Text
+        style={{
+          color: colors.text,
+          fontSize: typography.heading,
+          fontWeight: "600",
+          letterSpacing: -0.35,
+          marginTop: 5,
+          lineHeight: typography.heading + 4,
+        }}
+      >
         {title}
       </Text>
-      <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 8 }}>{body}</Text>
+      <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 17, marginTop: 6 }}>{body}</Text>
       <View
         style={{
-          marginTop: 16,
-          borderColor: `${officialPalette.plushCaramel}40`,
-          borderWidth: 1,
-          borderRadius: 20,
+          marginTop: spacing.md,
+          borderRadius: radius.md,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
           overflow: "hidden",
-          backgroundColor: `${officialPalette.furCream}12`,
         }}
       >
         {rows.map((row, index) => (
           <View
             key={`${row.label}-${row.value}`}
             style={{
-              padding: 12,
-              backgroundColor: index % 2 === 0 ? `${officialPalette.guitarMaple}14` : colors.panelSoft,
-              borderTopColor: index === 0 ? "transparent" : `${officialPalette.warmUmbar}22`,
-              borderTopWidth: 1,
+              padding: 10,
+              backgroundColor: index % 2 === 0 ? colors.white : colors.sky,
+              borderTopWidth: index === 0 ? 0 : StyleSheet.hairlineWidth,
+              borderTopColor: colors.border,
             }}
           >
-            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-              <Text style={{ color: colors.muted, fontSize: typography.micro, fontWeight: "600", letterSpacing: 0.7, textTransform: "uppercase" }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: spacing.md }}>
+              <Text
+                style={{
+                  color: colors.muted,
+                  fontSize: typography.micro - 1,
+                  fontWeight: "700",
+                  letterSpacing: 0.65,
+                  textTransform: "uppercase",
+                  flex: 1,
+                }}
+              >
                 {row.label}
               </Text>
-              <Text style={{ color: toneColor(row.tone), flexShrink: 0, fontWeight: "600" }}>{row.value}</Text>
+              <Text style={{ color: briefToneFg(row.tone), fontSize: typography.small - 1, fontWeight: "600" }}>{row.value}</Text>
             </View>
-            <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 5 }}>{row.note}</Text>
+            <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 16, marginTop: 4 }}>{row.note}</Text>
           </View>
         ))}
       </View>
@@ -254,8 +362,8 @@ export function OwnerWorkflowCard({
             }}
           >
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text, fontWeight: "600" }}>{item.label}</Text>
-              <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 4 }}>{item.detail}</Text>
+              <Text style={{ color: colors.text, fontWeight: "600", fontSize: typography.small }}>{item.label}</Text>
+              <Text style={{ color: colors.muted, fontSize: typography.micro, lineHeight: 16, marginTop: 3 }}>{item.detail}</Text>
             </View>
             <Pill tone={item.tone ?? "neutral"}>{item.status}</Pill>
           </View>
@@ -778,6 +886,107 @@ function RoyaltyStat({ label, value, tone = "neutral" }: { label: string; value:
       <Text style={{ color: tone === "neutral" ? colors.text : toneColor(tone), fontSize: 14, fontWeight: "600", marginTop: 6 }}>{value}</Text>
     </View>
   );
+}
+
+function OwnerProfileStat({ value, label }: { value: string; label: string }) {
+  return (
+    <View style={profileStyles.stat}>
+      <Text style={profileStyles.statValue}>{value}</Text>
+      <Text style={profileStyles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+const profileStyles = StyleSheet.create({
+  surface: {
+    marginBottom: spacing.lg,
+  },
+  profileRow: {
+    flexDirection: "row",
+    gap: spacing.lg,
+  },
+  avatar: {
+    alignItems: "center",
+    backgroundColor: officialPalette.furCream,
+    borderColor: "rgba(118, 73, 39, 0.12)",
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    height: 108,
+    justifyContent: "center",
+    width: 108,
+  },
+  avatarText: {
+    color: officialPalette.burntChestnut,
+    fontSize: 42,
+    fontWeight: "800",
+  },
+  badge: {
+    alignItems: "center",
+    backgroundColor: officialPalette.deepWood,
+    borderColor: colors.white,
+    borderRadius: 999,
+    borderWidth: 3,
+    bottom: 4,
+    height: 34,
+    justifyContent: "center",
+    position: "absolute",
+    right: 4,
+    width: 34,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  profileStats: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  stat: {
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 8,
+  },
+  statValue: {
+    color: colors.text,
+    fontSize: typography.title,
+    fontWeight: "800",
+    letterSpacing: -0.45,
+  },
+  statLabel: {
+    color: colors.muted,
+    fontSize: typography.micro,
+    fontWeight: "700",
+    marginTop: 2,
+  },
+  name: {
+    color: colors.text,
+    fontSize: typography.title + 4,
+    fontWeight: "800",
+    letterSpacing: -0.65,
+    marginTop: 18,
+  },
+  location: {
+    color: colors.muted,
+    fontSize: typography.small,
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  insetWell: {
+    borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    borderColor: colors.border,
+    overflow: "hidden",
+    backgroundColor: colors.white,
+    padding: 14,
+  },
+});
+
+function briefToneFg(t?: OwnerTone) {
+  if (t === "good") return colors.green;
+  if (t === "warn") return colors.amber;
+  if (t === "bad") return colors.red;
+  return colors.text;
 }
 
 function toneColor(tone: OwnerTone = "neutral") {

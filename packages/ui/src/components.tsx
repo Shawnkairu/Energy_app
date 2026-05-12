@@ -1,12 +1,7 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { Pressable, StyleSheet, Text, View, type AccessibilityProps, type ViewStyle } from "react-native";
 import {
   cardBorderColor,
-  cardGradientColors,
-  cardGradientLocations,
-  cardHighlightGradientColors,
-  cardHighlightGradientLocations,
   colors,
   radius,
   shadows,
@@ -14,9 +9,9 @@ import {
   typography,
 } from "./tokens";
 
-/** Screen body — transparent so mobile root shell gradient shows through `Stack` `contentStyle`. */
+/** Screen body — pure white canvas with warm spacing. */
 export function Surface({ children }: { children: ReactNode }) {
-  return <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }}>{children}</View>;
+  return <View style={{ flex: 1, backgroundColor: colors.surface, paddingHorizontal: 20, paddingTop: 16 }}>{children}</View>;
 }
 
 export function PaletteCard({
@@ -39,26 +34,12 @@ export function PaletteCard({
           borderColor: cardBorderColor,
           borderWidth: StyleSheet.hairlineWidth * 2,
           borderRadius,
-          overflow: "hidden",
+          backgroundColor: colors.white,
           ...shadows.card,
         },
         style,
       ]}
     >
-      <LinearGradient
-        colors={[...cardGradientColors]}
-        locations={[...cardGradientLocations]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      <LinearGradient
-        colors={[...cardHighlightGradientColors]}
-        locations={[...cardHighlightGradientLocations]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
       <View style={[{ padding }, contentStyle]}>{children}</View>
     </View>
   );
@@ -107,18 +88,39 @@ export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone
   );
 }
 
-export function PrimaryButton({ children, onPress }: { children: ReactNode; onPress?: () => void }) {
+type PrimaryButtonProps = {
+  children: ReactNode;
+  onPress?: () => void;
+  disabled?: boolean;
+} & Pick<AccessibilityProps, "accessibilityLabel" | "accessibilityHint" | "accessibilityRole" | "accessible">;
+
+export function PrimaryButton({
+  children,
+  onPress,
+  disabled,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityRole = "button",
+  accessible,
+}: PrimaryButtonProps) {
   return (
     <Pressable
-      onPress={onPress}
-      style={{
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessible={accessible}
+      accessibilityState={{ disabled: !!disabled }}
+      disabled={disabled}
+      onPress={disabled ? undefined : onPress}
+      style={({ pressed }) => ({
         backgroundColor: colors.orangeDeep,
         borderRadius: radius.md,
         paddingVertical: 16,
         paddingHorizontal: 18,
         alignItems: "center",
         ...shadows.soft,
-      }}
+        opacity: disabled ? 0.55 : pressed ? 0.92 : 1,
+      })}
     >
       <Text style={{ color: colors.white, fontSize: 15, fontWeight: "600" }}>{children}</Text>
     </Pressable>

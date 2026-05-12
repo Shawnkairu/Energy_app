@@ -11,13 +11,17 @@ export function InstallerChecklistScreen() {
   return (
     <InstallerScaffold
       section="Checklist"
-      title="Go-Live Checklist"
-      subtitle="The commissioning proof lane: photos, readings, connectivity, and ops signoff before activation."
-      actions={["Upload photos", "Add readings", "Request signoff"]}
+      title="Go-Live"
+      subtitle="Close the proof. Then activate."
+      actions={["Capture proof", "Request signoff", "Crew queue"]}
       hero={(building) => ({
-        label: "Proof complete",
+        label: "Checklist",
         value: `${building.roleViews.installer.checklistComplete}/${building.roleViews.installer.checklistTotal}`,
-        sub: "All evidence gates must close before go-live",
+        sub: "Evidence complete",
+        tone:
+          building.roleViews.installer.checklistComplete === building.roleViews.installer.checklistTotal
+            ? "good"
+            : "warn",
       })}
     >
       {(building) => {
@@ -28,38 +32,38 @@ export function InstallerChecklistScreen() {
         return (
           <>
             <InstallerBrief
-              eyebrow="Activation proof"
-              title={checklistComplete ? "Checklist evidence is ready for ops review." : "Checklist evidence still has blockers."}
-              body="This is the only installer screen with the full go-live checklist, keeping proof capture concentrated instead of repeated everywhere."
+              eyebrow="Activation"
+              title={checklistComplete ? "Ready for ops." : "Finish proof."}
+              body="Four gates."
               rows={[
                 {
                   label: "Photos",
-                  value: "Required",
-                  note: "Distribution board, roof works, cable route, inverter, and meter photos.",
+                  value: "Needed",
+                  note: "DB, roof, cable, inverter.",
                   tone: "warn",
                 },
                 {
                   label: "Readings",
                   value: drs.meterInverterMatchResolved ? "Aligned" : "Mismatch",
-                  note: "Meter and inverter readings must agree before activation.",
+                  note: "Meter + inverter.",
                   tone: drs.meterInverterMatchResolved ? "good" : "bad",
                 },
                 {
-                  label: "Ops signoff",
+                  label: "Signoff",
                   value: checklistComplete ? "Ready" : "Pending",
-                  note: "Ops acceptance happens after evidence and connectivity are complete.",
+                  note: "After proof.",
                   tone: checklistComplete ? "good" : "warn",
                 },
               ]}
             />
 
             <InstallerEvidenceList
-              title="Commissioning checklist"
+              title="Proof checklist"
               items={[
-                { label: "Site photos", detail: "Capture physical proof for DB, roof, cable route, and inverter install.", complete: drs.meterInverterMatchResolved },
-                { label: "Meter readings", detail: "Record commissioning readings for meter/inverter reconciliation.", complete: drs.meterInverterMatchResolved },
-                { label: "Connectivity test", detail: "Confirm monitoring is online before go-live.", complete: drs.monitoringConnectivityResolved },
-                { label: "Ops signoff", detail: "Final internal acceptance before solar allocation starts.", complete: checklistComplete && drs.settlementDataTrusted },
+                { label: "Site photos", detail: "DB, roof, cable, inverter.", complete: drs.meterInverterMatchResolved },
+                { label: "Meter readings", detail: "Commissioning values.", complete: drs.meterInverterMatchResolved },
+                { label: "Connectivity", detail: "Monitoring online.", complete: drs.monitoringConnectivityResolved },
+                { label: "Ops signoff", detail: "Activation approval.", complete: checklistComplete && drs.settlementDataTrusted },
               ]}
             />
 
@@ -68,25 +72,25 @@ export function InstallerChecklistScreen() {
                 <InstallerMetricCard
                   label="Monitoring"
                   value={drs.monitoringConnectivityResolved ? "Online" : "Blocked"}
-                  detail="Unresolved connectivity blocks activation."
+                  detail="Activation gate."
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <InstallerMetricCard
-                  label="Settlement data"
+                  label="Telemetry"
                   value={drs.settlementDataTrusted ? "Trusted" : "Paused"}
-                  detail="Go-live needs trusted telemetry."
+                  detail="Trusted readings."
                 />
               </View>
             </View>
 
             <InstallerActionList
-              eyebrow="Proof capture order"
+              eyebrow="Order"
               title="Capture in order"
               items={[
-                { label: "Photo pack", detail: "Upload site proof before readings so ops can compare physical layout.", status: "photos", tone: "neutral" },
-                { label: "Readings pack", detail: "Add meter and inverter readings after commissioning checks.", status: "readings", tone: drs.meterInverterMatchResolved ? "good" : "warn" },
-                { label: "Connectivity and signoff", detail: "Request ops signoff once monitoring and settlement data are trusted.", status: "signoff", tone: drs.monitoringConnectivityResolved && drs.settlementDataTrusted ? "good" : "warn" },
+                { label: "Photo pack", detail: "Physical install proof.", status: "photos", tone: "neutral" },
+                { label: "Readings pack", detail: "Meter and inverter.", status: "readings", tone: drs.meterInverterMatchResolved ? "good" : "warn" },
+                { label: "Signoff", detail: "Monitoring and telemetry trusted.", status: "ops", tone: drs.monitoringConnectivityResolved && drs.settlementDataTrusted ? "good" : "warn" },
               ]}
             />
           </>

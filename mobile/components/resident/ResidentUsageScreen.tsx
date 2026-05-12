@@ -1,5 +1,6 @@
-import { colors, officialPalette } from "@emappa/ui";
+import { colors } from "@emappa/ui";
 import { RoleDashboardScaffold } from "../roles/RoleDashboardScaffold";
+import { ROLE_TINT } from "./residentTint";
 import {
   ResidentEnergyFlowGraphic,
   ResidentFlowLane,
@@ -48,7 +49,7 @@ export function ResidentUsageScreen() {
                   label: "Solar allocation",
                   value: formatKwh(view.monthlySolarKwh),
                   detail: "Prepaid tokens are matched against monetized local solar first.",
-                  color: officialPalette.foxOrange,
+                  color: ROLE_TINT.fg,
                 },
                 {
                   label: "Battery support",

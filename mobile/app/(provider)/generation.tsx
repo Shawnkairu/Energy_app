@@ -1,5 +1,3 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { ProviderGenerationScreen } from "../../components/provider/ProviderScreens";
 
-export default function ProviderGenerationScreen() {
-  return <ContributorIaScreen role="provider" section="generation" />;
-}
+export default ProviderGenerationScreen;

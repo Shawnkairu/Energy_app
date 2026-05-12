@@ -1,3 +1,3 @@
-import { BuildingOwnerDeploymentScreen } from "../../../components/building-owner/BuildingOwnerScreens";
+import { OwnerDeploymentScreen } from "../../../components/owner/OwnerDeploymentScreen";
 
-export default BuildingOwnerDeploymentScreen;
+export default OwnerDeploymentScreen;

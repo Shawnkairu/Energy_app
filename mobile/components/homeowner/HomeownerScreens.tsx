@@ -9,17 +9,12 @@ import {
   TextInput,
   View,
   type DimensionValue,
+  type ViewStyle,
 } from "react-native";
 import { Redirect, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import type { DrsResult, PrepaidCommitment, User, WalletTransaction } from "@emappa/shared";
-import { colors, GlassCard, Label, Pill, PrimaryButton, Surface, typography } from "@emappa/ui";
-import { DrsCard } from "../DrsCard";
-import { EnergyTodayChart, type EnergyTodayPoint } from "../EnergyTodayChart";
-import { MetricCard } from "../MetricCard";
-import { PilotBanner } from "../PilotBanner";
-import { ProjectHero } from "../ProjectHero";
-import { RoofMap } from "../RoofMap";
-import { TokenHero } from "../TokenHero";
+import { colors, Label, Pill, PrimaryButton, typography } from "@emappa/ui";
 import { useAuth } from "../AuthContext";
 import { readPilotSession } from "../session";
 import { useApi } from "../../lib/api";
@@ -99,105 +94,52 @@ interface HomeownerSnapshot {
 
 type EmbeddedKind = "drs" | "deployment" | "approve-terms" | "compare-today" | "roof-detail" | "marketplace";
 
-const MONEY_KINDS = new Set(["pledge", "royalty", "capital_return"]);
+const MONEY_KINDS = new Set(["royalty", "capital_return"]);
 
 export function HomeownerHomeScreen() {
   const { data, error, isLoading, refetch } = useHomeownerSnapshot();
   const router = useRouter();
 
   return (
-    <HomeownerShell title="Home" subtitle="Your rooftop project, prepaid token state, and readiness gates in one place.">
+    <HomeownerShell title="Roof" subtitle="Permission, readiness, next step.">
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           if (!snapshot.building) {
             return (
-              <>
-                <PilotBanner
-                  title="Project setup"
-                  message="Create your single-family-home project before solar allocation, funding, or payouts can begin."
-                />
-                <EmptyCard
-                  title="Start your home solar project"
-                  body="Add your home address and roof basics. The backend will attach the new single-family building to your homeowner account."
-                  actionLabel="Start project"
-                  onAction={() => router.push("/(homeowner)/_embedded/start-project")}
-                />
-              </>
+              <EmptyCard
+                icon="home-outline"
+                title="Add your roof"
+                body="Create a home record before roof review can begin."
+                actionLabel="Start"
+                onAction={() => router.push("/(homeowner)/_embedded/start-project")}
+              />
             );
           }
 
-          const live = snapshot.building.stage === "live";
-          const drsLabel = readinessLabel(snapshot.drs);
+          const readiness = readinessLabel(snapshot.drs);
           const blockers = snapshot.drs?.reasons ?? [];
-          const balance = snapshot.balance?.confirmedTotalKes ?? 0;
-          const generation = sum(snapshot.energy?.generation_kwh);
+          const permission = roofPermissionLabel(snapshot.building);
+          const nextAction = nextHomeownerAction(snapshot.building, snapshot.drs);
 
           return (
             <>
-              <PilotBanner
-                title="Pilot pledge mode"
-                message="Prepaid cash is required before solar allocation or stakeholder payout can activate."
-              />
-
-              {live ? (
-                <>
-                  <TokenHero
-                    eyebrow="Live token balance"
-                    title="Prepaid solar is active"
-                    subtitle={`${formatKwh(generation)} generated today. Allocation remains capped by confirmed prepaid balance.`}
-                    tokenLabel="Confirmed prepaid"
-                    tokenValue={formatKes(balance)}
-                  />
-                  <CompactSpacer />
-                  <ProjectHero
-                    name={snapshot.building.name}
-                    location={snapshot.building.address}
-                    readinessLabel={drsLabel}
-                    summary="Project is live. Roof, DRS, and settlement details remain available from the project screens."
-                  />
-                  <ActionRail
-                    actions={[
-                      ["Pledge", "/(homeowner)/wallet"],
-                      ["View energy", "/(homeowner)/energy"],
-                      ["Wallet", "/(homeowner)/wallet"],
-                      ["Roof", "/(homeowner)/_embedded/roof-detail"],
-                    ]}
-                  />
-                </>
-              ) : (
-                <>
-                  <ProjectHero
-                    name={snapshot.building.name}
-                    location={snapshot.building.address}
-                    readinessLabel={drsLabel}
-                    summary={blockers.length ? blockers.slice(0, 2).join(" · ") : `Current project stage: ${formatStage(snapshot.building.stage)}.`}
-                  />
-                  <ActionRail
-                    actions={[
-                      ["View blockers", "/(homeowner)/_embedded/drs"],
-                      ["Approve terms", "/(homeowner)/_embedded/approve-terms"],
-                      ["Compare bill", "/(homeowner)/_embedded/compare-today"],
-                      ["Deployment timeline", "/(homeowner)/_embedded/deployment"],
-                      ["Roof detail", "/(homeowner)/_embedded/roof-detail"],
-                    ]}
-                  />
-                  <View style={styles.disabledHero}>
-                    <TokenHero
-                      eyebrow="Tokens locked"
-                      title="Tokens activate once your project goes live."
-                      subtitle="Funding, supplier lock, installer scheduling, and go-live remain gated by readiness."
-                      tokenLabel="Available allocation"
-                      tokenValue={formatKes(0)}
-                    />
-                  </View>
-                </>
-              )}
+              <RoofStatusHero building={snapshot.building} readiness={readiness} permission={permission} />
 
               <MetricGrid
                 metrics={[
-                  { label: "Pledged", value: formatKes(balance), detail: "Confirmed prepaid cash" },
-                  { label: "Stage", value: formatStage(snapshot.building.stage), detail: "Deployment lifecycle" },
-                  { label: "Roof", value: formatArea(snapshot.building.roofAreaM2), detail: "Usable area on file" },
+                  { label: "Readiness", value: readiness, detail: blockers[0] ?? "No blocker reported" },
+                  { label: "Status", value: formatStage(snapshot.building.stage), detail: "Project path" },
+                  { label: "Permission", value: permission, detail: "Roof access record" },
+                  { label: "Next", value: nextAction.label, detail: nextAction.detail },
+                ]}
+              />
+
+              <ActionRail
+                actions={[
+                  ["Roof detail", "/(homeowner)/_embedded/roof-detail"],
+                  ["Readiness", "/(homeowner)/_embedded/drs"],
+                  ["Terms", "/(homeowner)/_embedded/approve-terms"],
+                  ["Timeline", "/(homeowner)/_embedded/deployment"],
                 ]}
               />
             </>
@@ -212,7 +154,7 @@ export function HomeownerEnergyScreen() {
   const { data, error, isLoading, refetch } = useHomeownerSnapshot();
 
   return (
-    <HomeownerShell title="Energy" subtitle="Generation is always visible here because the homeowner owns the rooftop.">
+    <HomeownerShell title="Energy" subtitle="Roof flow, not asset ownership.">
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           if (!snapshot.building) {
@@ -226,25 +168,21 @@ export function HomeownerEnergyScreen() {
 
           return (
             <>
-              <PilotBanner
-                title="Energy data"
-                message={`Chart values are sourced from the energy API. Current building source: ${snapshot.building.dataSource ?? "unreported"}.`}
-              />
-              <EnergyTodayChart title="Rooftop generation today" points={chartPoints(snapshot.energy?.generation_kwh)} unit="kWh" />
+              <EnergyFlowCard generation={generation} load={load} source={snapshot.building.dataSource ?? "unreported"} />
               <MetricGrid
                 metrics={[
-                  { label: "Generated", value: formatKwh(generation), detail: "Trailing 24h solar" },
-                  { label: "Home load", value: formatKwh(load), detail: "Trailing 24h usage" },
-                  { label: "Solar cover", value: formatPercent(coverage), detail: "Generation matched to load" },
+                  { label: "Produced", value: formatKwh(generation), detail: "Provider system" },
+                  { label: "Home use", value: formatKwh(load), detail: "Trailing 24h" },
+                  { label: "Matched", value: formatPercent(coverage), detail: "Served by roof flow" },
                 ]}
               />
-              <GlassCard>
-                <Label>Readiness link</Label>
-                <Text style={styles.cardTitle}>Energy only earns after it is monetized</Text>
+              <WhiteCard>
+                <Label>Truth</Label>
+                <Text style={styles.cardTitle}>You control access to the roof.</Text>
                 <Text style={styles.bodyText}>
-                  Generated, wasted, curtailed, or free-exported energy does not create payout. Wallet payouts follow confirmed settlement records.
+                  The solar array is a provider asset. Income only follows monetized energy and settlement records.
                 </Text>
-            </GlassCard>
+              </WhiteCard>
             </>
           );
         }}
@@ -255,34 +193,16 @@ export function HomeownerEnergyScreen() {
 
 export function HomeownerWalletScreen() {
   const { data, error, isLoading, refetch } = useHomeownerSnapshot();
-  const api = useApi();
-  const [segment, setSegment] = useState<"cashflow" | "ownership" | "pledges">("cashflow");
-  const [amount, setAmount] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-
-  async function pledge(buildingId: string) {
-    const amountKes = Number(amount);
-    if (!Number.isFinite(amountKes) || amountKes <= 0) {
-      setStatus("Enter a positive pledge amount before submitting.");
-      return;
-    }
-
-    setStatus("Submitting pledge...");
-    await api.commitPrepaid({ buildingId, amountKes });
-    setAmount("");
-    setStatus("Pledge confirmed. Refreshing wallet...");
-    refetch();
-  }
+  const [segment, setSegment] = useState<"income" | "account">("income");
 
   return (
-    <HomeownerShell title="Wallet" subtitle="Pledges, homeowner royalties, and share earnings stay segmented.">
+    <HomeownerShell title="Wallet" subtitle="Roof income and account records.">
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           if (!snapshot.building) {
             return <NoBuildingCard />;
           }
 
-          const pledged = snapshot.balance?.confirmedTotalKes ?? 0;
           const royalties = snapshot.transactions
             .filter((tx) => tx.kind === "royalty")
             .reduce((total, tx) => total + Math.max(0, tx.amountKes), 0);
@@ -293,48 +213,28 @@ export function HomeownerWalletScreen() {
 
           return (
             <>
-              <PilotBanner
-                title="Wallet settlement"
-                message="Payouts appear only when solar has been monetized and a settlement record exists."
-              />
+              <IncomeHero royalties={royalties} shareEarnings={shareEarnings} walletBalance={snapshot.walletBalance?.kes ?? 0} />
               <MetricGrid
                 metrics={[
-                  { label: "Pledged total", value: formatKes(pledged), detail: "Confirmed prepaid" },
-                  { label: "Royalties earned", value: formatKes(royalties), detail: "Wallet royalty credits" },
-                  { label: "Share earnings", value: formatKes(shareEarnings), detail: "Ownership-linked credits" },
+                  { label: "Roof income", value: formatKes(royalties), detail: "Royalty credits" },
+                  { label: "Account", value: formatKes(snapshot.walletBalance?.kes ?? 0), detail: "Wallet balance" },
+                  { label: "Share record", value: formatPercent(ownedShare), detail: "Cashflow position" },
                 ]}
               />
-
-              <GlassCard>
-                <Label>Pledge tokens</Label>
-                <Text style={styles.cardTitle}>Add prepaid solar cash</Text>
-                <TextInput
-                  value={amount}
-                  onChangeText={setAmount}
-                  keyboardType="number-pad"
-                  placeholder="Amount in KES"
-                  placeholderTextColor={colors.dim}
-                  style={styles.input}
-                />
-                {status ? <Text style={styles.bodyText}>{status}</Text> : null}
-                <PrimaryButton onPress={() => pledge(snapshot.building!.id)}>Submit pledge</PrimaryButton>
-              </GlassCard>
 
               <Segmented
                 value={segment}
                 options={[
-                  ["cashflow", "Cashflow"],
-                  ["ownership", "Ownership"],
-                  ["pledges", "Pledges"],
+                  ["income", "Income"],
+                  ["account", "Account"],
                 ]}
                 onChange={setSegment}
               />
 
-              {segment === "cashflow" ? <TransactionList transactions={snapshot.transactions.filter((tx) => MONEY_KINDS.has(tx.kind))} /> : null}
-              {segment === "ownership" ? (
-                <OwnershipPanel positions={snapshot.ownership} ownedShare={ownedShare} />
+              {segment === "income" ? <TransactionList transactions={snapshot.transactions.filter((tx) => MONEY_KINDS.has(tx.kind))} /> : null}
+              {segment === "account" ? (
+                <AccountPanel user={snapshot.user} positions={snapshot.ownership} ownedShare={ownedShare} />
               ) : null}
-              {segment === "pledges" ? <PledgeHistory history={snapshot.pledgeHistory} /> : null}
             </>
           );
         }}
@@ -354,71 +254,64 @@ export function HomeownerProfileScreen() {
   }
 
   return (
-    <HomeownerShell title="Profile" subtitle="Account, home profile, roof evidence, settings, support, and session controls.">
+    <HomeownerShell title="Profile" subtitle="Home, trust, support.">
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           const initials = initialsFor(snapshot.user);
           return (
             <>
-              <GlassCard>
-                <View style={styles.profileRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{initials}</Text>
+              <WhiteCard>
+                <View style={styles.profileHero}>
+                  <View style={styles.avatarLarge}>
+                    <Text style={styles.avatarTextLarge}>{initials}</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>{snapshot.user.displayName ?? snapshot.user.email}</Text>
-                    <Text style={styles.bodyText}>{snapshot.user.email}</Text>
-                    <View style={{ alignSelf: "flex-start", marginTop: 8 }}>
-                      <Pill>Homeowner</Pill>
-                    </View>
+                  <Text style={styles.profileName}>{snapshot.user.displayName ?? "Homeowner"}</Text>
+                  <Text style={styles.profileEmail}>{snapshot.user.email}</Text>
+                  <View style={styles.pillRow}>
+                    <Pill>Roof host</Pill>
+                    <Pill>Verified account</Pill>
                   </View>
                 </View>
-              </GlassCard>
+              </WhiteCard>
 
               {snapshot.building ? (
-                <GlassCard>
-                  <Label>Building & roof</Label>
+                <WhiteCard>
+                  <Label>Home</Label>
                   <Text style={styles.cardTitle}>{snapshot.building.name}</Text>
                   <Text style={styles.bodyText}>{snapshot.building.address}</Text>
-                  <View style={{ marginTop: 14 }}>
-                    <RoofMap
-                      title="Roof evidence"
-                      usableAreaSqm={snapshot.building.roofAreaM2 ?? 0}
-                      panelCount={panelEstimate(snapshot.building.roofAreaM2)}
-                    />
-                  </View>
+                  <MiniRoofGraphic area={snapshot.building.roofAreaM2} />
                   <InfoRows
                     rows={[
                       ["Kind", snapshot.building.kind.replace("_", " ")],
-                      ["Units", String(snapshot.building.unitCount)],
-                      ["Roof source", snapshot.building.roofSource ?? "Not captured"],
+                      ["Roof record", formatArea(snapshot.building.roofAreaM2)],
+                      ["Source", snapshot.building.roofSource ?? "Not captured"],
                       ["Confidence", formatPercent(snapshot.building.roofConfidence ?? 0)],
                     ]}
                   />
                   <PrimaryButton onPress={() => router.push("/(homeowner)/_embedded/roof-detail")}>Edit roof</PrimaryButton>
-                </GlassCard>
+                </WhiteCard>
               ) : (
                 <NoBuildingCard />
               )}
 
-              <GlassCard>
-                <Label>Settings</Label>
+              <WhiteCard>
+                <Label>Trust</Label>
                 <InfoRows
                   rows={[
-                    ["Notifications", "Project gates and settlement events"],
-                    ["Units", "kWh and KES"],
-                    ["Language", "English"],
+                    ["Identity", "Account email on file"],
+                    ["Permission", snapshot.building ? roofPermissionLabel(snapshot.building) : "No roof"],
+                    ["Updates", "Readiness and settlements"],
                   ]}
                 />
-              </GlassCard>
+              </WhiteCard>
 
-              <GlassCard>
+              <WhiteCard>
                 <Label>Support</Label>
-                <Text style={styles.bodyText}>Get help with roof capture, prepaid pledges, and settlement questions.</Text>
+                <Text style={styles.bodyText}>Get help with roof records or income questions.</Text>
                 <PrimaryButton onPress={() => Linking.openURL("mailto:support@emappa.test?subject=Homeowner%20support")}>
                   Contact support
                 </PrimaryButton>
-              </GlassCard>
+              </WhiteCard>
 
               <Pressable onPress={logout} style={styles.logoutButton}>
                 <Text style={styles.logoutText}>Log out</Text>
@@ -439,11 +332,11 @@ export function HomeownerEmbeddedScreen({ kind }: { kind: EmbeddedKind }) {
     "approve-terms": "Terms",
     "compare-today": "Compare",
     "roof-detail": "Roof",
-    marketplace: "Ownership",
+    marketplace: "Shares",
   };
 
   return (
-    <HomeownerShell title={titleByKind[kind]} subtitle="Project detail screen for the homeowner workspace.">
+    <HomeownerShell title={titleByKind[kind]} subtitle="Homeowner roof record.">
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           if (!snapshot.building) {
@@ -502,17 +395,17 @@ export function HomeownerStartProjectScreen() {
   }
 
   return (
-    <HomeownerShell title="Start Project" subtitle="Create the single-family-home building record attached to your homeowner account.">
-      <PilotBanner title="Homeowner onboarding" message="The backend enforces single-family kind and one unit for homeowner projects." />
-      <GlassCard>
-        <Label>Home details</Label>
+    <HomeownerShell title="Start" subtitle="Add the roof you control.">
+      <WhiteCard>
+        <IconBadge name="home-outline" />
+        <Text style={styles.cardTitle}>Home details</Text>
         <TextInput value={name} onChangeText={setName} placeholder="Project name" placeholderTextColor={colors.dim} style={styles.input} />
         <TextInput value={address} onChangeText={setAddress} placeholder="Address" placeholderTextColor={colors.dim} style={styles.input} />
         <TextInput value={lat} onChangeText={setLat} placeholder="Latitude" placeholderTextColor={colors.dim} keyboardType="decimal-pad" style={styles.input} />
         <TextInput value={lon} onChangeText={setLon} placeholder="Longitude" placeholderTextColor={colors.dim} keyboardType="decimal-pad" style={styles.input} />
         {status ? <Text style={styles.bodyText}>{status}</Text> : null}
-        <PrimaryButton onPress={createProject}>Create project</PrimaryButton>
-      </GlassCard>
+        <PrimaryButton onPress={createProject}>Create</PrimaryButton>
+      </WhiteCard>
     </HomeownerShell>
   );
 }
@@ -595,7 +488,7 @@ function SnapshotState({
 
 function HomeownerShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
-    <Surface>
+    <View style={styles.screen}>
       <SafeAreaView style={styles.safe}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
           <Text style={styles.kicker}>Homeowner</Text>
@@ -604,7 +497,7 @@ function HomeownerShell({ title, subtitle, children }: { title: string; subtitle
           <View style={styles.stack}>{children}</View>
         </ScrollView>
       </SafeAreaView>
-    </Surface>
+    </View>
   );
 }
 
@@ -626,7 +519,11 @@ function MetricGrid({ metrics }: { metrics: Array<{ label: string; value: string
     <View style={styles.metricGrid}>
       {metrics.map((metric) => (
         <View key={metric.label} style={styles.metricItem}>
-          <MetricCard label={metric.label} value={metric.value} detail={metric.detail} />
+          <WhiteCard style={styles.metricCard}>
+            <Text style={styles.metricLabel}>{metric.label}</Text>
+            <Text style={styles.metricValue}>{metric.value}</Text>
+            <Text style={styles.metricDetail}>{metric.detail}</Text>
+          </WhiteCard>
         </View>
       ))}
     </View>
@@ -658,75 +555,61 @@ function Segmented<TValue extends string>({
 
 function TransactionList({ transactions }: { transactions: WalletTransaction[] }) {
   if (transactions.length === 0) {
-    return <EmptyCard title="No wallet cashflow yet" body="Pledge debits, royalty credits, and ownership-linked credits will appear after API records exist." />;
+    return <EmptyCard icon="wallet-outline" title="No income yet" body="Roof royalty credits appear after settlement." />;
   }
 
   return (
-    <GlassCard>
-      <Label>Cashflow</Label>
+    <WhiteCard>
+      <Label>Income</Label>
       {transactions.map((tx) => (
         <Row key={tx.id} label={tx.reference} value={formatKes(tx.amountKes)} note={`${tx.kind} · ${formatDate(tx.at)}`} />
       ))}
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
-function OwnershipPanel({ positions, ownedShare }: { positions: OwnershipPosition[]; ownedShare: number }) {
+function AccountPanel({ user, positions, ownedShare }: { user: User; positions: OwnershipPosition[]; ownedShare: number }) {
   const router = useRouter();
   return (
-    <GlassCard>
-      <Label>Ownership</Label>
-      <Text style={styles.cardTitle}>{formatPercent(ownedShare)} recorded homeowner share</Text>
+    <WhiteCard>
+      <Label>Account</Label>
+      <Text style={styles.cardTitle}>{user.displayName ?? user.email}</Text>
+      <Text style={styles.bodyText}>{user.email}</Text>
       {positions.length === 0 ? (
-        <Text style={styles.bodyText}>The ownership API returned no homeowner positions for this building.</Text>
+        <Row label="Share record" value="None" note="No cashflow position was returned." />
       ) : (
         positions.map((position, index) => (
           <Row
             key={`${position.ownerId ?? "owner"}-${index}`}
-            label={position.ownerRole ?? "homeowner"}
+            label={position.ownerRole ?? "cashflow"}
             value={formatPercent(positionShare(position))}
-            note={position.ownerId ?? "Owner id unavailable"}
+            note={position.ownerId ?? "Record id unavailable"}
           />
         ))
       )}
       {ownedShare < 1 ? (
-        <PrimaryButton onPress={() => router.push("/(homeowner)/_embedded/marketplace")}>Buy back shares</PrimaryButton>
+        <PrimaryButton onPress={() => router.push("/(homeowner)/_embedded/marketplace")}>Review shares</PrimaryButton>
       ) : null}
-    </GlassCard>
-  );
-}
-
-function PledgeHistory({ history }: { history: PrepaidCommitment[] }) {
-  if (history.length === 0) {
-    return <EmptyCard title="No pledges yet" body="Confirmed homeowner pledges from the prepaid API will appear here." />;
-  }
-  return (
-    <GlassCard>
-      <Label>Pledge history</Label>
-      {history.map((pledge) => (
-        <Row key={pledge.id} label={formatKes(pledge.amountKes)} value={pledge.status} note={formatDate(pledge.createdAt)} />
-      ))}
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
 function DrsDetail({ snapshot }: { snapshot: HomeownerSnapshot }) {
   if (!snapshot.drs) {
-    return <EmptyCard title="No DRS assessment" body="The readiness endpoint returned no DRS result for this building." />;
+    return <EmptyCard icon="shield-checkmark-outline" title="No readiness yet" body="No DRS result was returned." />;
   }
 
   return (
-    <>
-      <DrsCard drs={{ ...snapshot.drs, score: drsScore(snapshot.drs), label: readinessLabel(snapshot.drs) }} />
-      <GlassCard>
-        <Label>Blockers</Label>
-        {snapshot.drs.reasons.length === 0 ? (
-          <Text style={styles.bodyText}>No DRS blockers were returned by the API.</Text>
-        ) : (
-          snapshot.drs.reasons.map((reason) => <Row key={reason} label={reason} value="Review" note="Resolve before go-live." />)
-        )}
-      </GlassCard>
-    </>
+    <WhiteCard>
+      <IconBadge name="shield-checkmark-outline" />
+      <Text style={styles.cardTitle}>{readinessLabel(snapshot.drs)}</Text>
+      <Text style={styles.bodyText}>Readiness gates funding, scheduling, and go-live.</Text>
+      {snapshot.drs.reasons.length === 0 ? (
+        <Row label="Blockers" value="None" note="No DRS blocker was returned." />
+      ) : (
+        snapshot.drs.reasons.map((reason) => <Row key={reason} label={reason} value="Review" note="Resolve before go-live." />)
+      )}
+    </WhiteCard>
   );
 }
 
@@ -736,7 +619,7 @@ function DeploymentDetail({ building, drs }: { building: ApiBuilding; drs: DrsRe
   const progress = `${Math.max(8, ((current + 1) / stages.length) * 100)}%` as DimensionValue;
 
   return (
-    <GlassCard>
+    <WhiteCard>
       <Label>Deployment timeline</Label>
       <Text style={styles.cardTitle}>{formatStage(building.stage)}</Text>
       <View style={styles.progressTrack}>
@@ -750,24 +633,24 @@ function DeploymentDetail({ building, drs }: { building: ApiBuilding; drs: DrsRe
           note={stage === "live" ? "Go-live only follows readiness approval." : `DRS: ${readinessLabel(drs)}`}
         />
       ))}
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
 function TermsDetail({ snapshot }: { snapshot: HomeownerSnapshot }) {
   return (
-    <GlassCard>
-      <Label>Terms gate</Label>
-      <Text style={styles.cardTitle}>Prepaid and payout rules</Text>
+    <WhiteCard>
+      <Label>Terms</Label>
+      <Text style={styles.cardTitle}>Roof permission rules</Text>
       <InfoRows
         rows={[
-          ["Prepaid only", "No prepaid cash means no solar allocation."],
-          ["Readiness first", "Funding, supplier lock, scheduling, and go-live stay gated."],
-          ["Monetized solar", "Payout only follows sold solar and settlement records."],
+          ["Roof control", "You grant access; provider owns the array."],
+          ["Readiness", "Funding and go-live stay gated."],
+          ["Income", "Payout follows monetized energy only."],
           ["Current stage", formatStage(snapshot.building!.stage)],
         ]}
       />
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
@@ -778,12 +661,12 @@ function CompareTodayDetail({ snapshot }: { snapshot: HomeownerSnapshot }) {
 
   return (
     <>
-      <EnergyTodayChart title="Generation available today" points={chartPoints(snapshot.energy?.generation_kwh)} unit="kWh" />
+      <EnergyFlowCard generation={generation} load={load} source={snapshot.building?.dataSource ?? "unreported"} />
       <MetricGrid
         metrics={[
-          { label: "Generated", value: formatKwh(generation), detail: "Solar produced" },
-          { label: "Matched load", value: formatKwh(sold), detail: "Solar that could serve home load" },
-          { label: "Pledged", value: formatKes(snapshot.balance?.confirmedTotalKes ?? 0), detail: "Cash-cleared prepaid" },
+          { label: "Produced", value: formatKwh(generation), detail: "Provider system" },
+          { label: "Matched", value: formatKwh(sold), detail: "Served home load" },
+          { label: "Income", value: formatKes(snapshot.settlement?.payouts["homeowner"] ?? 0), detail: "Latest settlement" },
         ]}
       />
     </>
@@ -808,33 +691,29 @@ function RoofDetail({ snapshot, refetch }: { snapshot: HomeownerSnapshot; refetc
   }
 
   return (
-    <GlassCard>
+    <WhiteCard>
       <Label>Roof detail</Label>
-      <RoofMap
-        title={snapshot.building!.name}
-        usableAreaSqm={snapshot.building!.roofAreaM2 ?? 0}
-        panelCount={panelEstimate(snapshot.building!.roofAreaM2)}
-      />
+      <MiniRoofGraphic area={snapshot.building!.roofAreaM2} />
       <TextInput value={area} onChangeText={setArea} keyboardType="decimal-pad" placeholder="Usable roof area m2" placeholderTextColor={colors.dim} style={styles.input} />
       {status ? <Text style={styles.bodyText}>{status}</Text> : null}
       <PrimaryButton onPress={saveRoof}>Save roof area</PrimaryButton>
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
 function MarketplaceDetail({ snapshot }: { snapshot: HomeownerSnapshot }) {
   const ownedShare = ownershipPercent(snapshot.ownership);
   return (
-    <GlassCard>
-      <Label>Buy back shares</Label>
+    <WhiteCard>
+      <Label>Cashflow shares</Label>
       <Text style={styles.cardTitle}>{formatPercent(Math.max(0, 1 - ownedShare))} outside homeowner record</Text>
       <Text style={styles.bodyText}>
-        This screen reads the ownership API and shows whether there is a recorded share gap. A transfer action should appear only when the backend exposes a homeowner buyback endpoint.
+        This is a payout record, not solar array ownership. Transfers need backend support.
       </Text>
       <PrimaryButton onPress={() => Linking.openURL("mailto:support@emappa.test?subject=Homeowner%20share%20buyback")}>
         Contact support
       </PrimaryButton>
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
@@ -862,33 +741,45 @@ function Row({ label, value, note }: { label: string; value: string; note?: stri
 
 function LoadingCard() {
   return (
-    <GlassCard>
-      <Label>Loading</Label>
+    <WhiteCard>
+      <IconBadge name="sync-outline" />
       <Text style={styles.cardTitle}>Preparing homeowner data</Text>
-      <Text style={styles.bodyText}>Fetching role home, energy, wallet, roof, and readiness records.</Text>
-    </GlassCard>
+      <Text style={styles.bodyText}>Fetching roof, energy, income, and readiness.</Text>
+    </WhiteCard>
   );
 }
 
 function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <GlassCard>
-      <Label>Unable to load</Label>
+    <WhiteCard>
+      <IconBadge name="warning-outline" />
       <Text style={styles.cardTitle}>Homeowner data unavailable</Text>
       <Text style={styles.bodyText}>{message}</Text>
       <PrimaryButton onPress={onRetry}>Retry</PrimaryButton>
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
-function EmptyCard({ title, body, actionLabel, onAction }: { title: string; body: string; actionLabel?: string; onAction?: () => void }) {
+function EmptyCard({
+  icon = "home-outline",
+  title,
+  body,
+  actionLabel,
+  onAction,
+}: {
+  icon?: keyof typeof Ionicons.glyphMap;
+  title: string;
+  body: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
   return (
-    <GlassCard>
-      <Label>Empty state</Label>
+    <WhiteCard>
+      <IconBadge name={icon} />
       <Text style={styles.cardTitle}>{title}</Text>
       <Text style={styles.bodyText}>{body}</Text>
       {actionLabel && onAction ? <PrimaryButton onPress={onAction}>{actionLabel}</PrimaryButton> : null}
-    </GlassCard>
+    </WhiteCard>
   );
 }
 
@@ -896,21 +787,138 @@ function NoBuildingCard() {
   const router = useRouter();
   return (
     <EmptyCard
-      title="No home project attached"
-      body="Create a homeowner building record before energy, wallet, roof, and readiness data can load."
-      actionLabel="Start project"
+      icon="home-outline"
+      title="No roof yet"
+      body="Add a home before this screen can load."
+      actionLabel="Start"
       onAction={() => router.push("/(homeowner)/_embedded/start-project")}
     />
   );
 }
 
-function CompactSpacer() {
-  return <View style={{ height: 12 }} />;
+function WhiteCard({ children, style }: { children: ReactNode; style?: ViewStyle }) {
+  return <View style={[styles.whiteCard, style]}>{children}</View>;
 }
 
-function chartPoints(values: number[] | null | undefined): EnergyTodayPoint[] {
-  const source = values ?? [];
-  return source.map((value, index) => ({ label: `${index}`, value }));
+function IconBadge({ name }: { name: keyof typeof Ionicons.glyphMap }) {
+  return (
+    <View style={styles.iconBadge}>
+      <Ionicons name={name} color={colors.orangeDeep} size={20} />
+    </View>
+  );
+}
+
+function RoofStatusHero({ building, readiness, permission }: { building: ApiBuilding; readiness: string; permission: string }) {
+  return (
+    <WhiteCard style={styles.heroCard}>
+      <View style={styles.heroTopRow}>
+        <View style={{ flex: 1 }}>
+          <Label>Roof host</Label>
+          <Text style={styles.heroTitle}>{building.name}</Text>
+          <Text style={styles.heroSub}>{building.address}</Text>
+        </View>
+        <IconBadge name="home-outline" />
+      </View>
+      <MiniRoofGraphic area={building.roofAreaM2} />
+      <View style={styles.heroStatusRow}>
+        <Pill>{permission}</Pill>
+        <Text style={styles.heroStatusText}>{readiness}</Text>
+      </View>
+    </WhiteCard>
+  );
+}
+
+function MiniRoofGraphic({ area }: { area?: number | null }) {
+  return (
+    <View style={styles.roofGraphic}>
+      <View style={styles.roofPeak} />
+      <View style={styles.roofBase}>
+        <View style={styles.roofLine} />
+        <View style={[styles.roofLine, styles.roofLineShort]} />
+      </View>
+      <Text style={styles.roofArea}>{formatArea(area)}</Text>
+    </View>
+  );
+}
+
+function EnergyFlowCard({ generation, load, source }: { generation: number; load: number; source: string }) {
+  const matched = Math.min(generation, load);
+  const ratio = generation > 0 ? matched / generation : 0;
+  const width = `${Math.max(8, ratio * 100)}%` as DimensionValue;
+
+  return (
+    <WhiteCard style={styles.heroCard}>
+      <View style={styles.energyHeader}>
+        <Label>Today</Label>
+        <Text style={styles.energySource}>Source: {source}</Text>
+      </View>
+      <View style={styles.flowRow}>
+        <FlowNode icon="hardware-chip-outline" label="Provider array" />
+        <View style={styles.flowLine}>
+          <View style={[styles.flowLineFill, { width }]} />
+        </View>
+        <FlowNode icon="home-outline" label="Your roof" />
+        <View style={styles.flowLine}>
+          <View style={[styles.flowLineFill, { width }]} />
+        </View>
+        <FlowNode icon="bulb-outline" label="Home use" />
+      </View>
+      <View style={styles.energyTotals}>
+        <Text style={styles.energyNumber}>{formatKwh(generation)}</Text>
+        <Text style={styles.energyCaption}>produced on the roof</Text>
+      </View>
+    </WhiteCard>
+  );
+}
+
+function FlowNode({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+  return (
+    <View style={styles.flowNode}>
+      <Ionicons name={icon} color={colors.orangeDeep} size={18} />
+      <Text style={styles.flowLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function IncomeHero({
+  royalties,
+  shareEarnings,
+  walletBalance,
+}: {
+  royalties: number;
+  shareEarnings: number;
+  walletBalance: number;
+}) {
+  return (
+    <WhiteCard style={styles.heroCard}>
+      <View style={styles.heroTopRow}>
+        <View>
+          <Label>Available account</Label>
+          <Text style={styles.heroTitle}>{formatKes(walletBalance)}</Text>
+        </View>
+        <IconBadge name="wallet-outline" />
+      </View>
+      <View style={styles.incomeBars}>
+        <IncomeBar label="Roof income" value={royalties} max={Math.max(royalties, shareEarnings, 1)} />
+        <IncomeBar label="Share earnings" value={shareEarnings} max={Math.max(royalties, shareEarnings, 1)} />
+      </View>
+    </WhiteCard>
+  );
+}
+
+function IncomeBar({ label, value, max }: { label: string; value: number; max: number }) {
+  const width = `${Math.max(6, (value / max) * 100)}%` as DimensionValue;
+  return (
+    <View>
+      <View style={styles.barLabelRow}>
+        <Text style={styles.barLabel}>{label}</Text>
+        <Text style={styles.barValue}>{formatKes(value)}</Text>
+      </View>
+      <View style={styles.barTrack}>
+        <View style={[styles.barFill, { width }]} />
+      </View>
+    </View>
+  );
 }
 
 function sum(values: number[] | null | undefined) {
@@ -941,6 +949,26 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Date unavailable";
 }
 
+function roofPermissionLabel(building: ApiBuilding) {
+  if (building.roofAreaM2 && building.roofAreaM2 > 0) {
+    return "Permission ready";
+  }
+  return "Needs roof area";
+}
+
+function nextHomeownerAction(building: ApiBuilding, drs: DrsResult | null) {
+  if (!building.roofAreaM2 || building.roofAreaM2 <= 0) {
+    return { label: "Add roof area", detail: "Capture usable space" };
+  }
+  if (!drs || drs.reasons.length > 0) {
+    return { label: "Clear readiness", detail: drs?.reasons[0] ?? "Awaiting assessment" };
+  }
+  if (building.stage !== "live") {
+    return { label: "Approve access", detail: "Wait for go-live gates" };
+  }
+  return { label: "Monitor", detail: "Roof flow is live" };
+}
+
 function readinessLabel(drs: DrsResult | null) {
   if (!drs) {
     return "DRS unavailable";
@@ -950,10 +978,6 @@ function readinessLabel(drs: DrsResult | null) {
 
 function drsScore(drs: DrsResult) {
   return drs.score <= 1 ? Math.round(drs.score * 100) : Math.round(drs.score);
-}
-
-function panelEstimate(area?: number | null) {
-  return area ? Math.max(1, Math.floor(area / 2)) : 0;
 }
 
 function ownershipPercent(positions: OwnershipPosition[]) {
@@ -981,38 +1005,134 @@ function initialsFor(user: User) {
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.white },
   safe: { flex: 1 },
   scroll: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 36 },
   kicker: {
-    color: colors.muted,
+    color: colors.orangeDeep,
     fontSize: 12,
     fontWeight: "700",
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     textTransform: "uppercase",
   },
   title: {
     color: colors.text,
-    fontSize: typography.hero + 4,
+    fontSize: typography.hero + 8,
     fontWeight: "800",
     letterSpacing: -1.1,
-    lineHeight: typography.hero + 12,
+    lineHeight: typography.hero + 14,
     marginTop: 8,
   },
-  subtitle: { color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 8 },
+  subtitle: { color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 4 },
   stack: { gap: 16, marginTop: 18 },
   actionRail: { gap: 8, paddingVertical: 2 },
   actionPill: {
-    borderColor: colors.border,
+    borderColor: `${colors.orangeDeep}40`,
     borderRadius: 999,
     borderWidth: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.white,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  actionText: { color: colors.text, fontSize: 12, fontWeight: "700" },
-  disabledHero: { opacity: 0.55 },
+  actionText: { color: colors.orangeDeep, fontSize: 12, fontWeight: "800" },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   metricItem: { width: "48%" },
+  metricCard: { minHeight: 118, padding: 14 },
+  metricLabel: { color: colors.muted, fontSize: 11, fontWeight: "800", letterSpacing: 0.7, textTransform: "uppercase" },
+  metricValue: { color: colors.text, fontSize: 19, fontWeight: "800", letterSpacing: -0.45, marginTop: 8 },
+  metricDetail: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 5 },
+  whiteCard: {
+    gap: 10,
+    borderColor: "rgba(150, 90, 53, 0.14)",
+    borderRadius: 28,
+    borderWidth: 1,
+    backgroundColor: colors.white,
+    padding: 16,
+    boxShadow: "0 8px 16px rgba(87, 54, 27, 0.06)",
+    elevation: 2,
+  },
+  heroCard: { padding: 18 },
+  heroTopRow: { alignItems: "flex-start", flexDirection: "row", justifyContent: "space-between", gap: 14 },
+  heroTitle: { color: colors.text, fontSize: 28, fontWeight: "900", letterSpacing: -0.9, lineHeight: 34, marginTop: 6 },
+  heroSub: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: 4 },
+  heroStatusRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", gap: 12, marginTop: 6 },
+  heroStatusText: { color: colors.text, flex: 1, fontSize: 12, fontWeight: "800", textAlign: "right" },
+  iconBadge: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: `${colors.orangeDeep}12`,
+    borderColor: `${colors.orangeDeep}25`,
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 42,
+    justifyContent: "center",
+    width: 42,
+  },
+  roofGraphic: {
+    alignItems: "center",
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: 22,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 132,
+    padding: 18,
+  },
+  roofPeak: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 64,
+    borderRightWidth: 64,
+    borderBottomWidth: 44,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderBottomColor: `${colors.orangeDeep}22`,
+  },
+  roofBase: {
+    alignItems: "center",
+    backgroundColor: `${colors.orangeDeep}10`,
+    borderColor: `${colors.orangeDeep}55`,
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 48,
+    justifyContent: "center",
+    marginTop: -2,
+    width: 132,
+  },
+  roofLine: { backgroundColor: colors.orangeDeep, borderRadius: 999, height: 3, width: 78 },
+  roofLineShort: { opacity: 0.5, marginTop: 8, width: 48 },
+  roofArea: { color: colors.text, fontSize: 12, fontWeight: "800", marginTop: 10 },
+  energyHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  energySource: { color: colors.dim, fontSize: 11, fontWeight: "700", textTransform: "uppercase" },
+  flowRow: { alignItems: "center", flexDirection: "row", gap: 8, marginTop: 12 },
+  flowLine: { flex: 1, height: 4, borderRadius: 999, backgroundColor: `${colors.orangeDeep}18`, overflow: "hidden" },
+  flowLineFill: { height: 4, borderRadius: 999, backgroundColor: colors.orangeDeep },
+  flowNode: { alignItems: "center", gap: 5, width: 68 },
+  flowLabel: { color: colors.muted, fontSize: 10, fontWeight: "700", lineHeight: 13, textAlign: "center" },
+  energyTotals: { alignItems: "center", backgroundColor: `${colors.orangeDeep}0D`, borderRadius: 22, marginTop: 18, paddingVertical: 18 },
+  energyNumber: { color: colors.text, fontSize: 32, fontWeight: "900", letterSpacing: -1 },
+  energyCaption: { color: colors.muted, fontSize: 12, fontWeight: "700", marginTop: 3 },
+  incomeBars: { gap: 12, marginTop: 16 },
+  barLabelRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  barLabel: { color: colors.muted, fontSize: 12, fontWeight: "800" },
+  barValue: { color: colors.text, fontSize: 12, fontWeight: "900" },
+  barTrack: { height: 9, borderRadius: 999, backgroundColor: `${colors.orangeDeep}14`, marginTop: 6, overflow: "hidden" },
+  barFill: { height: 9, borderRadius: 999, backgroundColor: colors.orangeDeep },
+  profileHero: { alignItems: "center", gap: 8, paddingVertical: 10 },
+  avatarLarge: {
+    alignItems: "center",
+    backgroundColor: `${colors.orangeDeep}12`,
+    borderColor: `${colors.orangeDeep}28`,
+    borderRadius: 34,
+    borderWidth: 1,
+    height: 68,
+    justifyContent: "center",
+    width: 68,
+  },
+  avatarTextLarge: { color: colors.orangeDeep, fontSize: 22, fontWeight: "900" },
+  profileName: { color: colors.text, fontSize: 22, fontWeight: "900", letterSpacing: -0.5, marginTop: 4 },
+  profileEmail: { color: colors.muted, fontSize: 13, fontWeight: "600" },
+  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 6 },
   cardTitle: {
     color: colors.text,
     fontSize: typography.title,
@@ -1037,8 +1157,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: "rgba(150, 90, 53, 0.14)",
+    backgroundColor: colors.white,
     padding: 4,
   },
   segment: { flex: 1, alignItems: "center", borderRadius: 999, paddingVertical: 9 },
@@ -1056,7 +1176,7 @@ const styles = StyleSheet.create({
   rowLabel: { color: colors.text, fontSize: typography.small, fontWeight: "700" },
   rowNote: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 3 },
   rowValue: { color: colors.text, flexShrink: 0, fontSize: typography.small, fontWeight: "800" },
-  progressTrack: { height: 12, borderRadius: 999, backgroundColor: colors.panelSoft, marginVertical: 16, overflow: "hidden" },
+  progressTrack: { height: 12, borderRadius: 999, backgroundColor: `${colors.orangeDeep}14`, marginVertical: 16, overflow: "hidden" },
   progressFill: { height: 12, borderRadius: 999, backgroundColor: colors.orangeDeep },
   profileRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   avatar: {

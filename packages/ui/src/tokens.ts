@@ -20,13 +20,13 @@ export const officialPalette = {
  * Primary actions: fox / rust lineage; status green/red unchanged for real state only.
  */
 export const colors = {
-  /** Solid canvas aligned with shell gradient base (safe areas, chrome fallback) */
-  surface: "#FAF6F1",
-  surfaceElevated: "#FDF9F5",
+  /** Solid white canvas for safe areas and chrome fallback. */
+  surface: "#FFFFFF",
+  surfaceElevated: "#FFFFFF",
   ink: "#FFFFFF",
   night: "#FFFFFF",
-  panel: "#FFF8F2",
-  panelSoft: "#F3EBE3",
+  panel: "#FFFFFF",
+  panelSoft: "#FFF8F2",
   cream: "#FFF3DE",
   sky: "#FFF7EA",
   border: "rgba(125, 87, 52, 0.14)",
@@ -106,17 +106,11 @@ export const cardBorderColor = "rgba(118, 73, 39, 0.16)";
 
 export const shadows = {
   card: {
-    shadowColor: officialPalette.espressoShadow,
-    shadowOpacity: 0.09,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
+    boxShadow: `0 10px 22px rgba(87, 54, 27, 0.09)`,
     elevation: 4,
   },
   soft: {
-    shadowColor: officialPalette.espressoShadow,
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
+    boxShadow: `0 6px 14px rgba(87, 54, 27, 0.06)`,
     elevation: 2,
   },
 } as const;

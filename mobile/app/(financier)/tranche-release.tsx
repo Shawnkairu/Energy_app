@@ -1,3 +1,3 @@
-import { FinancierTrancheReleaseScreen } from "../../components/proposed-flow/FinancierTrancheReleaseScreen";
+import { FinancierDealDetailScreen } from "../../components/financier/FinancierScreens";
 
-export default FinancierTrancheReleaseScreen;
+export default FinancierDealDetailScreen;

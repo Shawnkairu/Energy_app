@@ -1,12 +1,15 @@
 import { Platform, StyleSheet, View } from "react-native";
 import { Tabs } from "expo-router";
-import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getMobileSections, type StakeholderRole } from "@emappa/shared";
 import { colors } from "@emappa/ui";
 
 const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
   home: "home-outline",
+  discover: "compass-outline",
+  jobs: "construct-outline",
+  compliance: "ribbon-outline",
   wallet: "wallet-outline",
   usage: "pulse-outline",
   energy: "flash-outline",
@@ -35,10 +38,7 @@ const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
 };
 
 function TabBarChromeBackground() {
-  if (Platform.OS === "ios") {
-    return <BlurView intensity={26} tint="light" style={StyleSheet.absoluteFill} />;
-  }
-  return <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceElevated }]} />;
+  return <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />;
 }
 
 const hiddenTabRoutes: Partial<Record<StakeholderRole, string[]>> = {
@@ -49,6 +49,9 @@ const hiddenTabRoutes: Partial<Record<StakeholderRole, string[]>> = {
 };
 
 export function RoleTabs({ role }: { role: StakeholderRole }) {
+  const insets = useSafeAreaInsets();
+  const tabBarInsetBottom = Platform.OS === "ios" ? Math.max(insets.bottom, 8) : Math.max(insets.bottom, 10);
+
   const sectionByRoute = Object.fromEntries(
     getMobileSections(role).map((section) => [
       section.mobileRoute?.split("/").at(-1) ?? section.id,
@@ -60,34 +63,51 @@ export function RoleTabs({ role }: { role: StakeholderRole }) {
 
   return (
     <Tabs
-      screenOptions={({ route }) => ({
-        title: sectionByRoute[route.name]?.label,
-        headerStyle: { backgroundColor: colors.surface },
-        headerShadowVisible: false,
-        headerTintColor: colors.text,
-        headerTitleStyle: { fontWeight: "600", fontSize: 15, color: colors.text },
-        tabBarStyle: {
-          backgroundColor: Platform.OS === "ios" ? "transparent" : colors.surfaceElevated,
-          borderTopColor: colors.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          height: 64,
-          paddingTop: 8,
-          paddingBottom: 10,
-        },
-        tabBarBackground: TabBarChromeBackground,
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: colors.orangeDeep,
-        tabBarInactiveTintColor: colors.dim,
-        tabBarLabelStyle: { fontWeight: "500", fontSize: 9 },
-        tabBarLabel: sectionByRoute[route.name]?.label,
-        tabBarIcon: ({ color, size }) => (
-          <Ionicons name={icons[route.name] ?? "ellipse-outline"} color={color} size={Math.max(16, size - 6)} />
-        ),
-      })}
+      screenOptions={({ route }) => {
+        const label = sectionByRoute[route.name]?.label ?? titleizeRoute(route.name);
+        return {
+          title: label,
+          headerStyle: {
+            backgroundColor: colors.surface,
+          },
+          headerShadowVisible: false,
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            fontWeight: "600",
+            fontSize: 17,
+            color: colors.text,
+          },
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            minHeight: 52 + tabBarInsetBottom,
+            paddingTop: 8,
+            paddingBottom: tabBarInsetBottom,
+          },
+          tabBarBackground: TabBarChromeBackground,
+          tabBarShowLabel: true,
+          tabBarActiveTintColor: colors.orangeDeep,
+          tabBarInactiveTintColor: colors.dim,
+          tabBarAccessibilityLabel: label,
+          tabBarLabel: label,
+          tabBarLabelStyle: { fontWeight: "700", fontSize: 10, marginTop: 2 },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name={icons[route.name] ?? "ellipse-outline"} color={color} size={Math.max(16, size - 8)} />
+          ),
+        };
+      }}
     >
       {hidden.map((name) => (
         <Tabs.Screen key={name} name={name} options={{ href: null }} />
       ))}
     </Tabs>
   );
+}
+
+function titleizeRoute(routeName: string) {
+  return routeName
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

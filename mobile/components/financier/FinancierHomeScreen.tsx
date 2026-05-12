@@ -1,11 +1,13 @@
-import { BuildingPulse, KillSwitchBanner } from "../design-handoff";
 import {
+  BuildingSnapshotCard,
   FinancierBriefCard,
   FinancierScreenShell,
-  FinancierWorkflowCard,
+  GateRailCard,
+  RecoveryBandCard,
   StatusRail,
   drsTone,
   formatKes,
+  formatKesShort,
   formatPercent,
 } from "./FinancierShared";
 
@@ -21,34 +23,33 @@ export function FinancierHomeScreen() {
   return (
     <FinancierScreenShell
       section="Home"
-      title="Financier Deal Room"
-      subtitle="A calm overview of the active named building raise, readiness gate, and next underwriting move."
-      actions={["Open deal room", "Review DRS", "Track recovery"]}
+      title="Deal room"
+      subtitle="Named exposure, readiness, and recovery range."
+      actions={["Open", "DRS", "Range"]}
       showActivity
       hero={({ primary }) => ({
-        label: "Active deal room",
+        label: "Active building",
         value: primary.project.name,
-        sub: "Capital and recovery stay tied to this building.",
+        sub: `${primary.project.units} units · ${primary.project.locationBand}`,
       })}
     >
       {({ primary }) => {
         const view = primary.roleViews.financier;
         return (
           <>
-            <BuildingPulse role="financier" building={primary} />
-            <KillSwitchBanner building={primary} />
+            <BuildingSnapshotCard building={primary} />
             <StatusRail
               items={[
                 {
                   label: "Committed",
-                  value: formatKes(view.committedCapitalKes),
-                  note: "To primary named deal.",
+                  value: formatKesShort(view.committedCapitalKes),
+                  note: "Named deal",
                   tone: "neutral",
                 },
                 {
                   label: "Progress",
                   value: formatPercent(view.fundingProgress),
-                  note: `${formatKes(view.remainingCapitalKes)} remaining.`,
+                  note: `${formatKesShort(view.remainingCapitalKes)} open`,
                   tone: "good",
                 },
                 {
@@ -59,32 +60,20 @@ export function FinancierHomeScreen() {
                 },
               ]}
             />
+            <GateRailCard building={primary} />
+            <RecoveryBandCard building={primary} title="Monthly recovery range" />
             <FinancierBriefCard
-              eyebrow="Deal room"
-              title="Named building, named risk."
-              body="Capital is committed to the building shown here, not a pooled vehicle. Readiness and recovery stay legible at every step."
+              eyebrow="Position"
+              title="Named building. Named risk."
+              body="No pool view. Ranges stay explicit."
               rows={[
-                { label: "Site", value: primary.project.locationBand, note: `${primary.project.units} apartments under one named raise.` },
-                { label: "Stage", value: formatStage(primary.project.stage), note: "Building advances only after readiness gates clear." },
+                { label: "Site", value: primary.project.locationBand, note: `${primary.project.units} apartments.` },
+                { label: "Stage", value: formatStage(primary.project.stage), note: "Moves after gates clear." },
                 {
                   label: "Capital",
                   value: formatKes(view.committedCapitalKes),
-                  note: `${formatPercent(view.fundingProgress)} funded; ${formatKes(view.remainingCapitalKes)} remaining to close.`,
+                  note: `${formatPercent(view.fundingProgress)} funded; ${formatKes(view.remainingCapitalKes)} open.`,
                 },
-              ]}
-            />
-            <FinancierWorkflowCard
-              eyebrow="Next deal-room moves"
-              title="Underwriting plan"
-              items={[
-                {
-                  label: "Confirm named exposure",
-                  detail: "Capital is committed to the building shown here, not a pooled vehicle.",
-                  status: "named",
-                  tone: "good",
-                },
-                { label: "Review readiness", detail: "DRS and kill switches determine when capital can move.", status: "DRS" },
-                { label: "Watch recovery", detail: "Recovery cases use monetized prepaid solar and remain ranges.", status: "range" },
               ]}
             />
           </>

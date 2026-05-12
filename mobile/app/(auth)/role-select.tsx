@@ -2,14 +2,14 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import type { BusinessType, StakeholderRole } from "@emappa/shared";
-import { AppMark, colors, PaletteCard, typography } from "@emappa/ui";
+import { AppMark, colors, PaletteCard, spacing, typography } from "@emappa/ui";
 import { useAuth } from "../../components/AuthContext";
 import { useApi } from "../../lib/api";
 
 /** shared-screens `ScreenRolePicker`: stacked role cards, first row emphasized, subtitle per row. */
 const roles: Array<{ label: string; sub: string; role: StakeholderRole; href: string; businessType?: BusinessType }> = [
   { label: "Resident", sub: "I live in a building", role: "resident", href: "/(resident)/home" },
-  { label: "Homeowner", sub: "I own and live in a single-family home", role: "homeowner", href: "/(building-owner)/home" },
+  { label: "Homeowner", sub: "I own and live in a single-family home", role: "homeowner", href: "/(homeowner)/home" },
   { label: "Building owner", sub: "I own a multi-unit building", role: "building_owner", href: "/(building-owner)/home" },
   { label: "Provider", sub: "I supply panels or infrastructure", role: "provider", href: "/(provider)/home", businessType: "both" },
   { label: "Financier", sub: "I fund deal-level capital", role: "financier", href: "/(financier)/portfolio" },
@@ -59,7 +59,7 @@ export default function RoleSelect() {
           <View style={{ flex: 1 }}>
             <Text style={styles.kicker}>Continue as</Text>
             <Text style={styles.title}>Pick your role</Text>
-            <Text style={styles.subtitle}>One account, role-specific guarded workspaces</Text>
+            <Text style={styles.subtitle}>One sign-in — each role sees only its workspace.</Text>
           </View>
           <AppMark size={40} />
         </View>
@@ -80,8 +80,12 @@ export default function RoleSelect() {
             return (
               <Pressable
                 key={r.role}
+                accessibilityRole="button"
+                accessibilityLabel={`Continue as ${r.label}`}
+                accessibilityHint={r.sub}
                 onPress={() => chooseRole(r.role, r.href, r.businessType)}
-                style={({ pressed }) => [{ opacity: pressed ? 0.94 : 1 }]}
+                disabled={isSubmitting}
+                style={({ pressed }) => [{ opacity: isSubmitting ? 0.75 : pressed ? 0.94 : 1 }]}
               >
                 <PaletteCard
                   borderRadius={16}
@@ -114,7 +118,7 @@ export default function RoleSelect() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 },
+  scroll: { paddingHorizontal: spacing.xl, paddingTop: spacing.lg, paddingBottom: spacing.xxl },
   topRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
   kicker: {
     color: colors.muted,
@@ -163,7 +167,7 @@ const styles = StyleSheet.create({
 function roleHomeHref(role: StakeholderRole, fallback: string) {
   const routes: Record<StakeholderRole, string> = {
     resident: "/(resident)/home",
-    homeowner: "/(building-owner)/home",
+    homeowner: "/(homeowner)/home",
     building_owner: "/(building-owner)/home",
     provider: "/(provider)/home",
     financier: "/(financier)/portfolio",

@@ -1,5 +1,5 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { InstallerJobsInboxScreen } from "../../components/proposed-flow/InstallerJobsInboxScreen";
 
 export default function ElectricianDiscoverScreen() {
-  return <ContributorIaScreen role="electrician" section="discover" />;
+  return <InstallerJobsInboxScreen />;
 }

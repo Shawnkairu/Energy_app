@@ -17,10 +17,10 @@ export function SyntheticBadge({ source = "synthetic" }: { source?: string }) {
   return <span className={`synthetic-badge source-${source}`}>{source} data</span>;
 }
 
-export function TokenHero({ project, title = "Pledged token balance", disabled = false }: { project: ProjectedBuilding; title?: string; disabled?: boolean }) {
+export function TokenHero({ project, title = "Pledge wallet", disabled = false }: { project: ProjectedBuilding; title?: string; disabled?: boolean }) {
   const view = project.roleViews.resident;
   return (
-    <PortalPanel className={disabled ? "is-disabled" : ""} eyebrow="Tokens" title={title}>
+    <PortalPanel className={disabled ? "is-disabled" : ""} eyebrow="Pledges" title={title}>
       <PortalKpiBar
         items={[
           { label: "Pledged balance", value: disabled ? "Activates at go-live" : kes(view.prepaidBalanceKes), detail: "confirmed pledges" },
@@ -30,7 +30,7 @@ export function TokenHero({ project, title = "Pledged token balance", disabled =
       />
       <PortalWorkflow
         steps={[
-          { label: "Pledge tokens", detail: disabled ? "Available after project goes live." : "Open pledge entry with amount presets.", status: disabled ? "locked" : "ready" },
+          { label: "Create pledge", detail: disabled ? "Available after project goes live." : "Open pledge entry with amount presets.", status: disabled ? "locked" : "ready" },
           { label: "Allocate solar", detail: "Solar-first allocation only happens against confirmed pledges.", status: "pilot" },
           { label: "Fallback", detail: "Grid usage stays separate from the pledge wallet.", status: "protected" },
         ]}

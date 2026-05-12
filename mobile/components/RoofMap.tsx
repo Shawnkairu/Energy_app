@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "@emappa/ui";
+import { colors, shadows } from "@emappa/ui";
 
 export interface RoofMapProps {
   title?: string;
@@ -30,9 +30,12 @@ export function RoofMap({ title = "Roof map", usableAreaSqm = 0, panelCount = 0 
 
 const styles = StyleSheet.create({
   card: {
+    ...shadows.card,
     gap: 14,
     borderRadius: 24,
-    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    backgroundColor: colors.white,
     padding: 18,
   },
   roof: {

@@ -1,5 +1,3 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { ProviderWalletScreen } from "../../components/provider/ProviderScreens";
 
-export default function ProviderWalletScreen() {
-  return <ContributorIaScreen role="provider" section="wallet" />;
-}
+export default ProviderWalletScreen;

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { GlassCard } from "@emappa/ui";
+import { GlassCard, colors } from "@emappa/ui";
 import { ActionButton, OnboardShell, StatusText, TextField, errorMessage, styles, useGeocodedAddress } from "../_shared";
 import { useApi } from "../../../lib/api";
 
@@ -66,7 +66,17 @@ export default function BuildingOwnerBasicsScreen() {
     <OnboardShell
       eyebrow="Building owner"
       title="List your building"
-      footer={<ActionButton onPress={createBuilding} disabled={isCreating || isGeocoding}>{isCreating ? "Creating..." : "Continue"}</ActionButton>}
+      footer={
+        <ActionButton
+          onPress={createBuilding}
+          disabled={isCreating || isGeocoding}
+          accessibilityLabel={
+            isCreating ? "Creating building" : isGeocoding ? "Waiting for geocode" : "Continue to roof capture"
+          }
+        >
+          {isCreating ? "Creating..." : "Continue"}
+        </ActionButton>
+      }
     >
       <GlassCard>
         <TextField label="Building name" value={name} onChangeText={setName} placeholder="Nyeri Ridge A" />
@@ -75,6 +85,12 @@ export default function BuildingOwnerBasicsScreen() {
         <TextField label="Occupancy estimate (%)" value={occupancy} onChangeText={setOccupancy} keyboardType="numeric" placeholder="85" />
         <Text style={styles.helper}>Readiness gates use these basics before funding, supplier lock, installer scheduling, and go-live.</Text>
         {geocode ? <Text style={styles.success}>Geocoded: {geocode.formattedAddress}</Text> : null}
+        {isGeocoding ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 }}>
+            <ActivityIndicator color={colors.orangeDeep} size="small" />
+            <Text style={styles.helper}>Pinning address on the map…</Text>
+          </View>
+        ) : null}
       </GlassCard>
       <StatusText status={geocodeError ?? error} tone="error" />
     </OnboardShell>

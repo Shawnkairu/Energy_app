@@ -35,18 +35,23 @@ export function PortalShell({
           <small>{project.project.locationBand}</small>
         </div>
         <nav className="role-nav local-nav" aria-label={`${roleLabels[role]} portal tabs`}>
-          {sections.map((item, index) => (
-            <button
-              key={item.id}
-              className={item.id === activeTab ? "active" : ""}
-              type="button"
-              onClick={() => onNavigate(item.id)}
-            >
-              <em>{String(index + 1).padStart(2, "0")}</em>
-              <span>{item.label}</span>
-              <small>{item.detail}</small>
-            </button>
-          ))}
+          {sections.map((item, index) => {
+            const isActive = item.id === activeTab;
+
+            return (
+              <button
+                key={item.id}
+                className={isActive ? "active" : ""}
+                type="button"
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => onNavigate(item.id)}
+              >
+                <em>{String(index + 1).padStart(2, "0")}</em>
+                <span>{item.label}</span>
+                <small>{item.detail}</small>
+              </button>
+            );
+          })}
         </nav>
         <button className="logout-button" onClick={onLogout}>Logout</button>
       </aside>
@@ -72,11 +77,21 @@ export function PortalShell({
         </header>
         {children}
         <nav className="mobile-tabbar" aria-label={`${roleLabels[role]} mobile web tabs`}>
-          {sections.map((item) => (
-            <button key={item.id} className={item.id === activeTab ? "active" : ""} type="button" onClick={() => onNavigate(item.id)}>
-              {item.label}
-            </button>
-          ))}
+          {sections.map((item) => {
+            const isActive = item.id === activeTab;
+
+            return (
+              <button
+                key={item.id}
+                className={isActive ? "active" : ""}
+                type="button"
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => onNavigate(item.id)}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
       </section>
     </main>
@@ -102,7 +117,7 @@ function StatusCard({
         <small>{decision}</small>
       </div>
       <div>
-        <span>Source</span>
+        <span>Data sources</span>
         <strong>{dataSourceLabel(role)}</strong>
         <small>{projectName}</small>
       </div>
@@ -112,12 +127,12 @@ function StatusCard({
 
 function dataSourceLabel(role: PublicRole) {
   const labels: Record<PublicRole, ReactNode> = {
-    resident: "projects + prepaid + energy + wallet",
-    homeowner: "projects + roof + prepaid + energy",
-    building_owner: "projects + DRS + energy + settlement",
-    provider: "discover + inventory + generation + wallet",
-    financier: "discover + portfolio + wallet",
-    electrician: "discover + jobs + compliance + wallet",
+    resident: "Projects + energy + wallet",
+    homeowner: "Projects + roof + energy",
+    building_owner: "Projects + DRS + settlement",
+    provider: "Inventory + generation + wallet",
+    financier: "Portfolio + wallet",
+    electrician: "Jobs + compliance + wallet",
   };
   return labels[role];
 }

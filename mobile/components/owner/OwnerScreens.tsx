@@ -7,3 +7,4 @@ export { OwnerEarningsScreen } from "./OwnerEarningsScreen";
 export { OwnerHomeScreen } from "./OwnerHomeScreen";
 export { OwnerListBuildingScreen } from "./OwnerListBuildingScreen";
 export { OwnerResidentRosterScreen } from "./OwnerResidentRosterScreen";
+export { OwnerIntroCard, OwnerProfileCard } from "./OwnerShared";

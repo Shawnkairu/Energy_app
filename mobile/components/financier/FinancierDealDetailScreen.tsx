@@ -1,34 +1,36 @@
-import { BuildingPulse, KillSwitchBanner, SoldVsWaste } from "../design-handoff";
 import {
+  BuildingSnapshotCard,
+  CashflowWaterfallCard,
   FinancierDiligenceCard,
   FinancierMilestoneBriefCard,
-  FinancierRecoveryBandsCard,
   FinancierScoreArtifact,
   FinancierScreenShell,
+  GateRailCard,
+  RecoveryBandCard,
 } from "./FinancierShared";
 
 export function FinancierDealDetailScreen() {
   return (
     <FinancierScreenShell
-      section="Deal Detail"
-      title="Deal Diligence"
-      subtitle="Evidence, release gates, and downside cases for one building before any capital movement."
-      actions={["Review evidence", "Stress cases", "Milestones"]}
+      section="Deal"
+      title="Diligence"
+      subtitle="Evidence, gates, and monetized cashflow."
+      actions={["Evidence", "Gates", "Range"]}
       hero={({ primary }) => ({
-        label: "Diligence target",
+        label: "Target",
         value: primary.project.name,
         sub: `${primary.project.locationBand} · ${primary.project.units} apartments.`,
       })}
     >
       {({ primary }) => (
         <>
-          <BuildingPulse role="financier" building={primary} />
-          <KillSwitchBanner building={primary} />
+          <BuildingSnapshotCard building={primary} />
           <FinancierScoreArtifact building={primary} />
-          <SoldVsWaste building={primary} headline="What this deal earns from" />
+          <GateRailCard building={primary} />
+          <CashflowWaterfallCard building={primary} />
           <FinancierDiligenceCard building={primary} />
           <FinancierMilestoneBriefCard building={primary} />
-          <FinancierRecoveryBandsCard building={primary} variant="diligence" />
+          <RecoveryBandCard building={primary} title="Stress band" />
         </>
       )}
     </FinancierScreenShell>

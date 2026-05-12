@@ -1,7 +1,8 @@
-import { SoldVsWaste } from "../design-handoff";
 import {
   ProviderActionPlan,
+  ProviderAssetSplit,
   ProviderDashboard,
+  ProviderGenerationGraphic,
   ProviderRows,
   ProviderSectionBrief,
   ProviderTruthCard,
@@ -12,9 +13,9 @@ export function ProviderAssetsScreen() {
   return (
     <ProviderDashboard
       section="Assets"
-      title="Solar Asset Register"
-      subtitle="Physical panel output separated from the portion residents prepaid for and consumed."
-      actions={["Inspect output", "Meter proof", "Asset docs"]}
+      title="Solar asset"
+      subtitle="Array proof and physical output."
+      actions={["Output", "Meter", "Docs"]}
       renderPanels={(building) => {
         const view = building.roleViews.provider;
 
@@ -22,23 +23,24 @@ export function ProviderAssetsScreen() {
           <>
             <ProviderSectionBrief
               section="Assets"
-              title="The asset view is physical first."
-              body="It shows what the array generated, what became paid solar, and what evidence keeps the asset credible."
+              title="Physical first."
+              body="Generated output, sold solar, warranty proof."
               building={building}
             />
-            <SoldVsWaste building={building} headline="Generated → Sold → Waste" />
+            <ProviderGenerationGraphic building={building} />
+            <ProviderAssetSplit building={building} />
             <ProviderRows
-              title="Asset proof packet"
+              title="Proof packet"
               eyebrow="Physical proof"
               rows={[
-                { label: "Generated", value: formatKwh(view.generatedKwh), note: "Modeled monthly output from the installed array." },
-                { label: "Monetized", value: formatKwh(view.monetizedKwh), note: "Prepaid solar allocation consumed by residents.", tone: "good" },
-                { label: "Warranty docs", value: `${view.warrantyDocuments} files`, note: "Supplier and equipment proof attached to this asset." },
+                { label: "Generated", value: formatKwh(view.generatedKwh) },
+                { label: "Monetized", value: formatKwh(view.monetizedKwh), tone: "good" },
+                { label: "Warranty docs", value: `${view.warrantyDocuments} files` },
               ]}
             />
             <ProviderTruthCard
               title="Unsold output stays unpaid."
-              body="Panels can generate more than the building monetizes. Wasted, curtailed, or free-exported kWh do not create provider payout."
+              body="Wasted, curtailed, or free-exported kWh do not create provider payout."
             />
             <ProviderActionPlan section="Assets" />
           </>

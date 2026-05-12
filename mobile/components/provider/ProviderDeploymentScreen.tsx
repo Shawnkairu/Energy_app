@@ -12,9 +12,9 @@ export function ProviderDeploymentScreen() {
   return (
     <ProviderDashboard
       section="Deployment"
-      title="Readiness Gate Path"
+      title="Deployment"
       subtitle="DRS, supplier lock, installer lead, monitoring, and settlement trust before go-live."
-      actions={["Review gates", "Supplier lock", "Go-live proof"]}
+      actions={["Gates", "Supplier lock", "Go-live proof"]}
       renderPanels={(building) => {
         const view = building.roleViews.provider;
         const completeGates = view.deploymentGates.filter((gate) => gate.complete).length;

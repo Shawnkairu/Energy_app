@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { BusinessType, GeocodeResult, StakeholderRole } from "@emappa/shared";
-import { AppMark, GlassCard, Label, colors, typography } from "@emappa/ui";
+import { AppMark, GlassCard, Label, PrimaryButton, colors, spacing, typography } from "@emappa/ui";
+import { SecondaryButton } from "../(auth)/authShell";
 import { PilotBanner } from "../../components/PilotBanner";
 import { RoofMap } from "../../components/RoofMap";
 import { useAuth } from "../../components/AuthContext";
@@ -79,6 +80,7 @@ export function TextField({
         keyboardType={keyboardType}
         onBlur={onBlur}
         multiline={multiline}
+        accessibilityLabel={label}
         style={[styles.input, multiline && styles.textarea]}
       />
     </View>
@@ -102,7 +104,14 @@ export function ChoiceGroup<TValue extends string>({
       {options.map((option) => {
         const selected = value === option.value;
         return (
-          <Pressable key={option.value} onPress={() => onChange(option.value)} style={[styles.choice, selected && styles.choiceSelected]}>
+          <Pressable
+            key={option.value}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: selected }}
+            accessibilityLabel={`${option.label}`}
+            onPress={() => onChange(option.value)}
+            style={[styles.choice, selected && styles.choiceSelected]}
+          >
             <View style={{ flex: 1 }}>
               <Text style={styles.choiceTitle}>{option.label}</Text>
               {option.detail ? <Text style={styles.choiceDetail}>{option.detail}</Text> : null}
@@ -134,6 +143,9 @@ export function MultiChoiceGroup<TValue extends string>({
         return (
           <Pressable
             key={option.value}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: selected }}
+            accessibilityLabel={option.label}
             onPress={() => onChange(selected ? values.filter((value) => value !== option.value) : [...values, option.value])}
             style={[styles.choice, selected && styles.choiceSelected]}
           >
@@ -153,19 +165,25 @@ export function ActionButton({
   onPress,
   variant = "primary",
   disabled = false,
+  accessibilityLabel,
 }: {
   children: ReactNode;
   onPress: () => void;
   variant?: "primary" | "secondary";
   disabled?: boolean;
+  accessibilityLabel?: string;
 }) {
+  if (variant === "secondary") {
+    return (
+      <SecondaryButton onPress={onPress} disabled={disabled} accessibilityLabel={accessibilityLabel}>
+        {children}
+      </SecondaryButton>
+    );
+  }
   return (
-    <Pressable
-      onPress={disabled ? undefined : onPress}
-      style={[styles.button, variant === "secondary" && styles.secondaryButton, disabled && styles.disabledButton]}
-    >
-      <Text style={[styles.buttonText, variant === "secondary" && styles.secondaryButtonText]}>{children}</Text>
-    </Pressable>
+    <PrimaryButton onPress={onPress} disabled={disabled} accessibilityLabel={accessibilityLabel}>
+      {children}
+    </PrimaryButton>
   );
 }
 
@@ -287,7 +305,7 @@ export function PledgeStep({
         </View>
       }
     >
-      <PilotBanner title="Pledge mode" message="Pledges are non-binding and no money is charged until the building is ready." />
+      <PilotBanner title="Pilot pledge" message="Pledges are non-binding until the building clears readiness gates." />
       <GlassCard>
         <TextField label="Amount in KES" value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="1000" />
         <Text style={styles.helper}>Prepaid-only allocation means solar tokens activate only from confirmed prepaid demand.</Text>
@@ -410,22 +428,31 @@ export function RoofCaptureStep({
       {mode === "suggest" ? (
         <GlassCard>
           <Label>Microsoft footprint suggestion</Label>
-          {suggestionState.isLoading ? <Text style={styles.helper}>Checking roof-footprint service...</Text> : null}
+          {suggestionState.isLoading ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color={colors.orangeDeep} />
+              <Text style={styles.helperShrink}>Fetching suggested footprint…</Text>
+            </View>
+          ) : null}
           {suggestionState.error ? (
             <>
               <Text style={styles.error}>{suggestionState.error.message}</Text>
-              <ActionButton onPress={suggestionState.refetch} variant="secondary">Retry suggestion</ActionButton>
+              <ActionButton onPress={suggestionState.refetch} variant="secondary" accessibilityLabel="Retry footprint suggestion">
+                Retry suggestion
+              </ActionButton>
             </>
           ) : null}
           {suggestionState.data && "available" in suggestionState.data ? (
-            <Text style={styles.helper}>No automatic footprint is available for this address. Redraw the roof or type the area.</Text>
+            <Text style={styles.helper}>
+              No automatic footprint matched this pin. Trace the roof corners or enter area manually below.
+            </Text>
           ) : null}
           {suggestedArea > 0 ? <Text style={styles.cardTitle}>{suggestedArea.toLocaleString()} sqm suggested</Text> : null}
           <View style={styles.inlineActions}>
-            <Pressable onPress={() => setMode("trace")} style={styles.linkButton}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Redraw roof footprint" onPress={() => setMode("trace")} style={styles.linkButton}>
               <Text style={styles.linkText}>Let me redraw</Text>
             </Pressable>
-            <Pressable onPress={() => setMode("manual")} style={styles.linkButton}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Enter roof area manually" onPress={() => setMode("manual")} style={styles.linkButton}>
               <Text style={styles.linkText}>Type sqm</Text>
             </Pressable>
           </View>
@@ -487,7 +514,7 @@ function polygonFromTrace(points: Array<{ x: number; y: number }>, lat: number, 
 
 export const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { gap: 16, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 120 },
+  scroll: { gap: spacing.lg, paddingHorizontal: spacing.xl, paddingTop: spacing.lg + 2, paddingBottom: 120 },
   header: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16 },
   eyebrow: {
     color: colors.muted,
@@ -496,7 +523,14 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: "uppercase",
   },
-  title: { color: colors.text, fontSize: 33, fontWeight: "700", letterSpacing: -1.1, lineHeight: 38, marginTop: 8 },
+  title: {
+    color: colors.text,
+    fontSize: typography.hero,
+    fontWeight: "700",
+    letterSpacing: -1,
+    lineHeight: 34,
+    marginTop: spacing.sm,
+  },
   footer: {
     position: "absolute",
     right: 0,
@@ -506,8 +540,10 @@ export const styles = StyleSheet.create({
     borderTopColor: colors.border,
     borderTopWidth: 1,
     backgroundColor: colors.surface,
-    padding: 20,
+    padding: spacing.xl,
   },
+  loadingRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, marginTop: spacing.sm },
+  helperShrink: { color: colors.muted, fontSize: typography.small, lineHeight: 20, flexShrink: 1 },
   input: {
     borderColor: colors.border,
     borderRadius: 14,
@@ -522,17 +558,6 @@ export const styles = StyleSheet.create({
   status: { color: colors.muted, fontSize: typography.small, lineHeight: 20 },
   error: { color: colors.red },
   success: { color: colors.green },
-  button: {
-    alignItems: "center",
-    backgroundColor: colors.orangeDeep,
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    paddingVertical: 15,
-  },
-  secondaryButton: { backgroundColor: "rgba(103, 64, 34, 0.08)", borderColor: colors.border, borderWidth: 1 },
-  disabledButton: { opacity: 0.55 },
-  buttonText: { color: colors.white, fontSize: 15, fontWeight: "700" },
-  secondaryButtonText: { color: colors.text },
   choice: {
     alignItems: "center",
     borderColor: colors.border,
@@ -574,3 +599,7 @@ export const styles = StyleSheet.create({
   tracePoint: { position: "absolute", width: 10, height: 10, borderRadius: 999, backgroundColor: colors.orangeDeep },
   traceText: { color: colors.muted, fontSize: typography.small, fontWeight: "700", padding: 14 },
 });
+
+export default function OnboardSharedRoutePlaceholder() {
+  return null;
+}

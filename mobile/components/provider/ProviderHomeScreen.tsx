@@ -1,9 +1,8 @@
 import {
   ProviderActionPlan,
   ProviderDashboard,
-  ProviderMetric,
+  ProviderHomeSummary,
   ProviderRows,
-  ProviderSectionBrief,
   formatKes,
   formatKwh,
   formatPercent,
@@ -12,35 +11,27 @@ import {
 export function ProviderHomeScreen() {
   return (
     <ProviderDashboard
-      section="Home"
-      title="Provider Asset Desk"
-      subtitle="A clean desk view of the active provider asset: payout, sold solar, and current operating posture."
-      actions={["Open asset desk", "Review payout", "Check posture"]}
+      section="Discover"
+      title="Discover"
+      subtitle="Named buildings, array signals, and payout context before you commit capacity."
+      actions={["Status", "Generation", "Revenue", "Gates"]}
       renderPanels={(building) => {
         const view = building.roleViews.provider;
 
         return (
           <>
-            <ProviderSectionBrief
-              section="Home"
-              title="One building, one operating snapshot."
-              body="The home screen stays high level so providers can see whether the asset is monetizing and ready for attention."
-              building={building}
-            />
-            <ProviderMetric
-              label="Projected payout"
-              value={formatKes(view.monthlyPayoutKes)}
-              detail="Monthly payout after sold provider shares are removed."
-            />
+            <ProviderHomeSummary building={building} />
             <ProviderRows
-              title="Desk summary"
+              title="Desk snapshot"
+              eyebrow="Discover"
               rows={[
-                { label: "Monetized solar", value: formatKwh(view.monetizedKwh), note: "Prepaid solar consumed by residents.", tone: "good" },
-                { label: "Retained stake", value: formatPercent(view.retainedOwnership), note: "Current provider-side cashflow right." },
-                { label: "Stage", value: building.project.stage, note: "Current provider operating posture." },
+                { label: "Sold solar", value: formatKwh(view.monetizedKwh), tone: "good" },
+                { label: "Payout", value: formatKes(view.monthlyPayoutKes), tone: "good" },
+                { label: "Retained", value: formatPercent(view.retainedOwnership) },
+                { label: "Stage", value: building.project.stage },
               ]}
             />
-            <ProviderActionPlan section="Home" />
+            <ProviderActionPlan section="Discover" />
           </>
         );
       }}

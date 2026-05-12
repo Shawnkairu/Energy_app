@@ -1,5 +1,3 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { ProviderHomeScreen } from "../../components/provider/ProviderScreens";
 
-export default function ProviderDiscoverScreen() {
-  return <ContributorIaScreen role="provider" section="discover" />;
-}
+export default ProviderHomeScreen;

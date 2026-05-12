@@ -1,6 +1,5 @@
 import { Platform, StyleSheet, View } from "react-native";
 import { Tabs } from "expo-router";
-import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@emappa/ui";
 import { HomeownerGuard } from "../../components/homeowner/HomeownerScreens";
@@ -12,39 +11,71 @@ const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
   profile: "person-circle-outline",
 };
 
+const tabHints: Record<string, string> = {
+  home: "Roof readiness, status, and shortcuts",
+  energy: "Generation, home use, and roof flow context",
+  wallet: "Income, prepaid balance, and transactions",
+  profile: "Account, permissions, and sign out",
+};
+
 function TabBarChromeBackground() {
-  if (Platform.OS === "ios") {
-    return <BlurView intensity={26} tint="light" style={StyleSheet.absoluteFill} />;
+  return <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />;
+}
+
+function tabTitle(routeName: string): string {
+  switch (routeName) {
+    case "home":
+      return "Home";
+    case "energy":
+      return "Energy";
+    case "wallet":
+      return "Wallet";
+    case "profile":
+      return "Profile";
+    default:
+      return routeName;
   }
-  return <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceElevated }]} />;
 }
 
 export default function HomeownerLayout() {
   return (
     <HomeownerGuard>
       <Tabs
-        screenOptions={({ route }) => ({
-          title: route.name === "home" ? "Home" : route.name === "energy" ? "Energy" : route.name === "wallet" ? "Wallet" : "Profile",
-          headerStyle: { backgroundColor: colors.surface },
-          headerShadowVisible: false,
-          headerTintColor: colors.text,
-          headerTitleStyle: { fontWeight: "600", fontSize: 15, color: colors.text },
-          tabBarStyle: {
-            backgroundColor: Platform.OS === "ios" ? "transparent" : colors.surfaceElevated,
-            borderTopColor: colors.border,
-            borderTopWidth: StyleSheet.hairlineWidth,
-            height: 64,
-            paddingTop: 8,
-            paddingBottom: 10,
-          },
-          tabBarBackground: TabBarChromeBackground,
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: colors.orangeDeep,
-          tabBarInactiveTintColor: colors.dim,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name={icons[route.name] ?? "ellipse-outline"} color={color} size={Math.max(16, size - 6)} />
-          ),
-        })}
+        screenOptions={({ route }) => {
+          const name = route.name;
+          const title = tabTitle(name);
+          const hint = tabHints[name];
+          return {
+            title,
+            headerStyle: { backgroundColor: colors.surface },
+            headerShadowVisible: false,
+            headerTintColor: colors.text,
+            headerTitleStyle: { fontWeight: "600", fontSize: 17, color: colors.text },
+            sceneContainerStyle: { backgroundColor: colors.surface },
+            tabBarStyle: {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              height: 70,
+              paddingTop: 7,
+              paddingBottom: Platform.OS === "ios" ? 8 : Platform.OS === "android" ? 6 : 8,
+            },
+            tabBarBackground: TabBarChromeBackground,
+            tabBarShowLabel: true,
+            tabBarHideOnKeyboard: true,
+            tabBarActiveTintColor: colors.orangeDeep,
+            tabBarInactiveTintColor: colors.dim,
+            tabBarAccessibilityLabel: title,
+            ...(hint ? { tabBarAccessibilityHint: hint } : {}),
+            tabBarLabel: title,
+            tabBarLabelStyle: { fontWeight: "700", fontSize: 10, marginTop: 2, letterSpacing: 0.2 },
+            tabBarIcon: ({ color, size }) => (
+              <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.tabIconWrap}>
+                <Ionicons name={icons[name] ?? "ellipse-outline"} color={color} size={Math.max(16, size - 8)} />
+              </View>
+            ),
+          };
+        }}
       >
         <Tabs.Screen name="home" />
         <Tabs.Screen name="energy" />
@@ -55,3 +86,7 @@ export default function HomeownerLayout() {
     </HomeownerGuard>
   );
 }
+
+const styles = StyleSheet.create({
+  tabIconWrap: { alignItems: "center", justifyContent: "center" },
+});

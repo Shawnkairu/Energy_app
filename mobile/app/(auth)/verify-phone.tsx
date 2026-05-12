@@ -1,7 +1,17 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import { Label, PrimaryButton, colors, typography } from "@emappa/ui";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { Label, PrimaryButton, colors, spacing, typography } from "@emappa/ui";
 import { useAuth } from "../../components/AuthContext";
 import { useApi } from "../../lib/api";
 
@@ -15,6 +25,14 @@ export default function VerifyPhone() {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("Enter the 6-digit code from your email.");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function updateCode(value: string) {
+    const digits = value.replace(/\D/g, "").slice(0, 6);
+    setCode(digits);
+    if (digits.length === 6) {
+      Keyboard.dismiss();
+    }
+  }
 
   async function verifyEmailOtp() {
     const normalizedEmail = email?.trim().toLowerCase();
@@ -61,39 +79,54 @@ export default function VerifyPhone() {
   }
 
   return (
-    <View style={styles.root}>
-      <Label>Verify</Label>
-      <Text style={styles.pageTitle}>Confirm it's you</Text>
-      <Text style={styles.step}>Step 2 of 3</Text>
-      <Text style={styles.lede}>
-        We sent a 6-digit code to{" "}
-        <Text style={{ color: colors.text, fontWeight: "600" }}>{email ?? "your email"}</Text>
-      </Text>
-      <Label>OTP code</Label>
-      <TextInput
-        value={code}
-        onChangeText={setCode}
-        keyboardType="number-pad"
-        maxLength={6}
-        placeholder="000000"
-        placeholderTextColor={colors.dim}
-        style={styles.input}
-        accessibilityLabel="Six digit OTP code"
-      />
-      <Text style={styles.note}>{status}</Text>
-      <Text style={styles.resend} onPress={resendCode}>
-        {isSubmitting ? "Working..." : "Resend code"}
-      </Text>
-      <View style={{ flex: 1, minHeight: 12 }} />
-      <PrimaryButton onPress={verifyEmailOtp}>{isSubmitting ? "Verifying..." : "Verify and continue"}</PrimaryButton>
-    </View>
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={24}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
+        <Label>Verify</Label>
+        <Text style={styles.pageTitle}>Confirm it's you</Text>
+        <Text style={styles.step}>Step 2 of 3</Text>
+        <Text style={styles.lede}>
+          We sent a 6-digit code to{" "}
+          <Text style={{ color: colors.text, fontWeight: "600" }}>{email ?? "your email"}</Text>
+        </Text>
+        <Label>OTP code</Label>
+        <TextInput
+          value={code}
+          onChangeText={updateCode}
+          keyboardType="number-pad"
+          maxLength={6}
+          placeholder="000000"
+          placeholderTextColor={colors.dim}
+          style={styles.input}
+          accessibilityLabel="Six digit OTP code"
+        />
+        <Text style={styles.note}>{status}</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Resend verification code"
+          accessibilityState={{ disabled: isSubmitting }}
+          disabled={isSubmitting}
+          onPress={resendCode}
+          hitSlop={8}
+        >
+          <Text style={[styles.resend, isSubmitting && styles.resendMuted]}>{isSubmitting ? "Working..." : "Resend code"}</Text>
+        </Pressable>
+        <View style={styles.spacer} />
+        <PrimaryButton
+          onPress={verifyEmailOtp}
+          disabled={isSubmitting}
+          accessibilityLabel={isSubmitting ? "Verifying code" : "Verify and continue"}
+        >
+          {isSubmitting ? "Verifying..." : "Verify and continue"}
+        </PrimaryButton>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 function roleHomeHref(role: string) {
   const routes: Record<string, string> = {
     resident: "/(resident)/home",
-    homeowner: "/(building-owner)/home",
+    homeowner: "/(homeowner)/home",
     building_owner: "/(building-owner)/home",
     provider: "/(provider)/home",
     financier: "/(financier)/portfolio",
@@ -105,7 +138,8 @@ function roleHomeHref(role: string) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 28 },
+  root: { flex: 1 },
+  content: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.xl },
   pageTitle: {
     color: colors.text,
     fontSize: typography.title,
@@ -128,5 +162,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   note: { color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 10 },
-  resend: { color: colors.dim, fontSize: typography.micro, marginTop: 24 },
+  resend: { color: colors.orangeDeep, fontSize: typography.small, fontWeight: "600", marginTop: 24 },
+  resendMuted: { color: colors.dim, fontWeight: "400" },
+  spacer: { flex: 1, minHeight: 24 },
 });

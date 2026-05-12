@@ -1,24 +1,70 @@
-import { PortalKpiBar, PortalPanel, PortalTable } from "../../../components/PortalPrimitives";
+import { PortalKpiBar, PortalLedger, PortalPanel, PortalTable, PortalWorkflow } from "../../../components/PortalPrimitives";
 import type { PortalScreenProps } from "../../../portal/types";
 
-export default function ElectricianCompliance({ project, data }: PortalScreenProps) {
+const daysUntil = (isoDate: string) => Math.ceil((new Date(isoDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+const dateLabel = (isoDate: string) => new Date(isoDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+
+export default function ElectricianCompliance({ project, user, data }: PortalScreenProps) {
   const certifications = data.certifications.length ? data.certifications : [
-    { name: "Solar PV Installation", issuer: "EPRA", expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 180).toISOString(), status: project.roleViews.installer.certified ? "valid" : "expiring" },
+    {
+      id: "solar-pv",
+      electricianUserId: user.id,
+      name: "Solar PV Installation",
+      issuer: "EPRA",
+      docUrl: "",
+      issuedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 180).toISOString(),
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 180).toISOString(),
+      status: project.roleViews.installer.certified ? "valid" as const : "expiring" as const,
+    },
+    {
+      id: "site-safety",
+      electricianUserId: user.id,
+      name: "Site Safety Induction",
+      issuer: "Emappa field ops",
+      docUrl: "",
+      issuedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(),
+      status: "valid" as const,
+    },
   ];
+  const validCerts = certifications.filter((cert) => cert.status === "valid").length;
+  const attentionCerts = certifications.filter((cert) => cert.status !== "valid");
+  const checklistTotal = Math.max(project.roleViews.installer.checklistTotal, 1);
+  const checklistPct = Math.round((project.roleViews.installer.checklistComplete / checklistTotal) * 100);
 
   return (
     <>
       <PortalKpiBar items={[
-        { label: "Active certs", value: String(certifications.length), detail: "uploaded" },
-        { label: "Checklist", value: `${project.roleViews.installer.checklistComplete}/${project.roleViews.installer.checklistTotal}`, detail: "complete" },
-        { label: "Alerts", value: certifications.some((cert) => cert.status !== "valid") ? "1" : "0", detail: "expiry" },
+        { label: "Valid certs", value: `${validCerts}/${certifications.length}`, detail: "uploaded" },
+        { label: "Checklist", value: `${checklistPct}%`, detail: `${project.roleViews.installer.checklistComplete}/${project.roleViews.installer.checklistTotal} complete` },
+        { label: "Alerts", value: String(attentionCerts.length), detail: "expiry watch" },
       ]} />
-      <PortalPanel eyebrow="Compliance" title="Certifications and training">
-        <PortalTable
-          columns={["Certification", "Issuer", "Expiry", "Status"]}
-          rows={certifications.map((cert) => [cert.name, cert.issuer, new Date(cert.expiresAt).toLocaleDateString(), cert.status])}
-        />
-      </PortalPanel>
+      <div className="portal-two-col">
+        <PortalPanel eyebrow="Compliance" title="Certifications and training">
+          <PortalTable
+            columns={["Certification", "Issuer", "Expiry", "Status"]}
+            rows={certifications.map((cert) => [
+              cert.name,
+              cert.issuer,
+              dateLabel(cert.expiresAt),
+              cert.status,
+            ])}
+          />
+        </PortalPanel>
+        <PortalPanel eyebrow="Readiness" title={project.roleViews.installer.certified ? "Cleared for field work" : "Certification needed"}>
+          <PortalWorkflow
+            steps={[
+              { label: "Identity and contact", detail: "Profile is visible to project ops.", status: "done" },
+              { label: "Certification review", detail: attentionCerts.length ? "Refresh expiring credentials before dispatch." : "Lead electrician credential accepted.", status: attentionCerts.length ? "pending" : "done" },
+              { label: "Install checklist", detail: `${project.roleViews.installer.checklistComplete} of ${project.roleViews.installer.checklistTotal} gates complete.`, status: checklistPct === 100 ? "done" : "pending" },
+            ]}
+          />
+          <PortalLedger rows={[
+            { label: "Nearest expiry", value: certifications.map((cert) => daysUntil(cert.expiresAt)).sort((a, b) => a - b)[0] + " days", note: "auto-sorted" },
+            { label: "Dispatch state", value: project.roleViews.installer.certified ? "Eligible" : "Hold", note: "compliance gate" },
+          ]} />
+        </PortalPanel>
+      </div>
     </>
   );
 }

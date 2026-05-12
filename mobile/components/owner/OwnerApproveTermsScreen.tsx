@@ -1,11 +1,10 @@
-import { Text, View } from "react-native";
-import { GlassCard, Label, PrimaryButton, colors, typography } from "@emappa/ui";
-import { OwnerBriefCard, OwnerScreenShell, OwnerWorkflowCard } from "./OwnerShared";
+import { View } from "react-native";
+import { PrimaryButton } from "@emappa/ui";
+import { OwnerBriefCard, OwnerIntroCard, OwnerScreenShell, OwnerWorkflowCard } from "./OwnerShared";
 
 export function OwnerApproveTermsScreen() {
   return (
     <OwnerScreenShell
-      showHandoffRibbon
       section="Terms"
       title="Approve Building Terms"
       subtitle="A single-step owner approval before deployment moves. Provider, financier, and royalty terms are bundled here."
@@ -20,13 +19,11 @@ export function OwnerApproveTermsScreen() {
     >
       {() => (
         <>
-          <GlassCard>
-            <Label>What you are approving</Label>
-            <Text style={{ color: colors.text, fontSize: typography.title, fontWeight: "600", marginTop: 6 }}>Owner has the last gate before money moves.</Text>
-            <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 8 }}>
-              Each term is bundled with its DRS dependency so it is clear what would be unlocked by approval.
-            </Text>
-          </GlassCard>
+          <OwnerIntroCard
+            eyebrow="What you are approving"
+            title="Owner holds the gate before capital moves."
+            detail="Each term is bundled with its DRS dependency so it is clear what would be unlocked by approval."
+          />
           <OwnerBriefCard
             eyebrow="Terms summary"
             title="Three things to confirm."
@@ -51,16 +48,15 @@ export function OwnerApproveTermsScreen() {
               { label: "Supplier scheduling", detail: "Installer can be paired with a locked BOM and dispatch window.", status: "unlocks", tone: "good" },
             ]}
           />
-          <GlassCard>
-            <Label>Signature</Label>
-            <Text style={{ color: colors.text, fontSize: typography.heading, fontWeight: "600", marginTop: 6 }}>One owner, one signature</Text>
-            <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8 }}>
-              The signer must be the listed building owner. e.mappa keeps a versioned record of approval and any later change request.
-            </Text>
-            <View style={{ marginTop: 14, alignSelf: "stretch" }}>
+          <OwnerIntroCard
+            eyebrow="Signature"
+            title="One owner, one signature"
+            detail="The signer must be the listed building owner. e.mappa keeps a versioned record of approval and any later change request."
+          >
+            <View style={{ alignSelf: "stretch" }}>
               <PrimaryButton>Approve all 3 terms</PrimaryButton>
             </View>
-          </GlassCard>
+          </OwnerIntroCard>
         </>
       )}
     </OwnerScreenShell>

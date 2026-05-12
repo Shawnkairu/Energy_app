@@ -1,5 +1,5 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { FinancierPortfolioScreen as FinancierPortfolioUx } from "../../components/financier/FinancierScreens";
 
 export default function FinancierPortfolioScreen() {
-  return <ContributorIaScreen role="financier" section="portfolio" />;
+  return <FinancierPortfolioUx />;
 }

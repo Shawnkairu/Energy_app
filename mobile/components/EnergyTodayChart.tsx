@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "@emappa/ui";
+import { colors, shadows } from "@emappa/ui";
 
 export interface EnergyTodayPoint {
   label: string;
@@ -34,16 +34,19 @@ export function EnergyTodayChart({ title = "Energy today", points = DEFAULT_POIN
           </View>
         ))}
       </View>
-      <Text style={styles.caption}>Values shown in {unit}; zero values render as placeholders.</Text>
+      <Text style={styles.caption}>Values shown in {unit}; updated from the active building feed.</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    ...shadows.card,
     gap: 14,
-    borderRadius: 22,
-    backgroundColor: colors.surface,
+    borderRadius: 26,
+    borderColor: colors.border,
+    borderWidth: 1,
+    backgroundColor: colors.white,
     padding: 18,
   },
   title: {
@@ -67,7 +70,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 30,
     borderRadius: 999,
-    backgroundColor: "rgba(216, 119, 56, 0.28)",
+    backgroundColor: colors.orangeDeep,
   },
   axisLabel: {
     color: colors.muted,

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Redirect } from "expo-router";
 import type { StakeholderRole } from "@emappa/shared";
 import { AppMark, colors, Surface } from "@emappa/ui";
@@ -22,12 +22,10 @@ export function RoleGuard({ role, children }: { role: StakeholderRole; children:
   if (isHydrating) {
     return (
       <Surface>
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <View style={styles.hydrateWrap}>
           <AppMark size={48} />
-          <Text style={{ color: colors.text, fontSize: 22, fontWeight: "600", letterSpacing: -0.6, marginTop: 18 }}>
-            Opening your workspace
-          </Text>
-          <Text style={{ color: colors.muted, marginTop: 8 }}>Checking your selected role...</Text>
+          <Text style={styles.hydrateTitle}>Opening your workspace</Text>
+          <Text style={styles.hydrateBody}>Checking your selected role…</Text>
         </View>
       </Surface>
     );
@@ -41,3 +39,27 @@ export function RoleGuard({ role, children }: { role: StakeholderRole; children:
 
   return children;
 }
+
+const styles = StyleSheet.create({
+  hydrateWrap: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 28,
+  },
+  hydrateTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "600",
+    letterSpacing: -0.6,
+    marginTop: 18,
+    textAlign: "center",
+  },
+  hydrateBody: {
+    color: colors.muted,
+    marginTop: 8,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+});

@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TextInput, View } from "react-native";
-import { AppMark, colors, GlassCard, Label, PrimaryButton, typography } from "@emappa/ui";
-import { useApi } from "../../lib/api";
+import { AppMark, colors, GlassCard, Label, PrimaryButton, spacing, typography } from "@emappa/ui";
+import { __API_BASE_URL, useApi } from "../../lib/api";
 
 export default function Login() {
   const router = useRouter();
   const api = useApi();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("Enter the email tied to your e.mappa invite. We will send a one-time code.");
+  const [status, setStatus] = useState("Use the email from your invite. We will send a one-time code.");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function requestEmailOtp() {
@@ -22,8 +22,9 @@ export default function Login() {
     try {
       await api.requestOtp(normalizedEmail);
       router.push({ pathname: "/(auth)/verify-phone", params: { email: normalizedEmail } });
-    } catch {
-      setStatus("We could not send a code. Check your API connection and try again.");
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : String(error);
+      setStatus(`Could not send code: ${detail} (API: ${__API_BASE_URL ?? "none"})`);
     } finally {
       setIsSubmitting(false);
     }
@@ -35,9 +36,7 @@ export default function Login() {
         <AppMark size={50} />
       </View>
       <Text style={styles.headline}>Welcome back</Text>
-      <Text style={styles.lede}>
-        Email OTP keeps each stakeholder workspace tied to an invited account and named building context.
-      </Text>
+      <Text style={styles.lede}>Email one-time codes keep workspaces tied to your invite and building context.</Text>
       <GlassCard>
         <Label>Email</Label>
         <TextInput
@@ -53,13 +52,19 @@ export default function Login() {
         />
         <Text style={styles.note}>{status}</Text>
       </GlassCard>
-      <PrimaryButton onPress={requestEmailOtp}>{isSubmitting ? "Sending..." : "Send code"}</PrimaryButton>
+      <PrimaryButton
+        onPress={requestEmailOtp}
+        disabled={isSubmitting}
+        accessibilityLabel={isSubmitting ? "Sending code" : "Send verification code"}
+      >
+        {isSubmitting ? "Sending..." : "Send code"}
+      </PrimaryButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  root: { flex: 1, paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
   headline: {
     color: colors.text,
     fontSize: 34,

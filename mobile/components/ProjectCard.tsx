@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "@emappa/ui";
+import { colors, shadows } from "@emappa/ui";
 
 export interface ProjectCardProps {
   title?: string;
@@ -37,11 +37,12 @@ export function ProjectCard({
 
 const styles = StyleSheet.create({
   card: {
+    ...shadows.card,
     gap: 16,
     borderRadius: 22,
     borderWidth: 1,
     borderColor: "rgba(103, 64, 34, 0.12)",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.white,
     padding: 18,
   },
   header: {

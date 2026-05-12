@@ -1,13 +1,11 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View, type DimensionValue } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import type { ProjectedBuilding } from "@emappa/shared";
 import { GlassCard, Label, PaletteCard, Pill, colors, officialPalette, radius, spacing, typography } from "@emappa/ui";
 import { formatKes, formatKwh, formatPercent, residentView } from "./residentUtils";
 
 export { formatKes, formatKwh, formatPercent, residentView };
 
-/** Inset panel: sits on PaletteCard/GlassCard gradient without painting flat white. */
+/** Inset panel: quiet white panel inside cards. */
 function InsetWell({
   children,
   padding = 14,
@@ -27,14 +25,9 @@ function InsetWell({
         borderWidth: StyleSheet.hairlineWidth * 2,
         borderColor: colors.border,
         overflow: "hidden",
+        backgroundColor: colors.white,
       }}
     >
-      <LinearGradient
-        colors={[colors.panelSoft, `${officialPalette.furCream}30`]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
       <View style={{ padding }}>{children}</View>
     </View>
   );
@@ -127,7 +120,7 @@ export function ResidentMiniGrid({
           key={item.label}
           borderRadius={24}
           padding={14}
-          style={{ width: "48%", minHeight: 118 }}
+          style={{ flexBasis: "48%", flexGrow: 1, maxWidth: "48%", minHeight: 118, minWidth: 0 }}
         >
           <View
             style={{
@@ -499,12 +492,6 @@ export function ResidentEnergyFlowGraphic({
             overflow: "hidden",
           }}
         >
-          <LinearGradient
-            colors={[colors.sky, `${officialPalette.plushCaramel}44`]}
-            start={{ x: 0.2, y: 0 }}
-            end={{ x: 0.9, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-          />
           <View style={{ alignItems: "center" }}>
             <Text style={{ color: colors.text, fontSize: 26, fontWeight: "600", letterSpacing: -0.65 }}>{formatPercent(coverage)}</Text>
             <Text style={{ color: colors.muted, fontSize: typography.micro, fontWeight: "600", marginTop: 2 }}>solar cover</Text>

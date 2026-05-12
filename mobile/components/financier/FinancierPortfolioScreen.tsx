@@ -1,38 +1,39 @@
-import { BuildingPulse, KillSwitchBanner, SettlementWaterfall } from "../design-handoff";
 import {
+  BuildingSnapshotCard,
+  CashflowWaterfallCard,
   DealPipelineCard,
-  FinancierRecoveryBandsCard,
   FinancierScreenShell,
+  RecoveryBandCard,
   StatusRail,
-  formatKes,
+  formatKesShort,
 } from "./FinancierShared";
 
 export function FinancierPortfolioScreen() {
   return (
     <FinancierScreenShell
       section="Portfolio"
-      title="Recovery Portfolio"
-      subtitle="Named exposure and projected recovery bands, kept separate from deal-room diligence."
-      actions={["Track exposure", "Recovery ranges", "Review deals"]}
+      title="Positions"
+      subtitle="Exposure, recovery band, and named deals."
+      actions={["Exposure", "Range", "Deals"]}
       hero={({ primary }) => ({
         label: "Total committed",
-        value: formatKes(primary.roleViews.financier.committedCapitalKes),
-        sub: `${formatKes(primary.roleViews.financier.monthlyRecoveryKes)} projected monthly recovery from the active building.`,
+        value: formatKesShort(primary.roleViews.financier.committedCapitalKes),
+        sub: `${formatKesShort(primary.roleViews.financier.monthlyRecoveryKes)} projected monthly recovery.`,
       })}
     >
       {({ primary, projects }) => (
         <>
-          <BuildingPulse role="financier" building={primary} />
-          <KillSwitchBanner building={primary} />
+          <BuildingSnapshotCard building={primary} />
           <StatusRail
             items={[
-              { label: "Exposure", value: formatKes(primary.roleViews.financier.committedCapitalKes), note: "Committed to primary named deal.", tone: "neutral" },
-              { label: "Recovery", value: formatKes(primary.roleViews.financier.monthlyRecoveryKes), note: "Projected monthly waterfall.", tone: "good" },
+              { label: "Exposure", value: formatKesShort(primary.roleViews.financier.committedCapitalKes), note: "Named deal.", tone: "neutral" },
+              { label: "Recovery", value: formatKesShort(primary.roleViews.financier.monthlyRecoveryKes), note: "Projected monthly.", tone: "good" },
+              { label: "Open", value: formatKesShort(primary.roleViews.financier.remainingCapitalKes), note: "Unfunded.", tone: "neutral" },
             ]}
           />
           <DealPipelineCard projects={projects} />
-          <SettlementWaterfall role="financier" building={primary} />
-          <FinancierRecoveryBandsCard building={primary} variant="portfolio" />
+          <CashflowWaterfallCard building={primary} />
+          <RecoveryBandCard building={primary} />
         </>
       )}
     </FinancierScreenShell>

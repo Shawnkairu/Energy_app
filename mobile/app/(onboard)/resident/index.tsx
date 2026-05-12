@@ -44,7 +44,15 @@ export default function ResidentInviteScreen() {
     <OnboardShell
       eyebrow="Resident"
       title="Join your building"
-      footer={<ActionButton onPress={join} disabled={isJoining}>{isJoining ? "Checking..." : "Continue"}</ActionButton>}
+      footer={
+        <ActionButton
+          onPress={join}
+          disabled={isJoining}
+          accessibilityLabel={isJoining ? "Joining building" : "Continue to confirm building"}
+        >
+          {isJoining ? "Checking..." : "Continue"}
+        </ActionButton>
+      }
     >
       <GlassCard>
         <TextField label="Invite code or QR code text" value={code} onChangeText={setCode} placeholder="NYERI-RIDGE-A" />

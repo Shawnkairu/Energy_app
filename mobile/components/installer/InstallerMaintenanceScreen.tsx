@@ -14,14 +14,15 @@ import {
 export function InstallerMaintenanceScreen() {
   return (
     <InstallerScaffold
-      section="Maintenance"
-      title="Service Trust"
-      subtitle="A post-live trust loop for restoring telemetry, readings, and closeout proof when service issues appear."
-      actions={["Open tickets", "Restore data", "Close with proof"]}
+      section="Service"
+      title="Closeout"
+      subtitle="Tickets, telemetry, pay."
+      actions={["Service ticket", "Capture proof", "Profile"]}
       hero={(building) => ({
         label: "Tickets",
         value: `${building.roleViews.installer.maintenanceTickets}`,
-        sub: "Open post-live service items",
+        sub: "Open service items",
+        tone: building.roleViews.installer.maintenanceTickets === 0 ? "good" : "warn",
       })}
     >
       {(building) => {
@@ -32,25 +33,25 @@ export function InstallerMaintenanceScreen() {
           <>
             <InstallerBrief
               eyebrow="Post-live"
-              title="Maintenance protects settlement data trust."
-              body="Maintenance is not a generic support queue. It is the field loop that keeps monitoring and readings credible after go-live."
+              title="Keep telemetry trusted."
+              body="Repair, prove, close."
               rows={[
                 {
                   label: "Monitoring",
                   value: drs.monitoringConnectivityResolved ? "Online" : "Blocked",
-                  note: "Unresolved monitoring connectivity blocks go-live and weakens live operations.",
+                  note: "Heartbeat.",
                   tone: drs.monitoringConnectivityResolved ? "good" : "bad",
                 },
                 {
-                  label: "Settlement data",
+                  label: "Telemetry",
                   value: drs.settlementDataTrusted ? "Trusted" : "Paused",
-                  note: "Untrusted settlement data pauses activation until readings are reliable.",
+                  note: "Reliable readings.",
                   tone: drs.settlementDataTrusted ? "good" : "bad",
                 },
                 {
                   label: "Tickets",
                   value: view.maintenanceTickets === 0 ? "Clear" : `${view.maintenanceTickets} open`,
-                  note: "Post-live service work stays attached to the building record.",
+                  note: "Proof before close.",
                   tone: view.maintenanceTickets === 0 ? "good" : "warn",
                 },
               ]}
@@ -61,14 +62,14 @@ export function InstallerMaintenanceScreen() {
                 <InstallerMetricCard
                   label="Telemetry"
                   value={drs.monitoringConnectivityResolved ? "Live" : "Restore"}
-                  detail="Monitoring must remain online for trusted settlement."
+                  detail="Monitoring."
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <InstallerMetricCard
-                  label="Data trust"
+                  label="Data"
                   value={drs.settlementDataTrusted ? "Trusted" : "Paused"}
-                  detail="Readings must support monetized solar allocation."
+                  detail="Settlement input."
                 />
               </View>
             </View>
@@ -76,7 +77,7 @@ export function InstallerMaintenanceScreen() {
             <GlassCard>
               <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 14 }}>
                 <View style={{ flex: 1 }}>
-                  <Label>Service ledger</Label>
+                  <Label>Ledger</Label>
                   <Text
                     style={{
                       color: colors.text,
@@ -87,10 +88,10 @@ export function InstallerMaintenanceScreen() {
                       lineHeight: typography.title + 4,
                     }}
                   >
-                    Trust work after activation
+                    Service proof
                   </Text>
                   <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 7 }}>
-                    Each ticket resolves toward monitored data the settlement engine can trust.
+                    Every ticket needs proof.
                   </Text>
                 </View>
                 <Pill tone={view.maintenanceTickets === 0 ? "good" : "warn"}>
@@ -99,9 +100,9 @@ export function InstallerMaintenanceScreen() {
               </View>
               <View style={{ gap: 10, marginTop: 16 }}>
                 {[
-                  ["Telemetry", drs.monitoringConnectivityResolved ? "Live" : "Restore feed", "Monitoring heartbeat and inverter feed."],
-                  ["Reading trust", drs.settlementDataTrusted ? "Trusted" : "Recheck", "Fresh readings when settlement confidence drops."],
-                  ["Closeout", view.maintenanceTickets === 0 ? "No open ticket" : "Proof required", "Repair notes or photos before ops closes the item."],
+                  ["Telemetry", drs.monitoringConnectivityResolved ? "Live" : "Restore", "Heartbeat + inverter feed."],
+                  ["Readings", drs.settlementDataTrusted ? "Trusted" : "Recheck", "Fresh values."],
+                  ["Closeout", view.maintenanceTickets === 0 ? "Clear" : "Proof required", "Notes or photos."],
                 ].map(([label, value, note]) => (
                   <InstallerFieldRow key={label}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>

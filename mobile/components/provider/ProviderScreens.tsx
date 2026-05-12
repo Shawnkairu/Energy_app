@@ -1,7 +1,10 @@
 export { ProviderHomeScreen } from "./ProviderHomeScreen";
 export { ProviderAssetsScreen } from "./ProviderAssetsScreen";
+export { ProviderGenerationScreen } from "./ProviderGenerationScreen";
 export { ProviderPerformanceScreen } from "./ProviderPerformanceScreen";
+export { ProviderWalletScreen } from "./ProviderWalletScreen";
 export { ProviderSharesScreen } from "./ProviderSharesScreen";
 export { ProviderEarningsScreen } from "./ProviderEarningsScreen";
 export { ProviderMaintenanceScreen } from "./ProviderMaintenanceScreen";
 export { ProviderDeploymentScreen } from "./ProviderDeploymentScreen";
+export { ProviderProfileScreen } from "./ProviderProfileScreen";

@@ -10,7 +10,7 @@ export default function OnboardLayout() {
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.text,
         headerTitleStyle: { color: colors.text, fontSize: 17, fontWeight: "700" },
-        contentStyle: { backgroundColor: "transparent" },
+        contentStyle: { backgroundColor: colors.surface },
       }}
     >
       <Stack.Screen name="welcome" options={{ title: "Welcome", headerShown: false }} />

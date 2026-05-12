@@ -26,10 +26,11 @@ export default function ResidentConfirmBuildingScreen() {
                 params: { buildingId },
               })
             }
+            accessibilityLabel="Confirm this is my building"
           >
             This is my building
           </ActionButton>
-          <ActionButton onPress={() => router.replace("/(onboard)/resident")} variant="secondary">
+          <ActionButton onPress={() => router.replace("/(onboard)/resident")} variant="secondary" accessibilityLabel="Go back, wrong building">
             Wrong building
           </ActionButton>
         </>

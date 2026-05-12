@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 export function PortalKpiBar({
   items,
@@ -6,7 +6,11 @@ export function PortalKpiBar({
   items: Array<{ label: string; value: string; detail?: string }>;
 }) {
   return (
-    <section className="portal-kpi-bar" aria-label="Key metrics">
+    <section
+      className="portal-kpi-bar"
+      aria-label="Key metrics"
+      style={{ "--portal-kpi-count": items.length } as CSSProperties}
+    >
       {items.map((item) => (
         <article key={item.label}>
           <span>{item.label}</span>
@@ -32,7 +36,7 @@ export function PortalPanel({
   className?: string;
 }) {
   return (
-    <section id={id} className={`portal-panel ${className}`}>
+    <section id={id} className={["portal-panel", className].filter(Boolean).join(" ")}>
       {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
       {title ? <h2>{title}</h2> : null}
       {children}
@@ -88,7 +92,11 @@ export function PortalTable({
   rows: string[][];
 }) {
   return (
-    <div className="portal-table" role="table">
+    <div
+      className="portal-table"
+      role="table"
+      style={{ "--portal-table-columns": columns.length } as CSSProperties}
+    >
       <div className="portal-table-row header" role="row">
         {columns.map((column) => <span key={column} role="columnheader">{column}</span>)}
       </div>

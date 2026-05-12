@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { getRoleHome } from "@emappa/api-client";
 import type { ProjectedBuilding, StakeholderRole } from "@emappa/shared";
-import { AppMark, colors, PaletteCard, Pill, Surface, typography } from "@emappa/ui";
+import { AppMark, colors, PaletteCard, Pill, shadows, Surface, typography } from "@emappa/ui";
 import { BuildingPulse, KillSwitchBanner } from "../design-handoff";
 
 export function RoleDashboardScaffold({
@@ -167,6 +167,8 @@ function ActionRail({ role, actions }: { role: StakeholderRole; actions: string[
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 18 }}>
       {actions.map((action, index) => (
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={action}
           key={action}
           onPress={() => {
             const target = getActionTarget(role, action);
@@ -174,15 +176,16 @@ function ActionRail({ role, actions }: { role: StakeholderRole; actions: string[
           }}
           style={{
             borderRadius: 999,
-            backgroundColor: colors.panel,
+            backgroundColor: index === 0 ? colors.orangeDeep : colors.white,
             borderColor: index === 0 ? colors.orangeDeep : colors.border,
             borderWidth: 1,
             paddingHorizontal: 14,
             paddingVertical: 9,
             marginRight: 8,
+            ...shadows.soft,
           }}
         >
-          <Text style={{ color: index === 0 ? colors.orangeDeep : colors.text, fontSize: 12, fontWeight: "500" }}>{action}</Text>
+          <Text style={{ color: index === 0 ? colors.white : colors.text, fontSize: 12, fontWeight: "700" }}>{action}</Text>
         </Pressable>
       ))}
     </ScrollView>

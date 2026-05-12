@@ -13,14 +13,15 @@ import {
 export function InstallerJobDetailScreen() {
   return (
     <InstallerScaffold
-      section="Job Detail"
-      title="Site Evidence"
-      subtitle="The site packet for map context, physical evidence, and readings tied to one named building."
-      actions={["Capture site", "Map meters", "Log readings"]}
+      section="Job"
+      title="Site Packet"
+      subtitle="Map. Meter. Photos."
+      actions={["Capture proof", "Crew queue", "Lead card"]}
       hero={(building) => ({
-        label: "Site proof",
-        value: building.project.drs.meterInverterMatchResolved ? "Aligned" : "Mismatch",
-        sub: "Meter and inverter proof for this named building",
+        label: building.project.locationBand,
+        value: building.project.drs.meterInverterMatchResolved ? "Mapped" : "Review",
+        sub: "Meter and inverter match",
+        tone: building.project.drs.meterInverterMatchResolved ? "good" : "bad",
       })}
     >
       {(building) => {
@@ -29,25 +30,25 @@ export function InstallerJobDetailScreen() {
         return (
           <>
             <InstallerBrief
-              eyebrow="Job packet"
-              title="Every field artifact stays attached to this building."
-              body="Job detail is the crew's source of truth for physical proof, map context, and commissioning readings."
+              eyebrow="Packet"
+              title={building.project.name}
+              body="Proof stays with this building."
               rows={[
                 {
                   label: "Site",
                   value: building.project.locationBand,
-                  note: "The installer works against a named building, not an opaque pooled deployment.",
+                  note: "Named job.",
                 },
                 {
                   label: "Meter map",
                   value: drs.meterInverterMatchResolved ? "Matched" : "Review",
-                  note: "Meter/inverter mismatch is a DRS kill switch.",
+                  note: "Mismatch blocks go-live.",
                   tone: drs.meterInverterMatchResolved ? "good" : "bad",
                 },
                 {
-                  label: "Owner access",
+                  label: "Access",
                   value: drs.ownerPermissionsComplete ? "Complete" : "Blocked",
-                  note: "Roof and meter access depends on completed building owner permission.",
+                  note: "Roof + meter room.",
                   tone: drs.ownerPermissionsComplete ? "good" : "bad",
                 },
               ]}
@@ -67,10 +68,10 @@ export function InstallerJobDetailScreen() {
                       lineHeight: typography.title + 4,
                     }}
                   >
-                    Physical install packet
+                    Site map
                   </Text>
                   <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 7 }}>
-                    Keep field proof minimal: access, meter path, roof works, and readings.
+                    Tap the next physical proof.
                   </Text>
                 </View>
                 <Pill tone={drs.meterInverterMatchResolved ? "good" : "bad"}>
@@ -82,7 +83,7 @@ export function InstallerJobDetailScreen() {
                   borderColor: colors.border,
                   borderWidth: 1,
                   borderRadius: 22,
-                  backgroundColor: colors.panelSoft,
+                  backgroundColor: colors.white,
                   minHeight: 148,
                   marginTop: 16,
                   overflow: "hidden",
@@ -96,8 +97,8 @@ export function InstallerJobDetailScreen() {
                 <View style={{ position: "absolute", top: 18, bottom: 18, right: 82, width: 1, backgroundColor: colors.borderStrong }} />
                 {[
                   ["Access", drs.ownerPermissionsComplete ? "Open" : "Hold", 12, 18],
-                  ["Meter", drs.meterInverterMatchResolved ? "Matched" : "Mismatch", 134, 56],
-                  ["Inverter", drs.settlementDataTrusted ? "Reading" : "Pending", 48, 105],
+                  ["Meter", drs.meterInverterMatchResolved ? "Match" : "Fix", 134, 56],
+                  ["Inverter", drs.settlementDataTrusted ? "Live" : "Read", 48, 105],
                 ].map(([label, value, left, top]) => (
                   <View
                     key={label}
@@ -126,14 +127,14 @@ export function InstallerJobDetailScreen() {
                 <InstallerMetricCard
                   label="Array size"
                   value={`${building.project.energy.arrayKw} kW`}
-                  detail="Mock projected system size for the active job."
+                  detail="System size."
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <InstallerMetricCard
                   label="Battery"
                   value={`${building.project.energy.batteryKwh} kWh`}
-                  detail="Storage capacity used during commissioning checks."
+                  detail="Storage."
                 />
               </View>
             </View>
@@ -150,7 +151,7 @@ export function InstallerJobDetailScreen() {
                   lineHeight: typography.title + 4,
                 }}
               >
-                Commissioning evidence
+                Readings
               </Text>
               <View
                 style={{
@@ -159,14 +160,14 @@ export function InstallerJobDetailScreen() {
                   borderWidth: 1,
                   borderColor: colors.border,
                   overflow: "hidden",
-                  backgroundColor: colors.sky,
+                  backgroundColor: colors.white,
                   ...shadows.soft,
                 }}
               >
                 {[
-                  ["Meter map", drs.meterInverterMatchResolved ? "Matched" : "Mismatch blocks go-live"],
-                  ["Cable route", drs.ownerPermissionsComplete ? "Access confirmed" : "Owner access incomplete"],
-                  ["Settlement readings", drs.settlementDataTrusted ? "Trusted" : "Needs fresh capture"],
+                  ["Meter", drs.meterInverterMatchResolved ? "Matched" : "Mismatch"],
+                  ["Cable", drs.ownerPermissionsComplete ? "Open" : "Blocked"],
+                  ["Telemetry", drs.settlementDataTrusted ? "Trusted" : "Recapture"],
                 ].map(([label, value], index) => (
                   <View
                     key={label}
@@ -175,7 +176,7 @@ export function InstallerJobDetailScreen() {
                       justifyContent: "space-between",
                       paddingVertical: spacing.md,
                       paddingHorizontal: spacing.md,
-                      backgroundColor: index % 2 === 0 ? colors.white : colors.panelSoft,
+                      backgroundColor: colors.white,
                       borderTopColor: index === 0 ? "transparent" : colors.border,
                       borderTopWidth: index === 0 ? 0 : 1,
                       gap: spacing.sm,

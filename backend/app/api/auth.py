@@ -12,7 +12,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # Loose email validator that accepts dev .test TLDs which Pydantic's EmailStr
 # rejects as reserved-use. Per RFC the format check is purely structural.
 _EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+_DEV_SEED_OTP = "000000"
 
+from ..config import get_settings
 from ..db.session import get_session
 from ..middleware.jwt import get_current_user
 from ..models.user import User
@@ -96,28 +98,31 @@ async def verify_otp(
     session: AsyncSession = Depends(get_session),
 ):
     email = body.email.lower().strip()
-    record = await otp_repo.get_active_for_email(session, email)
-    if record is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_code"
-        )
+    dev_seed_bypass = _allows_dev_seed_otp(email, body.code)
 
-    if otp_repo.is_expired(record):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="expired")
+    if not dev_seed_bypass:
+        record = await otp_repo.get_active_for_email(session, email)
+        if record is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_code"
+            )
 
-    if otp_repo.is_locked_out(record):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="too_many_attempts"
-        )
+        if otp_repo.is_expired(record):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="expired")
 
-    if record.code_hash != otp_repo.hash_code(body.code):
-        await otp_repo.increment_attempts(session, record)
-        await session.commit()
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_code"
-        )
+        if otp_repo.is_locked_out(record):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="too_many_attempts"
+            )
 
-    await otp_repo.consume_code(session, record)
+        if record.code_hash != otp_repo.hash_code(body.code):
+            await otp_repo.increment_attempts(session, record)
+            await session.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_code"
+            )
+
+        await otp_repo.consume_code(session, record)
 
     # Fetch or auto-provision the user. Auto-provisioning is allowed for the pilot;
     # in production the post-OTP step would require a sign-up form.
@@ -133,6 +138,17 @@ async def verify_otp(
 
     token = issue_token(user)
     return {"token": token, "user": _serialize_user(user)}
+
+
+def _allows_dev_seed_otp(email: str, code: str) -> bool:
+    """Allow stable smoke-test login for seeded pilot accounts in dev only."""
+
+    settings = get_settings()
+    return (
+        settings.allow_dev_otp_console
+        and email.endswith("@emappa.test")
+        and code == _DEV_SEED_OTP
+    )
 
 
 @router.get("/me")

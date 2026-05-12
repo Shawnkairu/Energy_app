@@ -1,3 +1,3 @@
-import { BuildingOwnerResidentRosterScreen } from "../../../components/building-owner/BuildingOwnerScreens";
+import { OwnerResidentRosterScreen } from "../../../components/owner/OwnerResidentRosterScreen";
 
-export default BuildingOwnerResidentRosterScreen;
+export default OwnerResidentRosterScreen;

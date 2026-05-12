@@ -1,12 +1,23 @@
 import { Text, View } from "react-native";
-import { colors, GlassCard, Label, PaletteCard, Pill, Value } from "@emappa/ui";
+import { colors, GlassCard, Label, PaletteCard, Pill, typography, Value } from "@emappa/ui";
 
 export function Insight({ title, body }: { title: string; body: string }) {
   return (
     <GlassCard>
       <Label>Insight</Label>
-      <Text style={{ color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.4, marginTop: 6 }}>{title}</Text>
-      <Text style={{ color: colors.muted, marginTop: 8, lineHeight: 22 }}>{body}</Text>
+      <Text
+        style={{
+          color: colors.text,
+          fontSize: typography.title,
+          fontWeight: "600",
+          letterSpacing: -0.4,
+          marginTop: 6,
+          lineHeight: typography.title + 4,
+        }}
+      >
+        {title}
+      </Text>
+      <Text style={{ color: colors.muted, marginTop: 8, fontSize: typography.body, lineHeight: 22 }}>{body}</Text>
     </GlassCard>
   );
 }
@@ -19,7 +30,16 @@ export function GateList({ gates }: { gates: Array<{ label: string; complete: bo
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <View>
           <Label>Readiness</Label>
-          <Text style={{ color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.4, marginTop: 5 }}>
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: typography.title,
+              fontWeight: "600",
+              letterSpacing: -0.4,
+              marginTop: 5,
+              lineHeight: typography.title + 4,
+            }}
+          >
             Deployment Gates
           </Text>
         </View>
@@ -81,10 +101,19 @@ export function SectionBrief({
   return (
     <GlassCard>
       <Label>{eyebrow}</Label>
-      <Text style={{ color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.5, marginTop: 6 }}>
+      <Text
+        style={{
+          color: colors.text,
+          fontSize: typography.title,
+          fontWeight: "600",
+          letterSpacing: -0.5,
+          marginTop: 6,
+          lineHeight: typography.title + 4,
+        }}
+      >
         {title}
       </Text>
-      <Text style={{ color: colors.muted, lineHeight: 22, marginTop: 8 }}>{body}</Text>
+      <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 22, marginTop: 8 }}>{body}</Text>
       <View style={{ marginTop: 14, borderColor: colors.border, borderWidth: 1, borderRadius: 18, overflow: "hidden" }}>
         {rows.map((row, index) => (
           <View
@@ -125,10 +154,19 @@ export function StatusRail({
           style={{ flex: 1, minHeight: 112 }}
         >
           <Pill tone={item.tone ?? "neutral"}>{item.label}</Pill>
-          <Text style={{ color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.5, marginTop: 12 }}>
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: typography.title,
+              fontWeight: "600",
+              letterSpacing: -0.5,
+              marginTop: 12,
+              lineHeight: typography.title + 4,
+            }}
+          >
             {item.value}
           </Text>
-          <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 6 }}>{item.note}</Text>
+          <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 17, marginTop: 6 }}>{item.note}</Text>
         </PaletteCard>
       ))}
     </View>
@@ -147,7 +185,16 @@ export function ActionList({
   return (
     <GlassCard>
       <Label>{eyebrow}</Label>
-      <Text style={{ color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.5, marginTop: 6 }}>
+      <Text
+        style={{
+          color: colors.text,
+          fontSize: typography.title,
+          fontWeight: "600",
+          letterSpacing: -0.5,
+          marginTop: 6,
+          lineHeight: typography.title + 4,
+        }}
+      >
         {title}
       </Text>
       <View style={{ marginTop: 12 }}>

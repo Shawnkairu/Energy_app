@@ -1,3 +1,3 @@
-import { BuildingOwnerProfileScreen } from "../../components/building-owner/BuildingOwnerScreens";
+import { OwnerAccountScreen } from "../../components/owner/OwnerAccountScreen";
 
-export default BuildingOwnerProfileScreen;
+export default OwnerAccountScreen;

@@ -1,5 +1,5 @@
-import { ContributorIaScreen } from "../../components/contributors/ContributorIaScreens";
+import { InstallerHomeScreen } from "../../components/installer/InstallerScreens";
 
 export default function ElectricianJobsScreen() {
-  return <ContributorIaScreen role="electrician" section="jobs" />;
+  return <InstallerHomeScreen />;
 }

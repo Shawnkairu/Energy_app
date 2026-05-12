@@ -6,6 +6,7 @@ import {
   InstallerFieldRow,
   InstallerMetricCard,
   InstallerScaffold,
+  InstallerTrustCard,
   Label,
   Pill,
   GlassCard,
@@ -14,14 +15,15 @@ import {
 export function InstallerCertificationScreen() {
   return (
     <InstallerScaffold
-      section="Certification"
-      title="Lead Eligibility"
-      subtitle="A focused eligibility lane for the accountable lead electrician before any installer schedule opens."
-      actions={["Review lead", "Attach license", "Clear dispatch"]}
+      section="Compliance"
+      title="Lead Card"
+      subtitle="Trust, license, dispatch."
+      actions={["Lead card", "Crew queue", "Profile"]}
       hero={(building) => ({
-        label: "Lead electrician",
+        label: "Certification",
         value: building.roleViews.installer.certified ? "Ready" : "Blocked",
-        sub: "No certified lead means no deployment scheduling",
+        sub: "Lead gate",
+        tone: building.roleViews.installer.certified ? "good" : "bad",
       })}
     >
       {(building) => {
@@ -29,27 +31,44 @@ export function InstallerCertificationScreen() {
 
         return (
           <>
+            <InstallerTrustCard
+              name="Amina Otieno"
+              role="Lead electrician"
+              status={certified ? "verified" : "hold"}
+              tone={certified ? "good" : "bad"}
+              stats={[
+                { label: "rating", value: "4.9" },
+                { label: "jobs", value: "38" },
+                { label: "drs", value: `${building.drs.components.installerReadiness}` },
+              ]}
+              checks={[
+                { label: "License", detail: certified ? "Current license attached." : "Upload current license.", complete: certified },
+                { label: "Site assignment", detail: building.project.name, complete: certified },
+                { label: "Dispatch", detail: certified ? "Schedule can open." : "Schedule stays closed.", complete: certified },
+              ]}
+            />
+
             <InstallerBrief
-              eyebrow="Scheduling guard"
-              title={certified ? "This crew can be scheduled." : "Scheduling is blocked until lead proof clears."}
-              body="Certification stays narrow: one accountable lead, one named building, and a clear DRS kill switch if eligibility is missing."
+              eyebrow="Gate"
+              title={certified ? "Crew can be scheduled." : "Lead proof missing."}
+              body="One accountable lead."
               rows={[
                 {
-                  label: "Lead proof",
+                  label: "License",
                   value: certified ? "Verified" : "Missing",
-                  note: "License, assignment, and safety accountability stay attached to the job.",
+                  note: "Current credential.",
                   tone: certified ? "good" : "bad",
                 },
                 {
-                  label: "Installer DRS",
+                  label: "DRS",
                   value: `${building.drs.components.installerReadiness}`,
-                  note: "Displayed as the readiness outcome, not recalculated in the UI.",
+                  note: "Readiness.",
                   tone: building.drs.components.installerReadiness >= 80 ? "good" : "warn",
                 },
                 {
                   label: "Dispatch",
                   value: certified ? "Allowed" : "Blocked",
-                  note: "Installer scheduling opens only after lead electrician eligibility is verified.",
+                  note: "Schedule gate.",
                   tone: certified ? "good" : "bad",
                 },
               ]}
@@ -58,7 +77,7 @@ export function InstallerCertificationScreen() {
             <GlassCard>
               <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 14 }}>
                 <View style={{ flex: 1 }}>
-                  <Label>Credential packet</Label>
+                  <Label>Certificate</Label>
                   <Text
                     style={{
                       color: colors.text,
@@ -69,19 +88,19 @@ export function InstallerCertificationScreen() {
                       lineHeight: typography.title + 4,
                     }}
                   >
-                    Lead electrician eligibility only
+                    Field credential
                   </Text>
                   <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 19, marginTop: 7 }}>
-                    This packet avoids commissioning clutter and keeps the scheduling decision auditable.
+                    Airbnb-style trust proof for the site.
                   </Text>
                 </View>
                 <Pill tone={certified ? "good" : "bad"}>{certified ? "valid" : "hold"}</Pill>
               </View>
               <View style={{ gap: 10, marginTop: 16 }}>
                 {[
-                  ["License", certified ? "Verified" : "Missing", "Current lead electrician license attached to this crew."],
-                  ["Assignment", certified ? "Bound" : "Unbound", "Named lead is accountable for this building's site work."],
-                  ["Dispatch", certified ? "Open" : "Closed", "Crew scheduling remains closed until eligibility clears."],
+                  ["License", certified ? "Verified" : "Missing", "Current credential."],
+                  ["Assignment", certified ? "Bound" : "Unbound", building.project.name],
+                  ["Dispatch", certified ? "Open" : "Closed", "Eligibility clears the job."],
                 ].map(([label, value, note]) => (
                   <InstallerFieldRow key={label}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
@@ -107,7 +126,7 @@ export function InstallerCertificationScreen() {
             <InstallerMetricCard
               label="Scheduling state"
               value={certified ? "Cleared" : "Hold"}
-              detail="Deployment cannot be scheduled without a certified lead electrician, even if other gates look ready."
+              detail="No lead, no schedule."
             />
           </>
         );

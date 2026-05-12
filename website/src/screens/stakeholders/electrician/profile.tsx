@@ -8,10 +8,11 @@ export default function ElectricianProfile({ user }: PortalScreenProps) {
       user={user}
       roleLabel="Electrician"
       extra={(
-        <PortalPanel eyebrow="Compliance link" title="Certification lives as a primary tab">
+        <PortalPanel eyebrow="Field profile" title="Dispatch, proof, and compliance">
           <PortalLedger rows={[
-            { label: "Compliance tab", value: "Open", note: "certifications + training" },
-            { label: "Scope", value: "Install / inspection / maintenance", note: "discover filter" },
+            { label: "Compliance tab", value: "Primary", note: "certifications + training" },
+            { label: "Scope", value: "Install / inspect / maintain", note: "discover filters" },
+            { label: "Payout trigger", value: "Signed proof", note: "wallet milestones" },
           ]} />
         </PortalPanel>
       )}

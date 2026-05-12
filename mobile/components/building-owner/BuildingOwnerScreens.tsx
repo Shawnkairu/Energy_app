@@ -1,12 +1,8 @@
 import { useCallback, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } from "react-native";
 import { Redirect, Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { AppMark, GlassCard, Label, Pill, PrimaryButton, Surface, colors, typography } from "@emappa/ui";
-import { EnergyTodayChart, type EnergyTodayPoint } from "../EnergyTodayChart";
-import { PilotBanner } from "../PilotBanner";
-import { ProjectHero } from "../ProjectHero";
-import { RoofMap } from "../RoofMap";
+import { AppMark, colors, typography } from "@emappa/ui";
 import { readPilotSession } from "../session";
 import { createApiClient } from "@emappa/api-client";
 import { useApiData } from "../../lib/useApiData";
@@ -99,26 +95,32 @@ export function BuildingOwnerLayout() {
 
   return (
     <Tabs
-      screenOptions={({ route }) => ({
-        title: tabTitle(route.name),
-        headerStyle: { backgroundColor: colors.surface },
-        headerShadowVisible: false,
-        headerTintColor: colors.text,
-        headerTitleStyle: { color: colors.text, fontSize: 15, fontWeight: "600" },
-        tabBarActiveTintColor: colors.orangeDeep,
-        tabBarInactiveTintColor: colors.dim,
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 10,
-          paddingTop: 8,
-        },
-        tabBarIcon: ({ color, size }) => (
-          <Ionicons name={tabIcon(route.name)} color={color} size={Math.max(18, size - 4)} />
-        ),
-      })}
+      screenOptions={({ route }) => {
+        const title = tabTitle(route.name);
+        return {
+          title,
+          headerStyle: { backgroundColor: colors.white },
+          headerShadowVisible: false,
+          headerTintColor: colors.text,
+          headerTitleStyle: { color: colors.text, fontSize: 15, fontWeight: "600" },
+          tabBarActiveTintColor: colors.orangeDeep,
+          tabBarInactiveTintColor: colors.dim,
+          tabBarShowLabel: true,
+          tabBarAccessibilityLabel: title,
+          tabBarLabel: title,
+          tabBarLabelStyle: { fontSize: 10, fontWeight: "700", marginTop: 2 },
+          tabBarStyle: {
+            backgroundColor: colors.white,
+            borderTopColor: colors.border,
+            height: 70,
+            paddingBottom: 8,
+            paddingTop: 7,
+          },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name={tabIcon(route.name)} color={color} size={Math.max(16, size - 8)} />
+          ),
+        };
+      }}
     >
       <Tabs.Screen name="home" />
       <Tabs.Screen name="energy" />
@@ -136,37 +138,46 @@ export function BuildingOwnerHomeScreen() {
   const router = useRouter();
 
   return (
-    <OwnerDataFrame state={state} title="Building Owner Home">
-      {({ project, drs }) => {
+    <OwnerDataFrame state={state} eyebrow="Building owner" title="Ready the building." subtitle="Access, residents, DRS, next move.">
+      {({ home, project, drs }) => {
         const blockers = drs.reasons.slice(0, 3);
+        const occupiedUnits = estimateOccupiedUnits(project);
+        const nextAction =
+          blockers[0] ??
+          (project.roofAreaM2 ? "Keep resident prepaid demand warm." : "Confirm roof and access evidence.");
+
         return (
           <>
-            <PilotBanner
-              title="Building-owner pilot"
-              message="Deployment, funding, supplier lock, and go-live remain blocked until readiness is proven by API-backed gates."
-            />
-            <ProjectHero
-              name={project.name}
-              location={project.address}
-              readinessLabel={`${formatDrsScore(drs.score)}/100 DRS · ${drs.decision}`}
-              summary={blockers.length ? blockers.join(" · ") : "No active readiness blockers returned by the API."}
-            />
-            <MetricGrid
-              metrics={[
-                { label: "Stage", value: formatStage(project.stage), detail: "Current project lane from the building record." },
-                { label: "Prepaid", value: formatKes(project.prepaidCommittedKes), detail: "Cash-backed demand committed to this building." },
-                { label: "Units", value: String(project.unitCount), detail: "Owner sees aggregate building context only." },
-                { label: "DRS", value: drs.decision, detail: "Readiness gates decide deployment movement.", tone: decisionTone(drs.decision) },
-              ]}
-            />
+            <ReadinessHero project={project} drs={drs} nextAction={nextAction} />
+            <BuildingReadinessMap project={project} drs={drs} />
+            <ResidentVisual unitCount={project.unitCount} occupiedUnits={occupiedUnits} prepaidKes={project.prepaidCommittedKes} />
             <ActionList
-              title="Owner actions"
+              title="Next"
               items={[
-                { label: "Review readiness", detail: "Open DRS blockers and component scores.", onPress: () => router.push("/(building-owner)/_embedded/drs") },
-                { label: "Track deployment", detail: "View access, supplier, installer, monitoring, and go-live gates.", onPress: () => router.push("/(building-owner)/_embedded/deployment") },
-                { label: "Invite residents", detail: "Open the privacy-safe resident roster aggregate.", onPress: () => router.push("/(building-owner)/_embedded/resident-roster") },
-                { label: "Compare today", detail: "Compare current API energy signals with e.mappa readiness.", onPress: () => router.push("/(building-owner)/_embedded/compare-today") },
+                {
+                  icon: "shield-checkmark-outline",
+                  label: "Open DRS",
+                  detail: blockers.length ? `${blockers.length} blocker${blockers.length === 1 ? "" : "s"}` : "All clear",
+                  onPress: () => router.push("/(building-owner)/_embedded/drs"),
+                },
+                {
+                  icon: "people-outline",
+                  label: "Residents",
+                  detail: "Aggregate sign-up only",
+                  onPress: () => router.push("/(building-owner)/_embedded/resident-roster"),
+                },
+                {
+                  icon: "construct-outline",
+                  label: "Deployment",
+                  detail: "Access and handoffs",
+                  onPress: () => router.push("/(building-owner)/_embedded/deployment"),
+                },
               ]}
+            />
+            <InfoRows
+              eyebrow="Recent"
+              empty="No owner activity returned."
+              rows={home.activity.slice(0, 3).map((item) => ({ label: "Update", value: "new", note: item }))}
             />
           </>
         );
@@ -180,32 +191,28 @@ export function BuildingOwnerEnergyScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Building Energy">
+    <OwnerDataFrame state={state} eyebrow="Energy" title="Rooftop signal." subtitle="Clean generation view. Payout lives in Wallet.">
       {({ project, today }) => {
         const generation = sum(today.generation_kwh);
         const load = sum(today.load_kwh);
-        const points = toEnergyPoints(today.generation_kwh);
+        const utilization = load > 0 ? Math.min(1, generation / load) : 0;
 
         return (
           <>
-            <PilotBanner
-              title="Energy data"
-              message="The owner sees building-level generation and load only. Resident balances and household usage stay private."
-            />
-            <EnergyTodayChart title="Rooftop generation today" points={points} unit="kWh" />
+            <EnergyVisual generation={generation} load={load} values={today.generation_kwh} />
             <MetricGrid
               metrics={[
-                { label: "Generated", value: `${round(generation)} kWh`, detail: "Today from the energy endpoint.", tone: generation > 0 ? "good" : "neutral" },
-                { label: "Building load", value: `${round(load)} kWh`, detail: "Aggregate load returned by the API." },
-                { label: "Utilization view", value: load > 0 ? `${Math.min(100, Math.round((generation / load) * 100))}%` : "pending", detail: "Generation compared with same-day load." },
-                { label: "Payout rule", value: "sold only", detail: "Generated, wasted, or free-exported solar is not owner payout." },
+                { label: "Generated", value: `${round(generation)} kWh`, detail: "Building-level today.", tone: generation > 0 ? "good" : "neutral" },
+                { label: "Load", value: `${round(load)} kWh`, detail: "Aggregate only." },
+                { label: "Use", value: load > 0 ? `${Math.round(utilization * 100)}%` : "pending", detail: "Operational view.", tone: utilization >= 0.75 ? "good" : "warn" },
+                { label: "Payout", value: "wallet", detail: "Sold solar only." },
               ]}
             />
-            <RoofMap title={project.name} usableAreaSqm={project.roofAreaM2 ?? 0} panelCount={estimatePanels(project.roofAreaM2)} />
+            <RoofDeckVisual title={project.name} usableAreaSqm={project.roofAreaM2 ?? 0} panelCount={estimatePanels(project.roofAreaM2)} />
             <InfoCard
-              eyebrow="Energy truth"
-              title="Generation visibility is not a cash claim."
-              body="Wallet payouts are created by monetized, prepaid solar settlement. This screen is operational context for the building owner."
+              eyebrow="Boundary"
+              title="Generation is context."
+              body="The building owner coordinates readiness and access. Wallet payouts require monetized prepaid solar."
             />
           </>
         );
@@ -219,30 +226,27 @@ export function BuildingOwnerWalletScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Owner Wallet">
+    <OwnerDataFrame state={state} eyebrow="Wallet" title="Settled cash." subtitle="Separate from readiness. Source of payout truth.">
       {({ project, balance, transactions }) => {
         const royaltyTransactions = transactions.filter((tx) => tx.kind === "royalty");
         const royaltyTotal = royaltyTransactions.reduce((total, tx) => total + tx.amountKes, 0);
 
         return (
           <>
-            <PilotBanner
-              title="Royalty wallet"
-              message="Owner payout is shown only from wallet transactions and settled cashflow returned by the API."
-            />
+            <WalletHero balanceKes={balance.kes} royaltyKes={royaltyTotal} />
             <MetricGrid
               metrics={[
-                { label: "Wallet balance", value: formatKes(balance.kes), detail: "Current API wallet balance." },
-                { label: "Royalties", value: formatKes(royaltyTotal), detail: "Royalty transactions in this wallet." },
-                { label: "Prepaid demand", value: formatKes(project.prepaidCommittedKes), detail: "Demand context, not owner balance." },
-                { label: "Transactions", value: String(transactions.length), detail: "Cashflow rows returned by the wallet endpoint." },
+                { label: "Balance", value: formatKes(balance.kes), detail: "Wallet endpoint." },
+                { label: "Royalty", value: formatKes(royaltyTotal), detail: "Settled rows." },
+                { label: "Demand", value: formatKes(project.prepaidCommittedKes), detail: "Not balance." },
+                { label: "Rows", value: String(transactions.length), detail: "Transactions." },
               ]}
             />
             <TransactionList transactions={transactions} />
             <InfoCard
-              eyebrow="Settlement guardrail"
-              title="No monetized solar, no owner payout."
-              body="Generated, wasted, curtailed, or free-exported energy does not create wallet movement. The transaction list is the source of truth."
+              eyebrow="Rule"
+              title="Sold solar creates payout."
+              body="Generated, wasted, curtailed, or free-exported energy does not move this wallet."
             />
           </>
         );
@@ -257,21 +261,17 @@ export function BuildingOwnerProfileScreen() {
   const router = useRouter();
 
   return (
-    <OwnerDataFrame state={state} title="Owner Profile">
+    <OwnerDataFrame state={state} eyebrow="Profile" title="Trust profile." subtitle="Identity, credentials, building access.">
       {({ project, user }) => (
         <>
-          <PilotBanner
-            title="Account profile"
-            message="Building, roof, account, support, and terms are grouped here without exposing private resident finances."
-          />
           <ProfileCard user={user} project={project} />
-          <RoofMap title="Confirmed roof" usableAreaSqm={project.roofAreaM2 ?? 0} panelCount={estimatePanels(project.roofAreaM2)} />
+          <CredentialsDeck project={project} />
           <ActionList
-            title="Profile links"
+            title="Account"
             items={[
-              { label: "Review terms", detail: "Open the owner terms summary tied to readiness gates.", onPress: () => router.push("/(building-owner)/_embedded/approve-terms") },
-              { label: "Resident roster", detail: "Open aggregate roster and prepaid participation context.", onPress: () => router.push("/(building-owner)/_embedded/resident-roster") },
-              { label: "Deployment path", detail: "Open building access and go-live requirements.", onPress: () => router.push("/(building-owner)/_embedded/deployment") },
+              { icon: "document-text-outline", label: "Terms", detail: "Readiness-gated", onPress: () => router.push("/(building-owner)/_embedded/approve-terms") },
+              { icon: "people-outline", label: "Residents", detail: "Private aggregates", onPress: () => router.push("/(building-owner)/_embedded/resident-roster") },
+              { icon: "construct-outline", label: "Deployment", detail: "Access path", onPress: () => router.push("/(building-owner)/_embedded/deployment") },
             ]}
           />
         </>
@@ -285,20 +285,15 @@ export function BuildingOwnerDrsScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Readiness Score">
+    <OwnerDataFrame state={state} eyebrow="DRS" title="Readiness score." subtitle="The gate before money, suppliers, install, go-live.">
       {({ project, drs }) => (
         <>
-          <ProjectHero
-            name={project.name}
-            location={project.address}
-            readinessLabel={`${formatDrsScore(drs.score)}/100 DRS · ${drs.decision}`}
-            summary="DRS gates funding, supplier lock, installer scheduling, deployment, and go-live."
-          />
+          <ReadinessHero project={project} drs={drs} nextAction={drs.reasons[0] ?? "Keep gates current."} />
           <MetricGrid
             metrics={Object.entries(drs.components).map(([label, value]) => ({
               label: formatStage(label),
               value: `${formatRatio(value)}%`,
-              detail: "Component score returned by the DRS endpoint.",
+              detail: "Score input.",
               tone: value >= 0.7 ? "good" : value >= 0.4 ? "warn" : "bad",
             }))}
           />
@@ -318,10 +313,10 @@ export function BuildingOwnerDeploymentScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Deployment">
+    <OwnerDataFrame state={state} eyebrow="Deployment" title="Path to go-live." subtitle="Owner access, resident demand, partner proof.">
       {({ project, drs }) => {
         const gates = [
-          { label: "Owner access", ready: Boolean(project.roofAreaM2), detail: "Roof area and access evidence must be captured before scheduling." },
+          { label: "Building access", ready: Boolean(project.roofAreaM2), detail: "Roof and meter-room evidence before scheduling." },
           { label: "Prepaid demand", ready: project.prepaidCommittedKes > 0, detail: "No prepaid cash means no solar allocation or payout." },
           { label: "DRS decision", ready: drs.decision === "approve", detail: "Review or block decisions hold deployment movement." },
           { label: "Monitoring", ready: drs.components.installationReadiness >= 0.6, detail: "Installation and monitoring readiness are checked by DRS." },
@@ -329,12 +324,7 @@ export function BuildingOwnerDeploymentScreen() {
 
         return (
           <>
-            <ProjectHero
-              name={project.name}
-              location={project.address}
-              readinessLabel={`${formatStage(project.stage)} · ${drs.decision}`}
-              summary="Deployment progresses only when readiness gates clear in order."
-            />
+            <DeploymentCircuit gates={gates} stage={project.stage} />
             <InfoRows
               eyebrow="Deployment gates"
               empty="No deployment gates returned."
@@ -357,28 +347,25 @@ export function BuildingOwnerResidentRosterScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Resident Roster">
+    <OwnerDataFrame state={state} eyebrow="Residents" title="Resident signal." subtitle="Aggregates only. No balances, no household usage.">
       {({ project }) => {
-        const occupiedUnits = project.occupancy === null ? null : Math.round(project.unitCount * project.occupancy);
+        const occupiedUnits = estimateOccupiedUnits(project);
 
         return (
           <>
-            <PilotBanner
-              title="Privacy-safe roster"
-              message="The mobile API exposes aggregate building demand here, not household names, balances, or private usage."
-            />
+            <ResidentVisual unitCount={project.unitCount} occupiedUnits={occupiedUnits} prepaidKes={project.prepaidCommittedKes} />
             <MetricGrid
               metrics={[
-                { label: "Units", value: String(project.unitCount), detail: "Total units in the building record." },
-                { label: "Occupied", value: occupiedUnits === null ? "not returned" : String(occupiedUnits), detail: "Derived from occupancy when the API returns it." },
-                { label: "Prepaid", value: formatKes(project.prepaidCommittedKes), detail: "Aggregate committed demand for this building." },
-                { label: "Roster detail", value: "private", detail: "No resident-level roster endpoint is exposed to this role." },
+                { label: "Units", value: String(project.unitCount), detail: "Building record." },
+                { label: "Occupied", value: occupiedUnits === null ? "pending" : String(occupiedUnits), detail: "API aggregate." },
+                { label: "Prepaid", value: formatKes(project.prepaidCommittedKes), detail: "Committed demand." },
+                { label: "Details", value: "private", detail: "No resident rows." },
               ]}
             />
             <InfoCard
               eyebrow="Owner boundary"
-              title="Aggregate demand is enough to move deployment."
-              body="Resident identities and wallet balances stay outside the building-owner surface. DRS uses aggregate participation and prepaid readiness."
+              title="Aggregate demand is enough."
+              body="Resident identities, balances, and household usage stay outside this surface."
             />
           </>
         );
@@ -392,15 +379,11 @@ export function BuildingOwnerApproveTermsScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Owner Terms">
+    <OwnerDataFrame state={state} eyebrow="Terms" title="Approve the building." subtitle="Confirms access and terms. DRS still decides movement.">
       {({ project, drs }) => (
         <>
-          <PilotBanner
-            title="Terms preview"
-            message="This mobile slice renders the API-backed terms context. It does not fabricate a signature endpoint."
-          />
           <InfoRows
-            eyebrow="Terms tied to gates"
+            eyebrow="Terms"
             empty="No terms context returned."
             rows={[
               { label: "Building", value: project.name, note: project.address },
@@ -420,25 +403,26 @@ export function BuildingOwnerCompareTodayScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} title="Today Compare">
+    <OwnerDataFrame state={state} eyebrow="Compare" title="Today vs ready." subtitle="Energy context beside readiness. No invented bill.">
       {({ project, drs, today }) => {
         const generation = sum(today.generation_kwh);
         const load = sum(today.load_kwh);
 
         return (
           <>
+            <EnergyVisual generation={generation} load={load} values={today.generation_kwh} />
             <MetricGrid
               metrics={[
-                { label: "Generation", value: `${round(generation)} kWh`, detail: "Today from the energy endpoint.", tone: generation > 0 ? "good" : "neutral" },
-                { label: "Load", value: `${round(load)} kWh`, detail: "Today from the energy endpoint." },
-                { label: "Prepaid", value: formatKes(project.prepaidCommittedKes), detail: "Cash-backed demand context." },
-                { label: "DRS", value: drs.decision, detail: `${formatDrsScore(drs.score)}/100 readiness`, tone: decisionTone(drs.decision) },
+                { label: "Generation", value: `${round(generation)} kWh`, detail: "Today.", tone: generation > 0 ? "good" : "neutral" },
+                { label: "Load", value: `${round(load)} kWh`, detail: "Aggregate." },
+                { label: "Prepaid", value: formatKes(project.prepaidCommittedKes), detail: "Demand context." },
+                { label: "DRS", value: drs.decision, detail: `${formatDrsScore(drs.score)}/100`, tone: decisionTone(drs.decision) },
               ]}
             />
             <InfoCard
               eyebrow="Comparison rule"
-              title="Today is operational, not a royalty promise."
-              body="The API currently returns generation, load, prepaid demand, and DRS. A cash comparison should wait for settlement rows rather than inventing a grid bill."
+              title="No settlement, no payout claim."
+              body="A cash comparison should wait for wallet or settlement rows."
             />
           </>
         );
@@ -486,54 +470,239 @@ function mobileClient() {
 
 function OwnerDataFrame<T>({
   state,
+  eyebrow,
   title,
+  subtitle,
   children,
 }: {
   state: { data: T | null; error: Error | null; isLoading: boolean; refetch: () => void };
+  eyebrow: string;
   title: string;
+  subtitle: string;
   children: (data: T) => ReactNode;
 }) {
   if (state.isLoading) {
     return (
-      <Surface>
+      <View style={styles.root}>
         <View style={styles.center}>
           <AppMark size={52} />
           <Text style={styles.centerTitle}>Loading {title.toLowerCase()}</Text>
-          <Text style={styles.centerText}>Fetching live building-owner data from the mobile API.</Text>
+          <Text style={styles.centerText}>Fetching building data.</Text>
         </View>
-      </Surface>
+      </View>
     );
   }
 
   if (state.error || !state.data) {
     return (
-      <Surface>
+      <View style={styles.root}>
         <View style={styles.center}>
           <AppMark size={52} />
           <Text style={styles.centerTitle}>{title} unavailable</Text>
           <Text style={styles.centerText}>{state.error?.message ?? "The API returned no building-owner data."}</Text>
-          <View style={{ marginTop: 18, alignSelf: "stretch" }}>
-            <PrimaryButton onPress={state.refetch}>Retry</PrimaryButton>
-          </View>
+          <Pressable onPress={state.refetch} style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Retry</Text>
+          </Pressable>
         </View>
-      </Surface>
+      </View>
     );
   }
 
   return (
-    <Surface>
+    <View style={styles.root}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <View>
-            <Pill>Building Owner</Pill>
+            <Text style={styles.eyebrow}>{eyebrow}</Text>
             <Text style={styles.kicker}>Private building workspace</Text>
           </View>
           <AppMark />
         </View>
         <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
         {children(state.data)}
       </ScrollView>
-    </Surface>
+    </View>
+  );
+}
+
+function ReadinessHero({ project, drs, nextAction }: { project: BuildingProject; drs: DrsPayload; nextAction: string }) {
+  const score = formatDrsScore(drs.score);
+
+  return (
+    <Card style={styles.heroCard}>
+      <View style={styles.heroTop}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.heroLabel}>{project.name}</Text>
+          <Text style={styles.heroValue}>{score}</Text>
+          <Text style={styles.heroMeta}>DRS / 100</Text>
+        </View>
+        <View style={[styles.statusOrb, { borderColor: toneColor(decisionTone(drs.decision)) }]}>
+          <Text style={[styles.statusOrbText, { color: toneColor(decisionTone(drs.decision)) }]}>{drs.decision}</Text>
+        </View>
+      </View>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${Math.max(0, Math.min(100, score))}%` as DimensionValue }]} />
+      </View>
+      <View style={styles.nextAction}>
+        <Ionicons name="arrow-forward-circle" color={ORANGE} size={22} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.nextLabel}>Next action</Text>
+          <Text style={styles.nextText}>{nextAction}</Text>
+        </View>
+      </View>
+    </Card>
+  );
+}
+
+function BuildingReadinessMap({ project, drs }: { project: BuildingProject; drs: DrsPayload }) {
+  const gates = [
+    { icon: "business-outline", label: "Building", ready: true },
+    { icon: "scan-outline", label: "Roof", ready: Boolean(project.roofAreaM2) },
+    { icon: "people-outline", label: "Residents", ready: project.prepaidCommittedKes > 0 },
+    { icon: "shield-checkmark-outline", label: "DRS", ready: drs.decision === "approve" },
+  ] as const;
+
+  return (
+    <Card>
+      <Text style={styles.cardKicker}>Readiness map</Text>
+      <View style={styles.iconGrid}>
+        {gates.map((gate) => (
+          <View key={gate.label} style={styles.iconTile}>
+            <View style={[styles.iconBubble, { backgroundColor: gate.ready ? `${ORANGE}14` : "#f7f4f1" }]}>
+              <Ionicons name={gate.icon} color={gate.ready ? ORANGE : MUTED} size={22} />
+            </View>
+            <Text style={styles.iconTileLabel}>{gate.label}</Text>
+            <Text style={[styles.iconTileStatus, { color: gate.ready ? GREEN : AMBER }]}>{gate.ready ? "ready" : "open"}</Text>
+          </View>
+        ))}
+      </View>
+    </Card>
+  );
+}
+
+function ResidentVisual({
+  unitCount,
+  occupiedUnits,
+  prepaidKes,
+}: {
+  unitCount: number;
+  occupiedUnits: number | null;
+  prepaidKes: number;
+}) {
+  const shownUnits = Math.min(36, Math.max(12, unitCount));
+  const filledUnits = occupiedUnits === null ? Math.floor(shownUnits * 0.62) : Math.min(shownUnits, Math.round((occupiedUnits / unitCount) * shownUnits));
+
+  return (
+    <Card>
+      <View style={styles.cardHeader}>
+        <View>
+          <Text style={styles.cardKicker}>Residents</Text>
+          <Text style={styles.cardTitle}>Aggregate demand.</Text>
+        </View>
+        <Text style={styles.badge}>{formatKes(prepaidKes)}</Text>
+      </View>
+      <View style={styles.unitCloud}>
+        {Array.from({ length: shownUnits }).map((_, index) => (
+          <View key={`unit-${index}`} style={[styles.unitDot, index < filledUnits && styles.unitDotActive]} />
+        ))}
+      </View>
+      <Text style={styles.cardBody}>
+        Owner sees totals only. Residents keep wallet balances and household usage private.
+      </Text>
+    </Card>
+  );
+}
+
+function EnergyVisual({ generation, load, values }: { generation: number; load: number; values: number[] }) {
+  const bars = compactValues(values);
+  const max = Math.max(1, ...bars);
+
+  return (
+    <Card style={styles.energyCard}>
+      <View style={styles.energyHeader}>
+        <View>
+          <Text style={styles.cardKicker}>Solar today</Text>
+          <Text style={styles.energyValue}>{round(generation)} kWh</Text>
+        </View>
+        <View style={styles.sun}>
+          <Ionicons name="sunny" color={ORANGE} size={30} />
+        </View>
+      </View>
+      <View style={styles.bars}>
+        {bars.map((value, index) => (
+          <View key={`bar-${index}`} style={styles.barTrack}>
+            <View style={[styles.barFill, { height: `${Math.max(12, (value / max) * 100)}%` as DimensionValue }]} />
+          </View>
+        ))}
+      </View>
+      <View style={styles.energyFooter}>
+        <Text style={styles.cardBody}>Load {round(load)} kWh</Text>
+        <Text style={styles.cardBody}>Operational, not payout.</Text>
+      </View>
+    </Card>
+  );
+}
+
+function RoofDeckVisual({ title, usableAreaSqm, panelCount }: { title: string; usableAreaSqm: number; panelCount: number }) {
+  const visiblePanels = Math.min(18, Math.max(6, panelCount || 6));
+
+  return (
+    <Card>
+      <View style={styles.cardHeader}>
+        <View>
+          <Text style={styles.cardKicker}>Roof deck</Text>
+          <Text style={styles.cardTitle}>{title}</Text>
+        </View>
+        <Text style={styles.badge}>{Math.round(usableAreaSqm)} m2</Text>
+      </View>
+      <View style={styles.panelField}>
+        {Array.from({ length: visiblePanels }).map((_, index) => (
+          <View key={`panel-${index}`} style={styles.panel} />
+        ))}
+      </View>
+      <Text style={styles.cardBody}>Access and roof evidence are owner coordination duties.</Text>
+    </Card>
+  );
+}
+
+function WalletHero({ balanceKes, royaltyKes }: { balanceKes: number; royaltyKes: number }) {
+  return (
+    <Card style={styles.walletCard}>
+      <Text style={styles.cardKicker}>Available</Text>
+      <Text style={styles.walletValue}>{formatKes(balanceKes)}</Text>
+      <View style={styles.walletLine}>
+        <Text style={styles.cardBody}>Settled royalty</Text>
+        <Text style={styles.walletRoyalty}>{formatKes(royaltyKes)}</Text>
+      </View>
+    </Card>
+  );
+}
+
+function DeploymentCircuit({ gates, stage }: { gates: Array<{ label: string; ready: boolean; detail: string }>; stage: string }) {
+  return (
+    <Card>
+      <View style={styles.cardHeader}>
+        <View>
+          <Text style={styles.cardKicker}>Live path</Text>
+          <Text style={styles.cardTitle}>{formatStage(stage)}</Text>
+        </View>
+        <Ionicons name="flash-outline" color={ORANGE} size={26} />
+      </View>
+      <View style={styles.circuit}>
+        {gates.map((gate, index) => (
+          <View key={gate.label} style={styles.circuitNode}>
+            <View style={[styles.circuitDot, { backgroundColor: gate.ready ? ORANGE : "#fff", borderColor: gate.ready ? ORANGE : BORDER }]} />
+            {index < gates.length - 1 ? <View style={styles.circuitLine} /> : null}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>{gate.label}</Text>
+              <Text style={styles.rowDetail}>{gate.detail}</Text>
+            </View>
+            <Text style={[styles.rowValue, { color: gate.ready ? GREEN : AMBER }]}>{gate.ready ? "ready" : "open"}</Text>
+          </View>
+        ))}
+      </View>
+    </Card>
   );
 }
 
@@ -551,32 +720,41 @@ function MetricGrid({ metrics }: { metrics: Array<{ label: string; value: string
   );
 }
 
-function ActionList({ title, items }: { title: string; items: Array<{ label: string; detail: string; onPress: () => void }> }) {
+function ActionList({
+  title,
+  items,
+}: {
+  title: string;
+  items: Array<{ icon: keyof typeof Ionicons.glyphMap; label: string; detail: string; onPress: () => void }>;
+}) {
   return (
-    <GlassCard>
-      <Label>{title}</Label>
+    <Card>
+      <Text style={styles.cardKicker}>{title}</Text>
       <View style={{ marginTop: 10 }}>
         {items.map((item, index) => (
           <Pressable key={item.label} onPress={item.onPress} style={[styles.actionRow, index > 0 && styles.divider]}>
+            <View style={styles.actionIcon}>
+              <Ionicons name={item.icon} color={ORANGE} size={19} />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.rowTitle}>{item.label}</Text>
               <Text style={styles.rowDetail}>{item.detail}</Text>
             </View>
-            <Ionicons name="chevron-forward" color={colors.orangeDeep} size={18} />
+            <Ionicons name="chevron-forward" color={ORANGE} size={18} />
           </Pressable>
         ))}
       </View>
-    </GlassCard>
+    </Card>
   );
 }
 
 function InfoCard({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
   return (
-    <GlassCard>
-      <Label>{eyebrow}</Label>
+    <Card>
+      <Text style={styles.cardKicker}>{eyebrow}</Text>
       <Text style={styles.cardTitle}>{title}</Text>
       <Text style={styles.cardBody}>{body}</Text>
-    </GlassCard>
+    </Card>
   );
 }
 
@@ -592,8 +770,8 @@ function InfoRows({
   const resolvedRows = rows.length ? rows : [{ label: "Status", value: "clear", note: empty, tone: "good" as Tone }];
 
   return (
-    <GlassCard>
-      <Label>{eyebrow}</Label>
+    <Card>
+      <Text style={styles.cardKicker}>{eyebrow}</Text>
       <View style={{ marginTop: 10 }}>
         {resolvedRows.map((row, index) => (
           <View key={`${row.label}-${row.note}`} style={[styles.infoRow, index > 0 && styles.divider]}>
@@ -605,24 +783,18 @@ function InfoRows({
           </View>
         ))}
       </View>
-    </GlassCard>
+    </Card>
   );
 }
 
 function TransactionList({ transactions }: { transactions: WalletTransaction[] }) {
   if (transactions.length === 0) {
-    return (
-      <InfoCard
-        eyebrow="Transactions"
-        title="No wallet transactions returned."
-        body="When owner royalties settle through the API, they will appear here as wallet transactions."
-      />
-    );
+    return <InfoCard eyebrow="Transactions" title="No transactions yet." body="Settled owner royalties will appear here." />;
   }
 
   return (
-    <GlassCard>
-      <Label>Transactions</Label>
+    <Card>
+      <Text style={styles.cardKicker}>Transactions</Text>
       <View style={{ marginTop: 10 }}>
         {transactions.map((tx, index) => (
           <View key={tx.id} style={[styles.infoRow, index > 0 && styles.divider]}>
@@ -634,40 +806,68 @@ function TransactionList({ transactions }: { transactions: WalletTransaction[] }
           </View>
         ))}
       </View>
-    </GlassCard>
+    </Card>
   );
 }
 
 function ProfileCard({ user, project }: { user: UserPayload; project: BuildingProject }) {
   return (
-    <InfoRows
-      eyebrow="Account"
-      empty="No profile rows returned."
-      rows={[
-        { label: "Signer", value: user.displayName ?? "account", note: user.email },
-        { label: "Role", value: "building owner", note: "This surface is scoped to the building_owner API role.", tone: "good" },
-        { label: "Building", value: project.name, note: project.address },
-        {
-          label: "Roof source",
-          value: project.roofSource ?? "pending",
-          note: project.roofConfidence === null ? "No roof confidence returned." : `${Math.round(project.roofConfidence * 100)}% confidence returned by API.`,
-        },
-      ]}
-    />
+    <Card style={styles.profileCard}>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{initials(user.displayName ?? user.email)}</Text>
+      </View>
+      <Text style={styles.profileName}>{user.displayName ?? "Building owner"}</Text>
+      <Text style={styles.profileEmail}>{user.email}</Text>
+      <View style={styles.trustRow}>
+        <TrustPill icon="checkmark-circle" label="Verified signer" />
+        <TrustPill icon="business" label={project.name} />
+      </View>
+      <Text style={styles.cardBody}>
+        Coordinates building access, roof evidence, residents, and readiness. Solar-array ownership stays with the provider unless terms explicitly say otherwise.
+      </Text>
+    </Card>
   );
 }
 
-function toEnergyPoints(values: number[]): EnergyTodayPoint[] {
-  if (!values.length) {
-    return [];
-  }
+function CredentialsDeck({ project }: { project: BuildingProject }) {
+  return (
+    <Card>
+      <Text style={styles.cardKicker}>Credentials</Text>
+      <View style={styles.credentialGrid}>
+        <Credential label="Role" value="Building owner" icon="key-outline" />
+        <Credential label="Roof" value={project.roofSource ?? "Pending"} icon="home-outline" />
+        <Credential label="Access" value={project.roofAreaM2 ? "Ready" : "Needed"} icon="lock-open-outline" />
+        <Credential
+          label="Confidence"
+          value={project.roofConfidence === null ? "Pending" : `${Math.round(project.roofConfidence * 100)}%`}
+          icon="ribbon-outline"
+        />
+      </View>
+    </Card>
+  );
+}
 
-  const labels = ["12a", "3a", "6a", "9a", "12p", "3p", "6p", "9p"];
-  const step = Math.max(1, Math.floor(values.length / labels.length));
-  return labels.map((label, index) => ({
-    label,
-    value: values[Math.min(values.length - 1, index * step)] ?? 0,
-  }));
+function Credential({ label, value, icon }: { label: string; value: string; icon: keyof typeof Ionicons.glyphMap }) {
+  return (
+    <View style={styles.credential}>
+      <Ionicons name={icon} color={ORANGE} size={19} />
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={styles.credentialValue}>{value}</Text>
+    </View>
+  );
+}
+
+function TrustPill({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+  return (
+    <View style={styles.trustPill}>
+      <Ionicons name={icon} color={ORANGE} size={15} />
+      <Text style={styles.trustPillText}>{label}</Text>
+    </View>
+  );
+}
+
+function Card({ children, style }: { children: ReactNode; style?: object }) {
+  return <View style={[styles.card, style]}>{children}</View>;
 }
 
 function tabTitle(name: string) {
@@ -686,10 +886,10 @@ function decisionTone(decision: DrsPayload["decision"]): Tone {
 }
 
 function toneColor(tone: Tone = "neutral") {
-  if (tone === "good") return colors.green;
-  if (tone === "warn") return colors.amber;
-  if (tone === "bad") return colors.red;
-  return colors.text;
+  if (tone === "good") return GREEN;
+  if (tone === "warn") return AMBER;
+  if (tone === "bad") return RED;
+  return TEXT;
 }
 
 function formatStage(value: string) {
@@ -718,6 +918,26 @@ function estimatePanels(areaM2: number | null) {
   return areaM2 ? Math.max(0, Math.floor(areaM2 / 2.2)) : 0;
 }
 
+function estimateOccupiedUnits(project: BuildingProject) {
+  return project.occupancy === null ? null : Math.round(project.unitCount * project.occupancy);
+}
+
+function compactValues(values: number[]) {
+  if (!values.length) return [0, 0, 0, 0, 0, 0, 0, 0];
+  const labels = 10;
+  const step = Math.max(1, Math.floor(values.length / labels));
+  return Array.from({ length: labels }).map((_, index) => values[Math.min(values.length - 1, index * step)] ?? 0);
+}
+
+function initials(value: string) {
+  return value
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
 function sum(values: number[]) {
   return values.reduce((total, value) => total + value, 0);
 }
@@ -726,10 +946,24 @@ function round(value: number) {
   return Math.round(value * 10) / 10;
 }
 
+const TEXT = "#171412";
+const MUTED = "#706962";
+const FAINT = "#faf8f6";
+const BORDER = "#eee7df";
+const ORANGE = "#f36b21";
+const GREEN = "#198754";
+const AMBER = "#b96b00";
+const RED = "#c2412d";
+
 const styles = StyleSheet.create({
+  root: {
+    backgroundColor: "#fff",
+    flex: 1,
+  },
   scroll: {
     gap: 16,
-    paddingBottom: 36,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
   },
   header: {
     alignItems: "center",
@@ -737,36 +971,426 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 22,
   },
+  eyebrow: {
+    alignSelf: "flex-start",
+    backgroundColor: `${ORANGE}10`,
+    borderColor: `${ORANGE}28`,
+    borderRadius: 999,
+    borderWidth: 1,
+    color: ORANGE,
+    fontSize: 12,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
   kicker: {
-    color: colors.muted,
+    color: MUTED,
     fontSize: 11,
-    fontWeight: "600",
+    fontWeight: "700",
     letterSpacing: 0.7,
     marginTop: 10,
     textTransform: "uppercase",
   },
   title: {
-    color: colors.text,
-    fontSize: typography.hero,
-    fontWeight: "700",
-    letterSpacing: -0.9,
-    lineHeight: typography.hero + 8,
+    color: TEXT,
+    fontSize: typography.hero + 4,
+    fontWeight: "800",
+    letterSpacing: -1.2,
+    lineHeight: typography.hero + 10,
+  },
+  subtitle: {
+    color: MUTED,
+    fontSize: typography.body,
+    lineHeight: 22,
+    marginTop: -8,
   },
   center: {
     flex: 1,
     justifyContent: "center",
+    paddingHorizontal: 20,
   },
   centerTitle: {
-    color: colors.text,
+    color: TEXT,
     fontSize: typography.title,
-    fontWeight: "700",
+    fontWeight: "800",
     letterSpacing: -0.45,
     marginTop: 18,
   },
   centerText: {
-    color: colors.muted,
+    color: MUTED,
     fontSize: typography.small,
     lineHeight: 20,
+    marginTop: 8,
+  },
+  primaryButton: {
+    alignItems: "center",
+    alignSelf: "stretch",
+    backgroundColor: ORANGE,
+    borderRadius: 18,
+    marginTop: 18,
+    paddingVertical: 13,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderColor: BORDER,
+    borderRadius: 28,
+    borderWidth: 1,
+    padding: 18,
+    boxShadow: "0 10px 18px rgba(61, 42, 31, 0.06)",
+  },
+  heroCard: {
+    padding: 20,
+  },
+  heroTop: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 14,
+    justifyContent: "space-between",
+  },
+  heroLabel: {
+    color: MUTED,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  heroValue: {
+    color: TEXT,
+    fontSize: 64,
+    fontWeight: "800",
+    letterSpacing: -3,
+    lineHeight: 72,
+    marginTop: 4,
+  },
+  heroMeta: {
+    color: MUTED,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
+  },
+  statusOrb: {
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 76,
+    justifyContent: "center",
+    width: 76,
+  },
+  statusOrbText: {
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  progressTrack: {
+    backgroundColor: FAINT,
+    borderRadius: 999,
+    height: 10,
+    marginTop: 18,
+    overflow: "hidden",
+  },
+  progressFill: {
+    backgroundColor: ORANGE,
+    borderRadius: 999,
+    height: 10,
+  },
+  nextAction: {
+    alignItems: "center",
+    backgroundColor: FAINT,
+    borderRadius: 20,
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+    padding: 13,
+  },
+  nextLabel: {
+    color: MUTED,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  nextText: {
+    color: TEXT,
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 2,
+  },
+  cardHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+  },
+  cardKicker: {
+    color: ORANGE,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  cardTitle: {
+    color: TEXT,
+    fontSize: typography.title,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+    marginTop: 5,
+  },
+  cardBody: {
+    color: MUTED,
+    fontSize: typography.small,
+    lineHeight: 20,
+    marginTop: 10,
+  },
+  badge: {
+    backgroundColor: FAINT,
+    borderColor: BORDER,
+    borderRadius: 999,
+    borderWidth: 1,
+    color: TEXT,
+    fontSize: 12,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  iconGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14,
+  },
+  iconTile: {
+    alignItems: "center",
+    backgroundColor: FAINT,
+    borderColor: BORDER,
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 12,
+    width: "48%",
+  },
+  iconBubble: {
+    alignItems: "center",
+    borderRadius: 999,
+    height: 46,
+    justifyContent: "center",
+    width: 46,
+  },
+  iconTileLabel: {
+    color: TEXT,
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 8,
+  },
+  iconTileStatus: {
+    fontSize: 11,
+    fontWeight: "800",
+    marginTop: 3,
+    textTransform: "uppercase",
+  },
+  unitCloud: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 16,
+  },
+  unitDot: {
+    backgroundColor: "#f0ebe5",
+    borderRadius: 999,
+    height: 16,
+    width: 16,
+  },
+  unitDotActive: {
+    backgroundColor: ORANGE,
+  },
+  energyCard: {
+    backgroundColor: "#fffdfb",
+  },
+  energyHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  energyValue: {
+    color: TEXT,
+    fontSize: 42,
+    fontWeight: "800",
+    letterSpacing: -1.7,
+    marginTop: 4,
+  },
+  sun: {
+    alignItems: "center",
+    backgroundColor: `${ORANGE}10`,
+    borderRadius: 999,
+    height: 62,
+    justifyContent: "center",
+    width: 62,
+  },
+  bars: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    gap: 7,
+    height: 128,
+    marginTop: 18,
+  },
+  barTrack: {
+    backgroundColor: FAINT,
+    borderRadius: 999,
+    flex: 1,
+    height: "100%",
+    justifyContent: "flex-end",
+    overflow: "hidden",
+  },
+  barFill: {
+    backgroundColor: ORANGE,
+    borderRadius: 999,
+  },
+  energyFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  panelField: {
+    backgroundColor: FAINT,
+    borderColor: BORDER,
+    borderRadius: 24,
+    borderWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 16,
+    padding: 12,
+  },
+  panel: {
+    backgroundColor: "#fff",
+    borderColor: `${ORANGE}40`,
+    borderRadius: 9,
+    borderWidth: 1,
+    height: 34,
+    width: "30%",
+  },
+  walletCard: {
+    backgroundColor: TEXT,
+    borderColor: TEXT,
+  },
+  walletValue: {
+    color: "#fff",
+    fontSize: 46,
+    fontWeight: "800",
+    letterSpacing: -1.9,
+    marginTop: 8,
+  },
+  walletLine: {
+    alignItems: "center",
+    borderTopColor: "rgba(255,255,255,0.12)",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    paddingTop: 14,
+  },
+  walletRoyalty: {
+    color: "#fff",
+    fontWeight: "800",
+  },
+  circuit: {
+    marginTop: 16,
+  },
+  circuitNode: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 72,
+  },
+  circuitDot: {
+    borderRadius: 999,
+    borderWidth: 2,
+    height: 18,
+    marginTop: 2,
+    width: 18,
+  },
+  circuitLine: {
+    backgroundColor: BORDER,
+    bottom: -50,
+    left: 8.5,
+    position: "absolute",
+    top: 22,
+    width: 1,
+  },
+  profileCard: {
+    alignItems: "center",
+  },
+  avatar: {
+    alignItems: "center",
+    backgroundColor: `${ORANGE}12`,
+    borderColor: `${ORANGE}28`,
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 92,
+    justifyContent: "center",
+    width: 92,
+  },
+  avatarText: {
+    color: ORANGE,
+    fontSize: 30,
+    fontWeight: "900",
+  },
+  profileName: {
+    color: TEXT,
+    fontSize: 24,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+    marginTop: 14,
+  },
+  profileEmail: {
+    color: MUTED,
+    fontSize: 13,
+    marginTop: 4,
+  },
+  trustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+    marginTop: 14,
+  },
+  trustPill: {
+    alignItems: "center",
+    backgroundColor: FAINT,
+    borderColor: BORDER,
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  trustPillText: {
+    color: TEXT,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  credentialGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14,
+  },
+  credential: {
+    backgroundColor: FAINT,
+    borderColor: BORDER,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 13,
+    width: "48%",
+  },
+  credentialValue: {
+    color: TEXT,
+    fontSize: 15,
+    fontWeight: "800",
     marginTop: 8,
   },
   metricGrid: {
@@ -775,18 +1399,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   metric: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderColor: BORDER,
+    borderRadius: 24,
     borderWidth: 1,
     minHeight: 118,
     padding: 14,
     width: "48%",
   },
   metricLabel: {
-    color: colors.muted,
+    color: MUTED,
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: "800",
     letterSpacing: 0.7,
     textTransform: "uppercase",
   },
@@ -797,7 +1421,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   metricDetail: {
-    color: colors.muted,
+    color: MUTED,
     fontSize: 12,
     lineHeight: 17,
     marginTop: 6,
@@ -808,6 +1432,14 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
   },
+  actionIcon: {
+    alignItems: "center",
+    backgroundColor: `${ORANGE}10`,
+    borderRadius: 999,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
   infoRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -815,15 +1447,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   divider: {
-    borderTopColor: colors.border,
+    borderTopColor: BORDER,
     borderTopWidth: 1,
   },
   rowTitle: {
-    color: colors.text,
-    fontWeight: "700",
+    color: TEXT,
+    fontWeight: "800",
   },
   rowDetail: {
-    color: colors.muted,
+    color: MUTED,
     fontSize: 12,
     lineHeight: 18,
     marginTop: 4,
@@ -831,19 +1463,6 @@ const styles = StyleSheet.create({
   rowValue: {
     flexShrink: 0,
     fontSize: 12,
-    fontWeight: "700",
-  },
-  cardTitle: {
-    color: colors.text,
-    fontSize: typography.title,
-    fontWeight: "700",
-    letterSpacing: -0.4,
-    marginTop: 6,
-  },
-  cardBody: {
-    color: colors.muted,
-    fontSize: typography.body,
-    lineHeight: 22,
-    marginTop: 8,
+    fontWeight: "800",
   },
 });

@@ -1,24 +1,29 @@
 import { Text, View } from "react-native";
-import { GlassCard, Label, colors, typography } from "@emappa/ui";
-import { OwnerBriefCard, OwnerMetricGrid, OwnerScreenShell, OwnerWireframeWell } from "./OwnerShared";
+import { GlassCard, Label, Pill, colors, spacing, typography } from "@emappa/ui";
+import { OwnerBriefCard, OwnerMetricGrid, OwnerScreenShell, OwnerWireframeWell, formatPercent } from "./OwnerShared";
 
 export function OwnerResidentRosterScreen() {
   return (
     <OwnerScreenShell
-      showHandoffRibbon
       section="Residents"
       title="Drive Resident Sign-Up"
       subtitle="Owner-controlled funnel: invitations sent, residents joined, prepaid tokens loaded. Privacy-safe — no individual balances."
       actions={["Send invites", "Building message", "Print QR"]}
-      hero={() => ({
-        label: "Participation",
-        value: "32 / 38",
-        sub: "84% participation. Demand below 60% blocks deployment, below 80% slows royalty.",
-        tone: "good",
-        status: "qualified",
-      })}
+      hero={(building) => {
+        const view = building.roleViews.owner;
+        const u = building.project.units;
+        const pct = view.residentParticipation;
+        const joined = Math.max(0, Math.min(u, Math.round(pct * u)));
+        return {
+          label: "Participation",
+          value: `${joined} / ${u}`,
+          sub: `${formatPercent(pct)} enrolled. Below 60% blocks deployment; below 80% slows royalty.`,
+          tone: pct >= 0.8 ? ("good" as const) : pct >= 0.6 ? ("warn" as const) : ("bad" as const),
+          status: pct >= 0.8 ? "strong" : pct >= 0.6 ? "building" : "short",
+        };
+      }}
     >
-      {() => (
+      {(building) => (
         <>
           <OwnerMetricGrid
             metrics={[
@@ -40,7 +45,22 @@ export function OwnerResidentRosterScreen() {
           />
           <GlassCard>
             <Label>Invitation log</Label>
-            <Text style={{ color: colors.text, fontSize: typography.heading, fontWeight: "600", marginTop: 6 }}>Most recent waves</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: spacing.md }}>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: typography.heading,
+                  fontWeight: "600",
+                  letterSpacing: -0.35,
+                  marginTop: 5,
+                  flex: 1,
+                  lineHeight: typography.heading + 4,
+                }}
+              >
+                Most recent waves
+              </Text>
+              <Pill tone={building.roleViews.owner.residentParticipation >= 0.8 ? "good" : "warn"}>aggregate only</Pill>
+            </View>
             {[
               { wave: "Wave 3 · last week", sent: 6, joined: 4 },
               { wave: "Wave 2 · 2 weeks ago", sent: 14, joined: 12 },

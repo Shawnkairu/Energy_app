@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "@emappa/ui";
+import { colors, shadows } from "@emappa/ui";
 
 export interface ProjectHeroProps {
   name?: string;
@@ -28,9 +28,12 @@ export function ProjectHero({
 
 const styles = StyleSheet.create({
   card: {
+    ...shadows.card,
     gap: 10,
     borderRadius: 28,
-    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    backgroundColor: colors.white,
     padding: 22,
   },
   badge: {
