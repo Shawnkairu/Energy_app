@@ -260,10 +260,10 @@ function PilotSection() {
           <div style={{ ...s.badge, background: 'rgba(224,120,86,0.12)', color: 'var(--peach-dark)', borderColor: 'rgba(224,120,86,0.2)' }}>
             Pilot scope
           </div>
-          <h2 style={s.h2}>The pilot proves demand, readiness, and trust before rollout.</h2>
+          <h2 style={s.h2}>The launch proves demand, readiness, and trust before rollout.</h2>
           <p style={s.body}>
-            The June 2026 pilot uses email signup, non-binding pledges, synthesized energy data, and simulated settlement.
-            It exits pilot only when a building has verified roof data, clear demand, partner readiness, and stakeholder screens
+            The June 2026 launch uses email signup, non-binding pledges, synthesized energy data, and simulated settlement.
+            Buildings move to live only once a building has verified roof data, clear demand, partner readiness, and stakeholder screens
             that explain the economics without hidden assumptions.
           </p>
         </div>
@@ -616,7 +616,7 @@ function Navbar() {
     >
       <div style={{ ...s.container, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
         {/* Logo */}
-        <a href="#pilot" style={{ display: 'flex', alignItems: 'center', gap: '0px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--navy)' }} aria-label="e.mappa pilot scope">
+        <a href="#pilot" style={{ display: 'flex', alignItems: 'center', gap: '0px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--navy)' }} aria-label="e.mappa scope">
           <span style={{ color: 'var(--emappa-solar-strong)' }}>e</span>
           <span>.mappa</span>
         </a>
@@ -796,9 +796,9 @@ function Hero() {
             </div>
           </div>
 
-          <aside className="hero-signal-panel" aria-label="e.mappa pilot operating snapshot">
+          <aside className="hero-signal-panel" aria-label="e.mappa operating snapshot">
             <div className="hero-panel-topline">
-              <span>Nyeri pilot model</span>
+              <span>Nyeri launch model</span>
               <strong>June 2026</strong>
             </div>
             <div className="hero-building-card">
@@ -890,7 +890,7 @@ function WhatIsEmappa() {
               { icon: 'hardware' as IconName, title: 'The physical layer', body: "Weatherproof rooftop plant with modular panel mounts, inverter, battery storage, production metering, and a data gateway—feeding a dedicated e.mappa solar path. Each enrolled apartment gets an ATS at or near its PAYG meter so the unit cleanly selects e.mappa solar versus KPLC. Providers bring panels and balance-of-system that land on the documented path, not a speculative common-bus injection." },
               { icon: 'app' as IconName, title: 'The software layer', body: "A virtual allocation engine tracks every monetized kWh, who generated it, which enrolled apartments consumed it, and what it is worth. Dedicated interfaces for residents, providers, building owners, electricians, fabricators, and component providers keep each role isolated while the same truth layer runs underneath." },
               { icon: 'battery' as IconName, title: 'The battery layer', body: "Integrated battery storage at the plant supports the e.mappa path for evenings, cloudy periods, and brief grid outages for apartments that are ATS-selected onto solar." },
-              { icon: 'payments' as IconName, title: 'The payments layer', body: "Everything will run through email-led pilot pledge flow. Residents will use it to make solar pledges, and everyone else in the network will use it to get paid through e.mappa, from providers earning on generation to electricians, fabricators, and providers earning on the work and components that keep each building running." },
+              { icon: 'payments' as IconName, title: 'The payments layer', body: "Everything will run through email-led pledge flow. Residents will use it to make solar pledges, and everyone else in the network will use it to get paid through e.mappa, from providers earning on generation to electricians, fabricators, and providers earning on the work and components that keep each building running." },
             ].map(({ icon, title, body }) => (
               <div key={title} style={{ display: 'flex', gap: '16px', padding: '20px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--surface)' }}>
                 <div style={{ flexShrink: 0 }}><IconBadge name={icon} /></div>
@@ -1354,7 +1354,7 @@ function ComingSoon() {
           <div style={{ ...s.badge, display: 'inline-flex' }}>Roadmap</div>
           <h2 style={s.h2}>The features we're building next.</h2>
           <p style={{ ...s.body, maxWidth: '520px', margin: '0 auto' }}>
-            The marketplace we plan to pilot in June 2026 will be the foundation. Here is where it could go next.
+            The marketplace we plan to launch in June 2026 will be the foundation. Here is where it could go next.
           </p>
         </div>
 
@@ -1681,7 +1681,7 @@ function WaitlistSection() {
             <h2 style={s.h2}>Don't live in a building with e.mappa yet?</h2>
             <p style={{ ...s.body, marginBottom: '16px' }}>
               We plan to expand building by building, neighborhood by neighborhood.
-              Join the waitlist and we will let you know if e.mappa comes to your area after the June 2026 pilot.
+              Join the waitlist and we will let you know if e.mappa comes to your area after the June 2026 launch.
             </p>
             <p style={{ ...s.body, fontWeight: 600, color: 'var(--navy)', marginBottom: '40px' }}>
               The neighborhoods with the most signups are the neighborhoods we prioritize,
@@ -1689,7 +1689,7 @@ function WaitlistSection() {
             </p>
             {[
               { icon: 'provider' as IconName, strong: 'Are you a solar provider?', text: " Register your interest and we'll reach out if a building near you becomes a fit for future panel deployment." },
-              { icon: 'building' as IconName, strong: 'Do you own an apartment building?', text: ' Get in touch if you would like to be considered for a future pilot or rollout conversation.' },
+              { icon: 'building' as IconName, strong: 'Do you own an apartment building?', text: ' Get in touch if you would like to be considered for a future launch or rollout conversation.' },
             ].map(({ icon, strong, text }) => (
               <div key={strong} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
                 <div style={{ flexShrink: 0 }}><IconBadge name={icon} /></div>
@@ -1705,10 +1705,10 @@ function WaitlistSection() {
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}><IconBadge name="party" /></div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--navy)', marginBottom: '8px' }}>You're on the list!</h3>
-                <p style={s.body}>We'll reach out if e.mappa expands to your neighborhood after the June 2026 pilot.</p>
+                <p style={s.body}>We'll reach out if e.mappa expands to your neighborhood after the June 2026 launch.</p>
                 {submission?.source === 'local' ? (
                   <p style={{ ...s.body, fontSize: '0.82rem', marginTop: '12px' }}>
-                    Saved locally because the API was unavailable. We will retry from the stored pilot lead.
+                    Saved locally because the API was unavailable. We will retry from the stored waitlist lead.
                   </p>
                 ) : null}
               </div>
@@ -1804,7 +1804,7 @@ function InvestorsSection() {
             e.mappa is being designed to become the energy operating system for urban Africa.
           </h2>
           <p style={{ ...s.body, maxWidth: '580px', margin: '0 auto 16px' }}>
-            We plan to run our first pilot in Nyeri, Kenya, in June 2026, and build toward scale across East Africa and beyond if the pilot succeeds.
+            We plan to run our first launch in Nyeri, Kenya, in June 2026, and build toward scale across East Africa and beyond if the launch succeeds.
             The platform is being designed to be energy-agnostic, starting with solar first, and ready for any
             clean energy source tomorrow.
           </p>

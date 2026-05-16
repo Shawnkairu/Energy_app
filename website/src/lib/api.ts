@@ -75,9 +75,15 @@ export function initializeApi() {
 }
 
 export function getApiBaseUrl() {
-  const fromVite = (import.meta as unknown as { env?: { VITE_API_BASE_URL?: string } }).env?.VITE_API_BASE_URL;
+  const viteEnv = (import.meta as unknown as { env?: { VITE_API_BASE_URL?: string; DEV?: boolean } }).env;
+  const fromVite = viteEnv?.VITE_API_BASE_URL;
   const fromWindow = (globalThis as { __EMAPPA_API_BASE_URL__?: string }).__EMAPPA_API_BASE_URL__;
-  return (fromVite || fromWindow || "").replace(/\/+$/, "");
+  // Dev fallback: without an explicit VITE_API_BASE_URL the portal silently fell
+  // back to fake sessions (apiRequest returns null → verifyEmailOtp returns
+  // createFallbackSession). That made misconfig look like a working app. In dev
+  // mode default to the canonical local backend so the real OTP flow runs.
+  const devDefault = viteEnv?.DEV ? "http://127.0.0.1:8000" : "";
+  return (fromVite || fromWindow || devDefault || "").replace(/\/+$/, "");
 }
 
 export function readSession(): WebSession | null {

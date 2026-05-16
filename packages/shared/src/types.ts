@@ -504,7 +504,7 @@ export interface SettlementPeriod {
     emappa: number;
     reserve: number;
   };
-  simulation: boolean;        // pilot: always true
+  simulation: boolean;        // true for simulated/demo, false for measured
   dataSource: "synthetic" | "measured" | "mixed";
   createdAt: string;
 }

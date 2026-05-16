@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_session
@@ -65,8 +65,7 @@ class CertBody(BaseModel):
     issued_at: datetime = Field(alias="issuedAt")
     expires_at: datetime = Field(alias="expiresAt")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.get("/{user_id}/certifications")

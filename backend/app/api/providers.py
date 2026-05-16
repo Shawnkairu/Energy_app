@@ -4,7 +4,7 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_session
@@ -34,8 +34,7 @@ class AddInventoryBody(BaseModel):
     stock: int = Field(ge=0)
     unit_price_kes: float = Field(alias="unitPriceKes", gt=0)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.get("/{user_id}/inventory")

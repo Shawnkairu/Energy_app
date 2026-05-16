@@ -78,10 +78,18 @@ export function App() {
     setError(null);
     getProjects(session.token)
       .then((items) => {
-        setProjects(items);
-        setSelectedProjectId((current) => current ?? items[0]?.project.id ?? null);
+        // Backend /projects currently returns flat Building rows (see
+        // backend/app/api/projects.py docstring — projector wiring is a TODO).
+        // Until that lands, drop items that don't already have the projected
+        // shape so the cockpit doesn't crash on `item.project.id`.
+        const valid = items.filter(
+          (item): item is typeof item & { project: { id: string } } =>
+            Boolean((item as { project?: { id?: unknown } })?.project?.id),
+        );
+        setProjects(valid);
+        setSelectedProjectId((current) => current ?? valid[0]?.project.id ?? null);
         return Promise.all(
-          items.map((item) =>
+          valid.map((item) =>
             getLatestSettlement(item.project.id, session.token)
               .then((settlement) => [item.project.id, settlement] as const)
               .catch(() => [item.project.id, null] as const),

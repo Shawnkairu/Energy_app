@@ -36,7 +36,7 @@ export function LoginLayer({
     try {
       await requestEmailOtp(normalizedEmail);
       setStep("verify");
-      setMessage(`We sent a six-digit pilot code to ${normalizedEmail}.`);
+      setMessage(`We sent a six-digit code to ${normalizedEmail}.`);
     } catch {
       setMessage("We could not send a code. Check the email and try again.");
     } finally {
@@ -56,7 +56,7 @@ export function LoginLayer({
       }
       onSession(session);
     } catch {
-      setMessage("That code did not open a pilot portal. Try again or request a new code.");
+      setMessage("That code did not open a portal. Try again or request a new code.");
     } finally {
       setLoading(false);
     }
@@ -102,10 +102,10 @@ export function LoginLayer({
 
       <section className="login-grid">
         <div className="login-copy">
-          <p className="eyebrow">Secure pilot access</p>
+          <p className="eyebrow">Secure portal access</p>
           <h1>Enter the portal built for your energy role.</h1>
           <p>
-            Sign in with the email assigned to your e.mappa pilot role. The portal opens with the
+            Sign in with the email assigned to your e.mappa role. The portal opens with the
             energy, wallet, project, and proof controls that role is allowed to use.
           </p>
           <div className="login-proof-grid" aria-label="Portal safeguards">
@@ -129,8 +129,8 @@ export function LoginLayer({
           </div>
           {step === "email" ? (
             <form className="otp-form" onSubmit={requestOtp}>
-              <label htmlFor="pilot-email">Email</label>
-              <input id="pilot-email" value={email} type="email" autoComplete="email" placeholder="resident@emappa.test" onChange={(event) => setEmail(event.target.value)} required />
+              <label htmlFor="login-email">Email</label>
+              <input id="login-email" value={email} type="email" autoComplete="email" placeholder="resident@emappa.test" onChange={(event) => setEmail(event.target.value)} required />
               <button type="submit" disabled={loading || !normalizedEmail}>{loading ? "Sending..." : "Send code"}</button>
               <div className="demo-role-grid" aria-label="Open synthetic demo portals">
                 <span>Or open a synthetic demo</span>
@@ -145,8 +145,8 @@ export function LoginLayer({
 
           {step === "verify" ? (
             <form className="otp-form" onSubmit={verifyOtp}>
-              <label htmlFor="pilot-code">Six-digit code</label>
-              <input id="pilot-code" value={code} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} placeholder="000000" onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} required />
+              <label htmlFor="otp-code">Six-digit code</label>
+              <input id="otp-code" value={code} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} placeholder="000000" onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} required />
               <button type="submit" disabled={loading || trimmedCode.length < 6}>{loading ? "Verifying..." : "Verify and continue"}</button>
               <button type="button" className="ghost-action" onClick={() => { setStep("email"); setCode(""); setMessage(null); }}>Use a different email</button>
             </form>

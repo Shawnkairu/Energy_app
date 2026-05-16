@@ -246,7 +246,7 @@ function runSharedDomainTests() {
     "Synthetic replay should derive role-specific stakeholder timelines",
   );
   assert(
-    replayed.at(-1)?.sourceSpec.includes("scenario-a-resident"),
+    replayed.at(-1)?.sourceSpec.includes("scenario-a-resident") ?? false,
     "Synthetic replay should trace back to the imported scenario document",
   );
 
