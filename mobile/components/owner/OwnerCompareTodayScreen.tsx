@@ -22,7 +22,7 @@ export function OwnerCompareTodayScreen() {
           <OwnerIntroCard
             eyebrow="How to read this"
             title="A range, not a guarantee."
-            detail="Numbers below assume 80% participation and median utilization. Both move with deployment readiness and resident sign-up."
+            detail="Numbers below use pledged demand and utilization scenarios — not guaranteed outcomes. Both move with DRS gates and resident sign-up."
           />
           <GlassCard>
             <Label>Side-by-side</Label>
@@ -64,7 +64,7 @@ export function OwnerCompareTodayScreen() {
             title="What changes the projection."
             body="The comparison reflects only monetized prepaid solar. Free generation, waste, and curtailment do not improve owner royalty."
             rows={[
-              { label: "Resident participation", value: "80% assumed", note: "Below 60% blocks deployment.", tone: "good" },
+              { label: "Resident participation", value: "Scenario range", note: "Low demand can block DRS critical gates.", tone: "good" },
               { label: "Utilization", value: "75% assumed", note: "Below 70% lowers royalty.", tone: "good" },
               { label: "Grid tariff", value: "+ shocks", note: "Tariff rises favor e.mappa more, never less.", tone: "neutral" },
             ]}

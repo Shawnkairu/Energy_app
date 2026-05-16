@@ -15,8 +15,8 @@ The homeowner unlock removes the constraints that made apartments hard:
 | Constraint (apartments) | Removed (single-family) |
 |---|---|
 | Allocation complexity across many residents | One household, one consumer |
-| Bus-bar integration / meter topology | One meter, one main panel |
-| KPLC ambiguity around shared metering | Standard residential connection |
+| Per-unit ATS, PAYG mapping, and selective participation (no common-bus injection shortcut) | One meter, one main panel |
+| KPLC token + multi-tenant visibility | Standard residential connection |
 | Shared consumption accounting | None — direct attribution |
 | Resident-onboarding density required for DRS | One pledger = full demand coverage |
 | Landlord legal/political coordination | Owner = decision maker |
@@ -41,9 +41,9 @@ That's not a solar marketplace. It's a coordination protocol for any recurring-c
 
 Not energy allocation. Not even solar.
 
-The moat is **deployment liquidity** — how fast can a project go from *"I want this"* → *"funded and installed"*. Today that takes weeks of phone calls, quotes, financing applications, installer scheduling. e.mappa makes it minutes-to-funded, days-to-installed, with full visibility for every stakeholder.
+The moat is **deployment liquidity** — how fast can a project go from *"I want this"* → *"funded and installed"*. Today that takes weeks of phone calls, quotes, financing applications, electrician scheduling. e.mappa makes it minutes-to-funded, days-to-installed, with full visibility for every stakeholder.
 
-That speed compounds as the network grows. Every new financier reduces capital cost. Every new installer reduces deployment time. Every new supplier reduces equipment lead-time. Liquidity begets liquidity.
+That speed compounds as the network grows. Every new financier reduces capital cost. Every new electrician reduces deployment time. Every new supplier reduces equipment lead-time. Liquidity begets liquidity.
 
 ## What this means for the pilot (today)
 

@@ -49,6 +49,22 @@ export const colors = {
   graphite: "#27302B",
 } as const;
 
+/** Dark immersive hero for Energy + Project status (Tesla / Enphase system-overview direction). */
+export const energyImmersive = {
+  heroTop: "#0D0C0B",
+  heroMid: "#161412",
+  heroDeep: "#0E1411",
+  textPrimary: "#F7F2EC",
+  textMuted: "rgba(247, 242, 236, 0.52)",
+  flowLine: "rgba(203, 171, 132, 0.95)",
+  flowCore: "#F5C65B",
+  gridStroke: "rgba(247, 242, 236, 0.22)",
+  battery: "#2F9F6B",
+  batteryMuted: "rgba(47, 159, 107, 0.35)",
+  sheetBg: "#FFFBF7",
+  sheetBorder: "rgba(118, 73, 39, 0.12)",
+} as const;
+
 export const spacing = {
   xs: 4,
   sm: 8,

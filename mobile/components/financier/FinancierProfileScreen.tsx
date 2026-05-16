@@ -1,3 +1,4 @@
+import { ProfileEssentials } from "../ProfileEssentials";
 import {
   BuildingSnapshotCard,
   FinancierBriefCard,
@@ -34,13 +35,21 @@ export function FinancierProfileScreen() {
           <RecoveryBandCard building={primary} title="Default range view" />
           <FinancierBriefCard
             eyebrow="Settings"
-            title="Quiet finance mode."
-            body="Concise numbers, readiness gates, and range-first recovery copy."
+            title="Compliance-gated finance mode."
+            body="Concise numbers, readiness gates, range-first recovery copy, and explicit pilot boundaries for KYC and escrow."
             rows={[
               { label: "View", value: "Deal room", note: "Building-level exposure." },
-              { label: "Alerts", value: "Gates", note: "DRS and release changes." },
-              { label: "Support", value: "Context", note: "Messages include active building." },
+              { label: "KYC / escrow", value: primary.roleViews.financier.kycEscrow?.status.replace(/_/g, " ") ?? "prototype", note: primary.roleViews.financier.kycEscrow?.detail ?? "Pilot status only.", tone: "warn" },
+              { label: "Support", value: "Context", note: "Messages include active building and compliance state." },
             ]}
+          />
+          <ProfileEssentials
+            roleLabel="Financier"
+            accountRows={[
+              { label: "Deal context", value: primary.project.name, note: "named-building funding only" },
+              { label: "Disclosure mode", value: "Range-first", note: "no guaranteed ROI" },
+            ]}
+            supportSubject={`Financier support - ${primary.project.name}`}
           />
         </>
       )}

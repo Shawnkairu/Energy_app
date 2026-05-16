@@ -13,17 +13,18 @@ export default function HomeownerWallet({ project, data }: PortalScreenProps) {
     <>
       <PortalKpiBar items={[
         { label: "Pledged total", value: kes(confirmedPledges), detail: "resident stream" },
-        { label: "Royalties earned", value: kes(owner.monthlyRoyaltyKes), detail: "rooftop stream" },
-        { label: "Share earnings", value: kes(provider.monthlyPayoutKes), detail: "retained share stream" },
+        { label: "Savings / offset", value: kes(owner.monthlyRoyaltyKes), detail: "no host royalty on your own roof" },
+        { label: "External / share", value: kes(provider.monthlyPayoutKes), detail: "export, trading, or ownership pool only" },
       ]} />
       <div className="portal-two-col">
-        <PortalPanel eyebrow="Cashflow" title="Three-stream wallet">
-          <p>Pledges, rooftop royalties, and retained-share earnings stay visibly separate while still rolling into one homeowner account.</p>
+        <PortalPanel eyebrow="Cashflow" title="Segmented wallet">
+          <p>Pledges, avoided grid cost (savings), and external monetization or share earnings stay separate — self-consumption is not cash income.</p>
           <WalletTransactions rows={data.walletTransactions} />
         </PortalPanel>
         <PortalPanel eyebrow="Segments" title="Account composition">
           <PortalLedger rows={[
-            { label: "Cashflow", value: kes(cashBalance + owner.monthlyRoyaltyKes), note: "available plus projected royalty" },
+            { label: "Cashflow", value: kes(cashBalance), note: "wallet balance; savings shown separately" },
+            { label: "Net effective offset", value: kes(owner.monthlyRoyaltyKes), note: "savings vs grid — not host royalty" },
             { label: "Ownership", value: kes(provider.monthlyPayoutKes * 24), note: "own-array position" },
             { label: "Pledges", value: `${data.prepaidHistory.length || 1} rows`, note: "confirmed history" },
             { label: "Retained share", value: pct(provider.retainedOwnership), note: "rooftop economics" },

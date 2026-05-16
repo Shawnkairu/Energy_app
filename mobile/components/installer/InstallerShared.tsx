@@ -54,6 +54,7 @@ export function InstallerScaffold({
   subtitle,
   actions,
   hero,
+  immersive = false,
   children,
 }: {
   section: string;
@@ -61,6 +62,8 @@ export function InstallerScaffold({
   subtitle: string;
   actions: string[];
   hero: (building: ProjectedBuilding) => InstallerHero;
+  /** Tesla/Enphase-style full-bleed status hero; hides document title and KPI hero card. */
+  immersive?: boolean;
   children: (building: ProjectedBuilding) => ReactNode;
 }) {
   const [building, setBuilding] = useState<ProjectedBuilding | null>(null);
@@ -128,23 +131,27 @@ export function InstallerScaffold({
           </View>
           <AppMark />
         </View>
-        <Text
-          style={{
-            color: colors.text,
-            fontSize: 31,
-            fontWeight: "800",
-            letterSpacing: -1,
-            lineHeight: 37,
-            marginTop: 18,
-          }}
-        >
-          {title}
-        </Text>
-        <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8, marginBottom: 12 }}>
-          {subtitle}
-        </Text>
+        {immersive ? null : (
+          <>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 31,
+                fontWeight: "800",
+                letterSpacing: -1,
+                lineHeight: 37,
+                marginTop: 18,
+              }}
+            >
+              {title}
+            </Text>
+            <Text style={{ color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8, marginBottom: 12 }}>
+              {subtitle}
+            </Text>
+          </>
+        )}
         <PilotBanner compact title="Pilot / demo field shell" />
-        {actions.length > 0 ? (
+        {!immersive && actions.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 14, marginBottom: 14 }}>
             {actions.map((action, index) => (
               <Pressable
@@ -167,7 +174,7 @@ export function InstallerScaffold({
             ))}
           </ScrollView>
         ) : null}
-        <InstallerHeroCard hero={h} />
+        {immersive ? null : <InstallerHeroCard hero={h} />}
         {children(building)}
       </ScrollView>
     </InstallerCanvas>
@@ -604,9 +611,23 @@ function getInstallerActionTarget(action: string) {
   const normalized = action.toLowerCase();
 
   if (normalized.includes("crew") || normalized.includes("queue") || normalized.includes("accept")) return "/(electrician)/jobs-inbox";
-  if (normalized.includes("license") || normalized.includes("lead") || normalized.includes("compliance")) return "/(electrician)/compliance";
-  if (normalized.includes("profile") || normalized.includes("credential")) return "/(electrician)/profile";
-  if (normalized.includes("ticket") || normalized.includes("service") || normalized.includes("pay")) return "/(electrician)/wallet";
+  if (normalized.includes("discover")) return "/(electrician)/discover";
+  if (
+    normalized.includes("license") ||
+    normalized.includes("compliance") ||
+    normalized.includes("certification") ||
+    normalized.includes("credential") ||
+    normalized.includes("training")
+  )
+    return "/(electrician)/compliance";
+  if (
+    normalized.includes("wallet") ||
+    normalized.includes("ticket") ||
+    normalized.includes("service") ||
+    normalized.includes("pay")
+  )
+    return "/(electrician)/wallet";
+  if (normalized.includes("profile")) return "/(electrician)/profile";
   return "/(electrician)/jobs";
 }
 

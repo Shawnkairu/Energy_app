@@ -19,12 +19,107 @@ export type PublicRole = Exclude<Role, "admin">;
 
 export type BusinessType = "panels" | "infrastructure" | "both";
 
-export type BuildingKind = "apartment" | "single_family";
+export type BuildingKind = "apartment" | "single_family" | "small_compound";
 
 // Back-compat alias. New code should prefer Role.
 export type StakeholderRole = Role;
 
-export type DeploymentDecision = "approve" | "review" | "block";
+/** Canonical DRS outcome — never infer deployment from display % alone (see docs/imported-specs). */
+export type DeploymentDecision = "deployment_ready" | "review" | "blocked";
+
+/** @deprecated Use `deployment_ready` — kept for archived JSON/migrations only */
+export type LegacyDeploymentDecision = "approve" | "review" | "block";
+
+export type DrsSiteKind = "apartment" | "homeowner";
+
+export type DataQualityStatus = "verified" | "estimated" | "missing" | "delayed" | "disputed" | "conservative";
+
+export type ExternalMonetization = "none" | "net_metering" | "export_credit" | "energy_trading" | "wheeling";
+
+export type SettlementPhase = "recovery" | "royalty";
+
+export type OperationalWorkflowId =
+  | "ats_activation"
+  | "verification_documents"
+  | "quote_reservation"
+  | "delivery_evidence"
+  | "go_live_signoff"
+  | "kyc_escrow"
+  | "ai_evidence_ingestion";
+
+export type OperationalWorkflowStatus = "pending" | "in_review" | "ready" | "blocked" | "prototype";
+
+export interface OperationalWorkflowSnapshot {
+  id: OperationalWorkflowId;
+  label: string;
+  status: OperationalWorkflowStatus;
+  ownerRole: PublicRole | "admin";
+  detail: string;
+  evidenceLabel: string;
+  /** Truthful pilot/prototype boundary; use when no production integration exists yet. */
+  prototypeScope: boolean;
+}
+
+export interface DrsGateFailure {
+  code: string;
+  message: string;
+  /** Who must act next; optional when internal/ops */
+  responsibleRole?: PublicRole | "admin";
+}
+
+export interface DrsChecklistItem {
+  id: string;
+  category: string;
+  displayWeight: number;
+  critical: boolean;
+  complete: boolean;
+  label: string;
+}
+
+export interface LbrsChecklistItem {
+  id: string;
+  testName: string;
+  displayWeight: number;
+  critical: boolean;
+  complete: boolean;
+  label: string;
+}
+
+export type CapacityQueueStatus =
+  | "interested"
+  | "pledged"
+  | "capacity_review"
+  | "capacity_cleared"
+  | "queued"
+  | "waitlisted"
+  | "activated";
+
+export type QuoteState =
+  | "draft"
+  | "submitted"
+  | "under_review"
+  | "approved"
+  | "reserved"
+  | "committed"
+  | "delivered"
+  | "installed_activated"
+  | "expired"
+  | "cancelled";
+
+export type ElectricianCertificationTier =
+  | "helper"
+  | "verified_electrician"
+  | "lead_electrician"
+  | "senior_inspector"
+  | "restricted_probation";
+
+export type FinancierEligibilityTier =
+  | "watch_only"
+  | "retail_limited"
+  | "sophisticated"
+  | "entity"
+  | "institutional"
+  | "restricted_jurisdiction";
 export type ProjectStage =
   | "lead"
   | "inspection"
@@ -57,6 +152,8 @@ export interface EnergyOutputs {
   E_waste: number;
   E_grid: number;
   utilization: number;
+  /** E_waste / E_gen (0 when E_gen is 0) */
+  wasteRate: number;
   coverage: number;
 }
 
@@ -76,6 +173,11 @@ export interface SettlementOutputs {
   ownerRoyalty: number;
   emappaFee: number;
   unallocated: number;
+  /** Sum of pool payouts — equals revenue when rates balanced and no shortfall */
+  allocatedTotal: number;
+  /** revenue - allocatedTotal when rates exceed 100% or forced cap */
+  shortfallKes: number;
+  phase: SettlementPhase;
 }
 
 export interface OwnershipPosition {
@@ -91,35 +193,110 @@ export interface OwnershipPayout {
   payout: number;
 }
 
+/**
+ * DRS inputs — canonical gate model in docs/imported-specs/installation-process-drs-lbrs-go-live.md.
+ * Display components are advisory weights; `decision` is derived only from critical gates + warnings.
+ */
 export interface DrsInputs {
+  /** Apartment vs homeowner path — selects which critical gate set applies */
+  siteKind?: DrsSiteKind;
+  /** Demand / load confidence (0–100) — display weight only unless paired with utilization kill */
   demandCoverage: number;
   prepaidCommitment: number;
   loadProfile: number;
   installationReadiness: number;
+  /** @deprecated Prefer `electricianReadiness`; retained for demo JSON */
   installerReadiness: number;
+  /** Electrician crew readiness score (0–100), display weight */
+  electricianReadiness?: number;
   capitalAlignment: number;
   projectedUtilization: number;
+  /**
+   * Resident prepaid cash on books (when applicable).
+   * Pilot pledges are non-purchases; use `hasResidentDemandSignal` for demand proof.
+   */
   hasPrepaidFunds: boolean;
+  /** Non-binding pledges + load artifacts sufficient to treat demand as evidenced */
+  hasResidentDemandSignal?: boolean;
   hasCertifiedLeadElectrician: boolean;
-  meterInverterMatchResolved: boolean;
+  /** Solar/battery capacity verified against participating apartments (dedicated solar path, not common-bus). */
+  solarApartmentCapacityFitVerified: boolean;
+  /** Design-stage: apartment ATS + PAYG meter mapping plan complete */
+  apartmentAtsMeterMappingVerified: boolean;
+  /** Design-stage: ATS / KPLC failover architecture validated */
+  atsKplcSwitchingVerified: boolean;
   ownerPermissionsComplete: boolean;
+  /** Hardware package / verified BOM or quote for procurement */
   hasVerifiedSupplierQuote: boolean;
+  /** Site inspection evidence complete (roof, meter bank, cable routes) */
+  siteInspectionComplete?: boolean;
+  /** Capacity plan (phases, max apartments, reserve margin) approved */
+  capacityPlanApproved?: boolean;
+  /** Vetted stakeholders committed (electrician, provider, financier as required) */
+  stakeholdersVetted?: boolean;
+  /** Electrician labor funded upfront or signed labor-as-capital terms */
+  electricianLaborPaymentResolved?: boolean;
+  /** Contracts, waterfall, compliance review signed off */
+  contractsAndComplianceReady?: boolean;
+  /** Homeowner-only: title/site authority verified */
+  propertyAuthorityComplete?: boolean;
+  /** Homeowner-only: roof/DB/meter feasibility */
+  siteFeasibilityComplete?: boolean;
+  /** Homeowner-only: load vs sizing discipline */
+  loadProfileSizingComplete?: boolean;
+  /** Homeowner-only: capital stack + labor payment */
+  capitalAndLaborResolved?: boolean;
+  /** Homeowner-only: procurement BOM path */
+  hardwareProcurementComplete?: boolean;
+  /** Homeowner-only: export / anti-islanding / permits */
+  legalUtilityDisciplineComplete?: boolean;
   monitoringConnectivityResolved: boolean;
   settlementDataTrusted: boolean;
 }
 
 export interface DrsResult {
+  /** Weighted display score (0–100); does not authorize installation without critical gates */
   score: number;
   decision: DeploymentDecision;
+  /** Human-readable reasons (blockers + warnings) */
   reasons: string[];
+  criticalFailures: DrsGateFailure[];
+  warnings: string[];
+  checklist: DrsChecklistItem[];
   components: {
     demandCoverage: number;
     prepaidCommitment: number;
     loadProfile: number;
     installationReadiness: number;
+    electricianReadiness: number;
+    /** @deprecated Use `electricianReadiness` */
     installerReadiness: number;
     capitalAlignment: number;
   };
+}
+
+export interface LbrsInputs {
+  siteKind?: DrsSiteKind;
+  asBuiltBomVerified: boolean;
+  electricalSafetyComplete: boolean;
+  solarBusIsolationVerified: boolean;
+  inverterBatteryTestsComplete: boolean;
+  atsSwitchingPerApartmentComplete?: boolean;
+  /** Home path: changeover/ATS tests */
+  homeSwitchingFallbackComplete?: boolean;
+  meterMappingDataReliable: boolean;
+  tokenSettlementDryRunPassed: boolean;
+  backendTokenControlDryRunPassed: boolean;
+  residentOwnerLaunchReadinessComplete: boolean;
+}
+
+export interface LbrsResult {
+  score: number;
+  decision: DeploymentDecision;
+  reasons: string[];
+  criticalFailures: DrsGateFailure[];
+  warnings: string[];
+  checklist: LbrsChecklistItem[];
 }
 
 export interface PaybackInputs {
@@ -133,6 +310,8 @@ export interface PaybackResult {
   targetMonths: number;
   yearsToPrincipal: number;
   yearsToTarget: number;
+  /** True when monthly monetized payout is zero or negative — do not show a fake payback date */
+  notCurrentlyRecovering: boolean;
 }
 
 export interface BuildingProject {
@@ -141,16 +320,22 @@ export interface BuildingProject {
   locationBand: string;
   units: number;
   stage: ProjectStage;
+  /** Defaults to apartment economics when omitted */
+  buildingKind?: BuildingKind;
   energy: EnergyInputs;
   solarPriceKes: number;
   gridPriceKes: number;
   settlementRates: SettlementRates;
+  settlementPhase?: SettlementPhase;
+  /** When omitted, derived from `stage` in projector (non-live = blocked LBRS). */
+  lbrs?: LbrsInputs;
   drs: DrsInputs;
   providerOwnership: OwnershipPosition[];
   financierOwnership: OwnershipPosition[];
   capitalRequiredKes: number;
   fundedKes: number;
   prepaidCommittedKes: number;
+  operationalWorkflows?: OperationalWorkflowSnapshot[];
 }
 
 // =============================================================================
@@ -208,6 +393,7 @@ export interface EnergyReading {
   unit: string;
   source: "synthetic" | "measured";
   provenance: string;
+  dataQuality?: DataQualityStatus;
 }
 
 // Geo polygon. Loosely typed as GeoJSON-like; full GeoJSON typing not pulled in to avoid a dep.

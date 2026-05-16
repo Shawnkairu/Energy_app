@@ -13,7 +13,7 @@ export function OwnerApproveTermsScreen() {
       hero={() => ({
         label: "Awaiting owner signature",
         value: "3 terms",
-        sub: "Provider royalty split, financier milestones, supplier lock window.",
+        sub: "Provider royalty split, financier milestones, provider lock window.",
         tone: "warn",
         status: "pending",
       })}
@@ -34,7 +34,7 @@ export function OwnerApproveTermsScreen() {
             rows={[
               { label: "Royalty split", value: "12% owner", note: "Of monetized solar after provider pool. Future periods only.", tone: "good" },
               { label: "Financier raise", value: "milestone", note: "3 tranches, released against verified evidence - not against time." },
-              { label: "Supplier lock", value: "30 days", note: "BOM and quote held for owner to confirm before installer scheduling." },
+              { label: "Provider lock", value: "30 days", note: "BOM and quote held for owner to confirm before electrician scheduling." },
             ]}
           />
           <OwnerWorkflowCard
@@ -48,7 +48,7 @@ export function OwnerApproveTermsScreen() {
                 tone: "good",
               },
               { label: "Financier deal room", detail: "Capital matching opens for the deal up to the agreed raise.", status: "unlocks", tone: "good" },
-              { label: "Supplier scheduling", detail: "Installer can be paired with a locked BOM and dispatch window.", status: "unlocks", tone: "good" },
+              { label: "Supplier scheduling", detail: "An electrician can be paired with a locked BOM and dispatch window.", status: "unlocks", tone: "good" },
             ]}
           />
           <GlassCard>

@@ -190,4 +190,3 @@ Do not connect e.mappa solar to a common bus that serves non-enrolled apartments
 
 Do not allow token purchases for apartments that are not capacity-cleared, ATS-installed, meter-mapped, and switching-verified.
 
-Do not settle from generated solar, pledged demand, unpaid usage, or unverified data.

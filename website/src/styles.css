@@ -1459,6 +1459,71 @@ a {
   content: none;
 }
 
+.scenario-timeline {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fffaf5;
+}
+
+.scenario-timeline h2 {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.scenario-timeline-rows {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scenario-event {
+  min-height: 112px;
+  padding: 11px;
+  border: 1px solid rgba(216, 111, 79, 0.18);
+  border-radius: 13px;
+  background: #ffffff;
+}
+
+.scenario-event span,
+.scenario-event strong,
+.scenario-event small {
+  display: block;
+}
+
+.scenario-event span {
+  color: var(--emappa-solar-strong);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scenario-event strong {
+  margin-top: 7px;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.scenario-event small {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.scenario-event.blocked {
+  border-color: rgba(185, 70, 63, 0.28);
+  background: #fff7f5;
+}
+
 .command-copy,
 .command-status-card {
   position: relative;

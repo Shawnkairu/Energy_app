@@ -13,7 +13,7 @@ export function OwnerDeploymentScreen() {
     <OwnerScreenShell
       section="Deployment"
       title="Deployment Journey"
-      subtitle="A timeline for owner access, resident readiness, supplier lock, installer proof, monitoring, and go-live."
+      subtitle="A timeline for owner access, resident readiness, provider lock, electrician proof, monitoring, and go-live."
       actions={["Confirm access", "Invite residents", "Track go-live"]}
       hero={(building) => ({
         label: "Current stage",
@@ -51,7 +51,7 @@ export function OwnerDeploymentScreen() {
                   tone: drsInput.hasVerifiedSupplierQuote ? "good" : "bad",
                 },
                 {
-                  label: "Installer proof",
+                  label: "Electrician proof",
                   value: drsInput.hasCertifiedLeadElectrician ? "assigned" : "missing",
                   detail: "Certified lead electrician is a deployment kill switch.",
                   tone: drsInput.hasCertifiedLeadElectrician ? "good" : "bad",
@@ -100,12 +100,12 @@ export function OwnerDeploymentScreen() {
                 },
                 {
                   label: "Supplier lock",
-                  detail: "BOM and quote proof are required before installer scheduling.",
+                  detail: "BOM and quote proof are required before electrician scheduling.",
                   status: drsInput.hasVerifiedSupplierQuote ? "locked" : "pending",
                   tone: drsInput.hasVerifiedSupplierQuote ? "good" : "warn",
                 },
                 {
-                  label: "Installer assignment",
+                  label: "Electrician assignment",
                   detail: "Certified labor must be assigned before installation can start.",
                   status: drsInput.hasCertifiedLeadElectrician ? "assigned" : "missing",
                   tone: drsInput.hasCertifiedLeadElectrician ? "good" : "bad",

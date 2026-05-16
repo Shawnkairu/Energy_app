@@ -6,47 +6,65 @@ import { AppMark, colors, PaletteCard, spacing, typography } from "@emappa/ui";
 import { useAuth } from "../../components/AuthContext";
 import { useApi } from "../../lib/api";
 
+function firstOnboardingHref(role: StakeholderRole): string {
+  switch (role) {
+    case "resident":
+      return "/(onboard)/resident";
+    case "homeowner":
+      return "/(onboard)/homeowner/address";
+    case "building_owner":
+      return "/(onboard)/building-owner";
+    case "provider":
+      return "/(onboard)/provider";
+    case "electrician":
+      return "/(onboard)/electrician";
+    case "financier":
+      return "/(onboard)/financier";
+    case "admin":
+      return "/(admin)/alerts";
+    default:
+      return "/(auth)/role-select";
+  }
+}
+
 /** shared-screens `ScreenRolePicker`: stacked role cards, first row emphasized, subtitle per row. */
-const roles: Array<{ label: string; sub: string; role: StakeholderRole; href: string; businessType?: BusinessType }> = [
-  { label: "Resident", sub: "I live in a building", role: "resident", href: "/(resident)/home" },
-  { label: "Homeowner", sub: "I own and live in a single-family home", role: "homeowner", href: "/(homeowner)/home" },
-  { label: "Building owner", sub: "I own a multi-unit building", role: "building_owner", href: "/(building-owner)/home" },
-  { label: "Provider", sub: "I supply panels or infrastructure", role: "provider", href: "/(provider)/home", businessType: "both" },
-  { label: "Financier", sub: "I fund deal-level capital", role: "financier", href: "/(financier)/portfolio" },
-  { label: "Electrician", sub: "I install and verify", role: "electrician", href: "/(electrician)/jobs" },
+const roles: Array<{ label: string; sub: string; role: StakeholderRole; businessType?: BusinessType }> = [
+  { label: "Resident", sub: "I live in a building", role: "resident" },
+  { label: "Homeowner", sub: "I own and live in a single-family home", role: "homeowner" },
+  { label: "Building owner", sub: "I own a multi-unit building", role: "building_owner" },
+  { label: "Provider", sub: "I supply panels or infrastructure", role: "provider", businessType: "both" },
+  { label: "Financier", sub: "I fund deal-level capital", role: "financier" },
+  { label: "Electrician", sub: "I install and verify", role: "electrician" },
 ];
 
 export default function RoleSelect() {
   const router = useRouter();
   const api = useApi();
-  const { completeProfile, refreshUser, session, setRole } = useAuth();
+  const { refreshUser, session, setRole } = useAuth();
   const [displayName, setDisplayName] = useState(session?.user?.displayName ?? "");
-  const [status, setStatus] = useState("Confirm your workspace to finish onboarding.");
+  const [status, setStatus] = useState("Pick your workspace, then complete the short setup for that role.");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function chooseRole(role: StakeholderRole, href: string, businessType?: BusinessType) {
+  async function chooseRole(role: StakeholderRole, businessType?: BusinessType) {
     if (isSubmitting) {
       return;
     }
 
     setIsSubmitting(true);
-    setStatus("Finishing onboarding...");
+    setStatus("Saving your role…");
 
     try {
-      const profile = {
+      await api.selectRole({
+        role,
         displayName: displayName.trim() || undefined,
         businessType: role === "provider" ? businessType : undefined,
-      };
-      await api.completeOnboarding(profile);
+      });
       const user = await api.me();
-      completeProfile(profile);
       refreshUser(user);
       setRole(user.role ?? role);
-      router.replace(roleHomeHref(user.role ?? role, href));
+      router.replace(firstOnboardingHref(user.role ?? role));
     } catch {
-      setRole(role);
-      setStatus("Saved locally, but the API could not complete onboarding yet.");
-      router.replace(href);
+      setStatus("We could not save your role. Check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +101,7 @@ export default function RoleSelect() {
                 accessibilityRole="button"
                 accessibilityLabel={`Continue as ${r.label}`}
                 accessibilityHint={r.sub}
-                onPress={() => chooseRole(r.role, r.href, r.businessType)}
+                onPress={() => chooseRole(r.role, r.businessType)}
                 disabled={isSubmitting}
                 style={({ pressed }) => [{ opacity: isSubmitting ? 0.75 : pressed ? 0.94 : 1 }]}
               >
@@ -163,17 +181,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.orangeDeep,
   },
 });
-
-function roleHomeHref(role: StakeholderRole, fallback: string) {
-  const routes: Record<StakeholderRole, string> = {
-    resident: "/(resident)/home",
-    homeowner: "/(homeowner)/home",
-    building_owner: "/(building-owner)/home",
-    provider: "/(provider)/home",
-    financier: "/(financier)/portfolio",
-    electrician: "/(electrician)/jobs",
-    admin: "/(admin)/home",
-  };
-
-  return routes[role] ?? fallback;
-}

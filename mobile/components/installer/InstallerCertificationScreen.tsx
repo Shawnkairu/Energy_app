@@ -18,16 +18,16 @@ export function InstallerCertificationScreen() {
       section="Compliance"
       title="Lead Card"
       subtitle="Trust, license, dispatch."
-      actions={["Lead card", "Crew queue", "Profile"]}
+      actions={["Discover", "Crew queue", "Profile"]}
       hero={(building) => ({
         label: "Certification",
-        value: building.roleViews.installer.certified ? "Ready" : "Blocked",
+        value: building.roleViews.electrician.certified ? "Ready" : "Blocked",
         sub: "Lead gate",
-        tone: building.roleViews.installer.certified ? "good" : "bad",
+        tone: building.roleViews.electrician.certified ? "good" : "bad",
       })}
     >
       {(building) => {
-        const certified = building.roleViews.installer.certified;
+        const certified = building.roleViews.electrician.certified;
 
         return (
           <>

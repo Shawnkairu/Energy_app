@@ -2,8 +2,8 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { getProjects } from "@emappa/api-client";
 import { getWebSections, type ProjectedBuilding, type PublicRole } from "@emappa/shared";
 import MarketingPage from "./MarketingPage";
-import { initializeApi, clearSession, loadPortalData, readSession, type PortalData, type WebSession } from "./lib/api";
-import { HomeownerOnboarding } from "./onboard/homeowner/HomeownerOnboarding";
+import { initializeApi, clearSession, loadPortalData, readSession, type PortalData, type WebSession, persistSession, fetchAuthMeFresh } from "./lib/api";
+import { StakeholderOnboarding } from "./onboard/StakeholderOnboarding";
 import { PortalShell } from "./portal/PortalShell";
 import type { PortalScreenProps } from "./portal/types";
 import { LoginLayer } from "./screens/LoginLayer";
@@ -30,7 +30,7 @@ const screenLoaders = {
   },
   provider: {
     discover: lazy(() => import("./screens/stakeholders/provider/discover")),
-    inventory: lazy(() => import("./screens/stakeholders/provider/inventory")),
+    projects: lazy(() => import("./screens/stakeholders/provider/projects")),
     generation: lazy(() => import("./screens/stakeholders/provider/generation")),
     wallet: lazy(() => import("./screens/stakeholders/provider/wallet")),
     profile: lazy(() => import("./screens/stakeholders/provider/profile")),
@@ -39,12 +39,12 @@ const screenLoaders = {
     discover: lazy(() => import("./screens/stakeholders/electrician/discover")),
     jobs: lazy(() => import("./screens/stakeholders/electrician/jobs")),
     wallet: lazy(() => import("./screens/stakeholders/electrician/wallet")),
-    compliance: lazy(() => import("./screens/stakeholders/electrician/compliance")),
     profile: lazy(() => import("./screens/stakeholders/electrician/profile")),
   },
   financier: {
     discover: lazy(() => import("./screens/stakeholders/financier/discover")),
     portfolio: lazy(() => import("./screens/stakeholders/financier/portfolio")),
+    generation: lazy(() => import("./screens/stakeholders/financier/generation")),
     wallet: lazy(() => import("./screens/stakeholders/financier/wallet")),
     profile: lazy(() => import("./screens/stakeholders/financier/profile")),
   },
@@ -89,6 +89,12 @@ function WebsiteApp() {
     }
 
     const currentSections = getWebSections(view.role);
+    const normalizedTab = normalizePortalTab(view.role, view.tab);
+    if (normalizedTab !== view.tab) {
+      routeTo({ kind: "portal", role: view.role, tab: normalizedTab });
+      return;
+    }
+
     if (session.user.role !== view.role) {
       const role = session.user.role;
       routeTo({ kind: "portal", role, tab: getWebSections(role)[0]?.id ?? "home" });
@@ -132,7 +138,7 @@ function WebsiteApp() {
       return;
     }
 
-    if (role === "homeowner" && !nextSession.user.onboardingComplete) {
+    if (!nextSession.user.onboardingComplete) {
       routeTo({ kind: "onboard", role });
       return;
     }
@@ -153,7 +159,35 @@ function WebsiteApp() {
   }
 
   if (view.kind === "onboard") {
-    return <HomeownerOnboarding onExit={() => routeTo({ kind: "portal", role: view.role, tab: getWebSections(view.role)[0]?.id ?? "home" })} />;
+    if (!session) {
+      return (
+        <LoginLayer
+          onBack={() => routeTo({ kind: "public" })}
+          onSession={(next) => {
+            handleSession(next);
+          }}
+        />
+      );
+    }
+    return (
+      <StakeholderOnboarding
+        role={(isPublicRole(session.user.role) ? session.user.role : view.role) as PublicRole}
+        onFinished={async () => {
+          const user = await fetchAuthMeFresh();
+          if (user) {
+            const next = { ...session, user };
+            persistSession(next);
+            setSession(next);
+          }
+          const effectiveRole = (user ?? session.user).role;
+          if (!isPublicRole(effectiveRole)) {
+            routeTo({ kind: "login" });
+            return;
+          }
+          routeTo({ kind: "portal", role: effectiveRole, tab: getWebSections(effectiveRole)[0]?.id ?? "home" });
+        }}
+      />
+    );
   }
 
   if (view.kind === "portal" && session) {
@@ -258,6 +292,9 @@ function parseLocation(session: WebSession | null): ViewState {
     return { kind: "portal", role, tab: rawTab || getWebSections(role)[0]?.id || "home" };
   }
   if (path.startsWith("/onboard/")) {
+    if (!session) {
+      return { kind: "login" };
+    }
     const role = fromUrlRole(path.split("/")[2]);
     return { kind: "onboard", role };
   }
@@ -279,6 +316,11 @@ function fromUrlRole(role: string | undefined): PublicRole {
   if (role === "building-owner") return "building_owner";
   if (role === "homeowner" || role === "provider" || role === "electrician" || role === "financier" || role === "resident") return role;
   return "resident";
+}
+
+function normalizePortalTab(role: PublicRole, tab: string) {
+  if (role === "provider" && tab === "inventory") return "projects";
+  return tab;
 }
 
 function getCockpitUrl() {
@@ -303,5 +345,6 @@ function emptyPortalData(): PortalData {
     portfolio: [],
     walletBalance: null,
     walletTransactions: [],
+    syntheticTimeline: [],
   };
 }

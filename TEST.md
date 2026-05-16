@@ -2,6 +2,8 @@
 
 > e.mappa must become the **No. 1 trusted energy app in the world**. Nothing ships because it looks good. It ships only when product invariants, financial reconciliation, database durability, security, queryability, agent behavior, user workflows, and operational controls all pass.
 
+> **Canonical product model:** [docs/imported-specs/](docs/imported-specs/README.md). DRS decisions are `deployment_ready` | `review` | `blocked` (all critical gates required for deployment_ready). LBRS gates go-live. Settlement uses **E_sold**, not E_gen.
+
 > **Pilot mode override:** during the pilot, "phone OTP" gates read as "email OTP" gates, "prepaid" gates read as "pledge" gates, and energy-truth gates apply against synthesized data tagged `source='synthetic'`. See [docs/PILOT_SCOPE.md](docs/PILOT_SCOPE.md) for the authoritative pilot scope. Gates marked **[deferred-pilot]** are not required for pilot release but must be re-enabled before each post-pilot exit criterion is met.
 
 Use these markers:
@@ -14,7 +16,7 @@ Every release candidate must be tested in:
 - Mock mode: no backend URL, `@emappa/api-client` falls back to local projected data.
 - API mode: backend URL configured, real FastAPI/Postgres path.
 - Offline/degraded mode: backend unavailable, app fails gracefully without corrupting state.
-- Role-scoped mode: resident, owner, provider, financier, installer, supplier, and admin.
+- Role-scoped mode: resident, homeowner, building_owner, provider, financier, electrician, and admin.
 
 ---
 
@@ -52,7 +54,7 @@ The release is blocked if any item below fails.
 ### 1.2 DRS Gates Everything
 - [ ] Funding release is blocked when DRS decision is `block`.
 - [ ] Supplier lock is blocked when DRS decision is `block`.
-- [ ] Installer scheduling is blocked when DRS decision is `block`.
+- [ ] Electrician scheduling is blocked when DRS decision is `block`.
 - [ ] Go-live is blocked when DRS decision is `block`.
 - [ ] Any kill switch forces `block` regardless of weighted score.
 - [ ] DRS recalculates after prepaid, ownership, gate, and energy config changes.
@@ -148,7 +150,7 @@ The release is blocked if any item below fails.
 
 ### 3.4 DRS
 - [ ] Score is between 0 and 100.
-- [ ] Score weights are correct: demand 35%, prepaid 20%, load profile 15%, installation 10%, installer 10%, capital 10%.
+- [ ] Score weights are correct: demand 35%, prepaid 20%, load profile 15%, installation 10%, electrician/labor 10%, capital 10%.
 - [ ] Score >= 80 with no kill switches approves.
 - [ ] Score 65-79 with no kill switches reviews.
 - [ ] Score < 65 blocks.
@@ -385,7 +387,7 @@ The release is blocked if any item below fails.
 - [ ] Tranche release requires DRS/evidence gate.
 - [ ] Stress-test route or equivalent scenario view is reachable.
 
-### 6.8 Installer
+### 6.8 Electrician
 - [ ] Home shows assigned site/readiness.
 - [ ] Checklist is interactive when backend supports it.
 - [ ] Job detail captures proof/readings flow.
@@ -475,7 +477,7 @@ The release is blocked if any item below fails.
 - [ ] Monitoring queue shows connectivity outages and stale data.
 - [ ] Ownership queue shows disputes, transfers, and approval state.
 - [ ] Security queue shows findings, severity, evidence, owner, and status.
-- [ ] Support queue shows resident/provider/owner/installer/supplier issues by role.
+- [ ] Support queue shows resident/provider/owner/electrician/supplier issues by role.
 
 ### 8.3 Agent & Approval Workbench
 - [ ] Cockpit shows agent run history by building.
@@ -550,7 +552,7 @@ The release is blocked if any item below fails.
 - [ ] Routes DRS blockers to DRS queue.
 - [ ] Routes prepaid/payment issues to payment/support queue.
 - [ ] Routes supplier quote gaps to supplier ops queue.
-- [ ] Routes installer readiness to installer ops queue.
+- [ ] Routes electrician readiness to electrician ops queue.
 - [ ] Routes monitoring outages to technical ops queue.
 - [ ] Routes settlement anomalies to finance ops queue.
 - [ ] Routes ownership disputes to governance queue.
@@ -707,8 +709,8 @@ The release is blocked if any item below fails.
 - [ ] Track recovery.
 - [ ] Release tranche only when gates pass.
 
-### 15.5 Installer Demo
-- [ ] Login/select installer.
+### 15.5 Electrician Demo
+- [ ] Login/select electrician.
 - [ ] View job.
 - [ ] Complete checklist.
 - [ ] Upload proof/readings.

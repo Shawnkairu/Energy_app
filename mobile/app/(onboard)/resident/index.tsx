@@ -56,7 +56,9 @@ export default function ResidentInviteScreen() {
     >
       <GlassCard>
         <TextField label="Invite code or QR code text" value={code} onChangeText={setCode} placeholder="NYERI-RIDGE-A" />
-        <Text style={styles.helper}>Your building owner shares this code after listing the building with e.mappa.</Text>
+        <Text style={styles.helper}>
+          Join only if you are enrolling a participating apartment. e.mappa solar uses a dedicated path and an apartment-level ATS at your PAYG meter; pledges do not guarantee service until DRS clears capacity and switching proof.
+        </Text>
       </GlassCard>
       <StatusText status={error} tone="error" />
     </OnboardShell>

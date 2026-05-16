@@ -25,7 +25,7 @@ export function OwnerAccountScreen() {
             body="Owner identity is the signature of record for terms, inspections, and approvals."
             rows={[
               { label: "Role", value: "building owner", note: "One signer of record per building operator account.", tone: "good" },
-              { label: "Contacts", value: "masked", note: "Installer and financier routes messages without exposing personal phones on-screen.", tone: "neutral" },
+              { label: "Contacts", value: "masked", note: "Electrician and financier routes messages without exposing personal phones on-screen.", tone: "neutral" },
             ]}
           />
           <OwnerIntroCard

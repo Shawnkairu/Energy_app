@@ -9,7 +9,7 @@
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "audit": "tsc --module CommonJS --moduleResolution Node --target ES2022 --outDir ../../.tmp/shared-audit --rootDir src --noEmit false src/audit.ts && node ../../.tmp/shared-audit/audit.js",
+    "audit": "tsc --module CommonJS --moduleResolution Node --target ES2022 --outDir ../../.tmp/shared-audit --rootDir src --noEmit false src/audit.ts && node ../../.tmp/shared-audit/audit.js && node scripts/audit-ui-compliance.cjs",
     "test": "tsc --module CommonJS --moduleResolution Node --target ES2022 --outDir ../../.tmp/shared-tests --rootDir src --noEmit false src/domain.test.ts && node ../../.tmp/shared-tests/domain.test.js"
   },
   "devDependencies": {

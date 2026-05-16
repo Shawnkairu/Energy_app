@@ -1,4 +1,4 @@
-import type { ProjectCard, ProjectedBuilding, User, WalletTransaction } from "@emappa/shared";
+import { generationVisibilityForRole, type ProjectCard, type ProjectedBuilding, type User, type WalletTransaction } from "@emappa/shared";
 import { EnergyFlow } from "../components/EnergyFlow";
 import { GateList } from "../components/GateList";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalTable, PortalWorkflow } from "../components/PortalPrimitives";
@@ -91,7 +91,11 @@ export function EnergyTodayChart({ project, today }: { project: ProjectedBuildin
 }
 
 export function GenerationPanel({ project, alwaysVisible = false, hasShares = true }: { project: ProjectedBuilding; alwaysVisible?: boolean; hasShares?: boolean }) {
-  if (!alwaysVisible && !hasShares) {
+  const visibility = alwaysVisible
+    ? generationVisibilityForRole("homeowner")
+    : generationVisibilityForRole("resident", { shareOwnershipPct: hasShares ? 1 : 0 });
+
+  if (!visibility.visible) {
     return (
       <PortalPanel eyebrow="Generation" title="Buy a share to see live generation">
         <p>Generation visibility is gated by share ownership. This screen stays visible, but live generation is empty until shares exist.</p>
@@ -125,7 +129,7 @@ export function ProjectCardList({ cards, project, role }: { cards: ProjectCard[]
       stage: "funding" as const,
       gapSummary: role === "provider" ? "Needs panels + inverter + DB" : role === "electrician" ? "Inspection + install scope open" : "Capital stack open",
       capitalAskKes: project.roleViews.financier.remainingCapitalKes,
-      equipmentAsk: { panels: Math.round(project.project.energy.arrayKw * 2), infrastructure: ["Inverter", "Smart meters"] },
+      equipmentAsk: { panels: Math.round(project.project.energy.arrayKw * 2), infrastructure: ["Inverter", "Apartment ATS", "PAYG metering"] },
       electricianAsk: { scope: "install" as const, payEstimateKes: 38000 },
     },
   ];

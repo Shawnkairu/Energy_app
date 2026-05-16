@@ -58,6 +58,9 @@ jobs:
       - name: Run shared tests
         run: npm run test --workspace @emappa/shared
 
+      - name: Run shared consistency audit
+        run: npm run audit:shared
+
   test-backend:
     name: Backend tests
     runs-on: ubuntu-latest
@@ -107,7 +110,8 @@ jobs:
         run: python -m alembic upgrade head
 
       - name: Run backend tests
-        run: python -m pytest backend/ -q
+        working-directory: backend
+        run: python -m pytest tests -q
 
   lint:
     name: Lint

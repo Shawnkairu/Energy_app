@@ -153,7 +153,7 @@ website/src/screens/stakeholders/
 │   ├── home.tsx, energy.tsx, wallet.tsx, profile.tsx
 │   └── _embedded/{drs,deployment,resident-roster,approve-terms,compare-today}.tsx
 ├── provider/
-│   ├── discover.tsx, inventory.tsx, generation.tsx, wallet.tsx, profile.tsx
+│   ├── discover.tsx, projects.tsx, generation.tsx, wallet.tsx, profile.tsx
 ├── electrician/
 │   ├── discover.tsx, jobs.tsx, wallet.tsx, compliance.tsx, profile.tsx
 └── financier/

@@ -15,7 +15,7 @@ const ROLE_TINT = {
   owner:    { fg: '#764927', bg: '#FBEFDF', label: 'Owner' },
   provider: { fg: '#7D5734', bg: '#F8EDDD', label: 'Provider' },
   financier:{ fg: '#693719', bg: '#FAEDDC', label: 'Financier' },
-  installer:{ fg: '#856444', bg: '#F7EFE0', label: 'Installer' },
+  installer:{ fg: '#856444', bg: '#F7EFE0', label: 'Electrician' },
   supplier: { fg: '#997757', bg: '#F5EEDF', label: 'Supplier' },
 };
 
@@ -28,10 +28,10 @@ function BuildingPulse({ role = 'resident', compact = false }) {
   const b = window.MOCK;
   const tint = ROLE_TINT[role] || ROLE_TINT.resident;
   const drs = b.drs;
-  const activated = drs.decision === 'approve' && b.project.drs.monitoringConnectivityResolved && b.project.drs.settlementDataTrusted;
+  const activated = drs.decision === 'deployment_ready' && b.project.drs.monitoringConnectivityResolved && b.project.drs.settlementDataTrusted;
   const statePill = activated
     ? { tone: 'good', label: 'Live · settling' }
-    : drs.decision === 'approve'
+    : drs.decision === 'deployment_ready'
       ? { tone: 'good', label: 'Approved · pre-go-live' }
       : drs.decision === 'review'
         ? { tone: 'warn', label: 'In review' }
@@ -83,8 +83,9 @@ function KillSwitchBanner() {
   const synth = [];
   if (!drs.ownerPermissionsComplete)        synth.push('Owner permission incomplete · Owner must confirm building access.');
   if (!drs.hasVerifiedSupplierQuote)        synth.push('Supplier quote/BOM missing · Supplier must lock the BOM.');
-  if (!drs.hasCertifiedLeadElectrician)     synth.push('No certified lead electrician · Installer must assign a certified lead.');
-  if (!drs.meterInverterMatchResolved)      synth.push('Meter/inverter mismatch · Installer must reconcile readings.');
+  if (!drs.hasCertifiedLeadElectrician)     synth.push('No certified lead electrician · Electrician must assign a certified lead.');
+  if (!drs.solarApartmentCapacityFitVerified || !drs.apartmentAtsMeterMappingVerified || !drs.atsKplcSwitchingVerified)
+    synth.push('Apartment supply path · Capacity, ATS map, or switching verification still open for electrician.');
   if (!drs.monitoringConnectivityResolved)  synth.push('Monitoring offline · Restore connectivity before go-live.');
   if (!drs.settlementDataTrusted)           synth.push('Settlement data not trusted · Recheck telemetry before payout.');
   const all = [...reasons, ...synth];

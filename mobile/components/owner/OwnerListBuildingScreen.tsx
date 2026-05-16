@@ -7,7 +7,7 @@ export function OwnerListBuildingScreen() {
     <OwnerScreenShell
       section="Onboard"
       title="List your Building"
-      subtitle="Tell e.mappa about the building so qualification can begin. Required before DRS, supplier, and installer steps unlock."
+      subtitle="Tell e.mappa about the building so qualification can begin. Required before DRS, provider quotes, and electrician assignment unlock."
       actions={["Save draft", "Request inspection", "Cancel"]}
       hero={() => ({
         label: "Step 1 of 5",

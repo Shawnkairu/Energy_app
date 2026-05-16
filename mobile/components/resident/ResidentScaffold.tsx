@@ -30,11 +30,14 @@ export function ResidentScreenFrame({
   title,
   subtitle,
   children,
+  headerMode = "default",
 }: {
   section: string;
   title: string;
   subtitle: string;
   children: (building: ProjectedBuilding, refetch: () => void) => ReactNode;
+  /** `immersive` removes the marketing header so Energy / system heroes can go edge-to-edge. */
+  headerMode?: "default" | "immersive";
 }) {
   const api = useApi();
   const apiRef = useRef(api);
@@ -74,14 +77,16 @@ export function ResidentScreenFrame({
   return (
     <View style={styles.screen}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.headerCopy}>
-            <Text style={styles.section}>{section}</Text>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
+        {headerMode === "default" ? (
+          <View style={styles.header}>
+            <View style={styles.headerCopy}>
+              <Text style={styles.section}>{section}</Text>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.subtitle}>{subtitle}</Text>
+            </View>
+            <AppMark />
           </View>
-          <AppMark />
-        </View>
+        ) : null}
         {children(normalizeResidentBuilding(data.primary), refetch)}
       </ScrollView>
     </View>

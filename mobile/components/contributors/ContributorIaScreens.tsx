@@ -14,7 +14,7 @@ import { useApiData } from "../../lib/useApiData";
 type ContributorRole = "provider" | "electrician" | "financier";
 type ContributorSection =
   | "discover"
-  | "inventory"
+  | "projects"
   | "generation"
   | "wallet"
   | "profile"
@@ -110,10 +110,10 @@ const sectionCopy: Record<ContributorRole, Record<string, { title: string; subti
       subtitle: "Building opportunities needing provider equipment or retained supply-side ownership.",
       empty: "No provider-ready projects are available from the API right now.",
     },
-    inventory: {
-      title: "Inventory",
-      subtitle: "Live SKU, order, quote, and reliability signals from the provider inventory feed.",
-      empty: "No inventory records are available from the API right now.",
+    projects: {
+      title: "Projects",
+      subtitle: "Current project status, readiness gates, quote/BOM commitments, and delivery proof.",
+      empty: "No provider project records are available from the API right now.",
     },
     generation: {
       title: "Generation",
@@ -187,12 +187,16 @@ async function fetchContributorSection({ api, role, section, userId, buildingId 
     return { cards: (await api.getDiscover(role)).map(projectToCard) };
   }
 
+  if (role === "provider" && section === "projects") {
+    return { cards: (await api.getDiscover(role)).map(projectToCard) };
+  }
+
   if (section === "profile") {
     return { rows: [userToRow(await api.me())] };
   }
 
   if (section === "generation") {
-    if (!buildingId) throw new Error("This tab needs a building assignment before generation data can load.");
+    if (!buildingId) throw new Error("This screen needs a building assignment before generation data can load.");
     const today = await api.getEnergyToday(buildingId);
     return {
       energyToday: {
@@ -208,17 +212,7 @@ async function fetchContributorSection({ api, role, section, userId, buildingId 
     };
   }
 
-  if (!userId) throw new Error("This tab needs an authenticated user before data can load.");
-
-  if (role === "provider" && section === "inventory") {
-    return { rows: (await api.getProviderInventory(userId)).map((item) => ({
-      id: item.id,
-      label: item.sku,
-      value: `KES ${formatValue(item.unitPriceKes)}`,
-      detail: `${item.kind} stock: ${item.stock}`,
-      trend: `${item.reliabilityScore}% reliability`,
-    })) };
-  }
+  if (!userId) throw new Error("This screen needs an authenticated user before data can load.");
 
   if (role === "electrician" && section === "jobs") {
     return { cards: (await api.getElectricianJobs(userId)).map((job) => ({
@@ -297,7 +291,7 @@ export function ContributorIaScreen({ role, section }: ContributorScreenProps) {
     return (
       <ScreenFrame title={copy.title} subtitle={copy.subtitle}>
         <View style={styles.errorCard}>
-          <Text style={styles.errorTitle}>Could not load this tab</Text>
+          <Text style={styles.errorTitle}>Could not load this screen</Text>
           <Text style={styles.muted}>{error.message}</Text>
           <Pressable accessibilityRole="button" onPress={refetch} style={styles.retryButton}>
             <Text style={styles.retryText}>Retry</Text>
@@ -316,7 +310,7 @@ export function ContributorIaScreen({ role, section }: ContributorScreenProps) {
     <ScreenFrame title={data?.title ?? copy.title} subtitle={data?.subtitle ?? copy.subtitle}>
       <PilotBanner
         title={data?.banner?.title ?? "Contributor workspace"}
-        message={data?.banner?.message ?? "All values below are loaded from the mobile API for this role and tab."}
+        message={data?.banner?.message ?? "All values below are loaded from the mobile API for this role workspace."}
       />
 
       {(data?.synthetic || data?.sourceLabel) && <SyntheticBadge label={data.sourceLabel ?? "Synthetic data source"} />}

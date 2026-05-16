@@ -11,10 +11,16 @@ function synthReasons(projectDrs: ProjectedBuilding["project"]["drs"], explicit:
     synth.push("Supplier quote/BOM missing · Supplier must lock the BOM.");
   }
   if (!projectDrs.hasCertifiedLeadElectrician) {
-    synth.push("No certified lead electrician · Installer must assign a certified lead.");
+    synth.push("No certified lead electrician · A certified lead must be assigned.");
   }
-  if (!projectDrs.meterInverterMatchResolved) {
-    synth.push("Meter/inverter mismatch · Installer must reconcile readings.");
+  if (!projectDrs.solarApartmentCapacityFitVerified) {
+    synth.push("Solar capacity vs participating apartments not verified · Close capacity-fit evidence.");
+  }
+  if (!projectDrs.apartmentAtsMeterMappingVerified) {
+    synth.push("Apartment ATS / PAYG meter mapping incomplete · Electrician must document per-unit ATS.");
+  }
+  if (!projectDrs.atsKplcSwitchingVerified) {
+    synth.push("ATS ↔ KPLC switching not verified · Commission transfer tests before go-live.");
   }
   if (!projectDrs.monitoringConnectivityResolved) {
     synth.push("Monitoring offline · Restore connectivity before go-live.");

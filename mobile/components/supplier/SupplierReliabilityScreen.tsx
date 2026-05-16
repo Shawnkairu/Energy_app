@@ -53,7 +53,7 @@ export function SupplierReliabilityScreen() {
               />
               <SupplierRow
                 label="Lead-time variance"
-                detail="Longer lead times require earlier installer coordination."
+                detail="Longer lead times require earlier electrician coordination."
                 value={`${view.leadTimeDays}d`}
                 tone={view.leadTimeDays <= 7 ? "good" : "warn"}
               />

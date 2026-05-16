@@ -17,6 +17,7 @@ export function PortalShell({
   role,
   user,
   project,
+  data,
   sections,
   activeTab,
   onNavigate,
@@ -75,6 +76,7 @@ export function PortalShell({
           </div>
           <StatusCard role={role} projectName={project.project.name} value={project.drs.score} decision={project.drs.decision} />
         </header>
+        <ScenarioTimeline role={role} events={data.syntheticTimeline} />
         {children}
         <nav className="mobile-tabbar" aria-label={`${roleLabels[role]} mobile web tabs`}>
           {sections.map((item) => {
@@ -95,6 +97,35 @@ export function PortalShell({
         </nav>
       </section>
     </main>
+  );
+}
+
+function ScenarioTimeline({
+  role,
+  events,
+}: {
+  role: PublicRole;
+  events: PortalShellProps["data"]["syntheticTimeline"];
+}) {
+  const visible = events.slice(-4);
+  if (!visible.length) return null;
+
+  return (
+    <section className="scenario-timeline" aria-label={`${roleLabels[role]} synthetic scenario timeline`}>
+      <div>
+        <p className="eyebrow">Synthetic operating-system replay</p>
+        <h2>Scenario timeline</h2>
+      </div>
+      <div className="scenario-timeline-rows">
+        {visible.map((event) => (
+          <article key={event.id} className={`scenario-event ${event.status}`}>
+            <span>{event.status}</span>
+            <strong>{event.title}</strong>
+            <small>{event.detail}</small>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -130,9 +161,9 @@ function dataSourceLabel(role: PublicRole) {
     resident: "Projects + energy + wallet",
     homeowner: "Projects + roof + energy",
     building_owner: "Projects + DRS + settlement",
-    provider: "Inventory + generation + wallet",
-    financier: "Portfolio + wallet",
-    electrician: "Jobs + compliance + wallet",
+    provider: "Projects + generation + wallet",
+    financier: "Discover + project status + generation + wallet",
+    electrician: "Discover + projects + wallet",
   };
   return labels[role];
 }

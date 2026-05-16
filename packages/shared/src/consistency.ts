@@ -24,12 +24,7 @@ export function auditProjectConsistency(project: BuildingProject) {
   }
 
   const settlementTotal =
-    projected.settlement.reserve +
-    projected.settlement.providerPool +
-    projected.settlement.financierPool +
-    projected.settlement.ownerRoyalty +
-    projected.settlement.emappaFee +
-    projected.settlement.unallocated;
+    projected.settlement.allocatedTotal + projected.settlement.unallocated;
 
   if (!near(settlementTotal, projected.settlement.revenue)) {
     issues.push("Settlement waterfall does not reconcile to revenue.");

@@ -1,3 +1,4 @@
+import { PilotBanner } from "../PilotBanner";
 import {
   BuildingSnapshotCard,
   DealPipelineCard,
@@ -14,6 +15,13 @@ export function FinancierDealsScreen() {
       section="Discover"
       title="Deal cards"
       subtitle="Readiness first. Raise second."
+      pilotSlot={
+        <PilotBanner
+          compact
+          title="Pilot mode"
+          message="Pilot: pledges are non-binding and no money is charged. Deal and energy figures may be synthesized until live settlement."
+        />
+      }
       actions={["Cards", "DRS", "Open raise"]}
       hero={({ projects }) => ({
         label: "Active raises",

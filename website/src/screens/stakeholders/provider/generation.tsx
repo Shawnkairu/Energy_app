@@ -1,3 +1,4 @@
+import { ImmersiveProjectHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalWorkflow } from "../../../components/PortalPrimitives";
 import { GenerationPanel, kes, kwh, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -13,6 +14,7 @@ export default function ProviderGeneration({ project }: PortalScreenProps) {
 
   return (
     <>
+      <ImmersiveProjectHero project={project} mode="provider" />
       <PortalKpiBar items={[
         { label: "Monetized output", value: kwh(view.monetizedKwh), detail: `${Math.round(soldRatio * 100)}% of generation sold` },
         { label: "Wasted output", value: kwh(view.wasteKwh), detail: `${Math.round(wasteRatio * 100)}% not paid out` },

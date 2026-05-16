@@ -5,6 +5,7 @@ import { PaletteCard, Pill, colors, officialPalette, spacing, typography } from 
 import { useApi } from "../../lib/api";
 import { useApiData } from "../../lib/useApiData";
 import { commitResidentPrepaid, getResidentPrepaidBalance, getResidentPrepaidHistory } from "./ResidentApi";
+import { PilotBanner } from "../PilotBanner";
 import { CenteredState, ResidentInfoCard, ResidentMetricGrid, ResidentPrimaryButton, ResidentScreenFrame } from "./ResidentScaffold";
 import { ROLE_TINT } from "./residentTint";
 import { formatKes } from "./residentUtils";
@@ -14,7 +15,7 @@ export function ResidentWalletScreen() {
     <ResidentScreenFrame
       section="Wallet"
       title="Wallet"
-      subtitle="Prepaid balance, top-up, and history."
+      subtitle="Pledges, prepaid, and when solar tokens become usable on your apartment path."
     >
       {(building, refetchHome) => <ResidentWalletPanels building={building} refetchHome={refetchHome} />}
     </ResidentScreenFrame>
@@ -60,7 +61,7 @@ function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBu
   }
 
   if (isLoading) {
-    return <CenteredState title="Loading wallet" detail="Fetching prepaid balance and pledge history." />;
+    return <CenteredState title="Loading wallet" detail="Fetching balance and pledge history." />;
   }
 
   if (error) {
@@ -69,6 +70,11 @@ function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBu
 
   return (
     <>
+      <PilotBanner
+        title="Pilot pledge"
+        message="Pledges are non-binding and no money is charged. A pledge does not guarantee e.mappa service until capacity fit, ATS/meter mapping, and switching verification clear in DRS."
+        compact
+      />
       <PaletteCard borderRadius={32} padding={20} style={{ ...styles.balanceCard, backgroundColor: ROLE_TINT.bg }}>
         <View style={styles.balanceTop}>
           <Text style={styles.eyebrow}>Confirmed balance</Text>
@@ -78,7 +84,7 @@ function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBu
         <View style={styles.walletGraphic}>
           <View style={styles.walletPocket}>
             <View style={styles.walletSlot} />
-            <Text style={styles.walletText}>Prepaid</Text>
+            <Text style={styles.walletText}>Wallet</Text>
           </View>
         </View>
       </PaletteCard>
@@ -88,7 +94,7 @@ function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBu
           {
             label: "Confirmed",
             value: formatKes(confirmedKes),
-            detail: "Cash-cleared tokens.",
+            detail: "Usable solar tokens only after capacity + ATS.",
             tone: confirmedKes > 0 ? "good" : "warn",
           },
           {
@@ -112,9 +118,9 @@ function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBu
       />
 
       <ResidentInfoCard
-        eyebrow="Top up"
-        title="Add KSh 1,000 prepaid solar tokens"
-        detail="Solar allocation opens only after payment confirms."
+        eyebrow="Pledge / prepaid"
+        title="Add KSh 1,000 toward your apartment path"
+        detail="Pilot records intent immediately. Post-pilot, confirmed cash still only unlocks usable solar tokens after capacity clearance and ATS activation at your PAYG meter."
       >
         <View style={{ gap: spacing.sm }}>
           <ResidentPrimaryButton
@@ -139,9 +145,9 @@ function ResidentWalletPanels({ building, refetchHome }: { building: ProjectedBu
       <PaletteCard style={styles.historyCard}>
         <View style={styles.historyHeader}>
           <Text style={styles.historyTitle}>
-            Prepaid history
+            Prepaid & pledge history
           </Text>
-          <Pill tone="good">prepaid</Pill>
+          <Pill tone="good">wallet</Pill>
         </View>
         <View style={{ marginTop: spacing.sm }}>
           {history.map((item) => (

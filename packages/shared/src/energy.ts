@@ -25,19 +25,25 @@ export function calculateEnergy(input: EnergyInputs): EnergyOutputs {
   const E_direct = directDaily * 30;
   const E_charge = chargedDaily * 30;
   const E_battery_used = batteryUsedDaily * 30;
-  const E_sold = E_direct + E_battery_used;
-  const E_waste = wasteDaily * 30;
-  const E_grid = Math.max(0, input.monthlyDemandKwh - E_sold);
+  const E_gen_raw = round(E_gen);
+  const E_sold_uncapped = round(E_direct + E_battery_used);
+  const E_sold = round(Math.min(E_sold_uncapped, input.monthlyDemandKwh, E_gen_raw));
+  const E_waste = round(Math.max(0, E_gen_raw - E_direct - E_charge));
+  const E_grid = round(Math.max(0, input.monthlyDemandKwh - E_sold));
+
+  const utilization = round(ratio(E_sold, E_gen_raw));
+  const wasteRate = round(ratio(E_waste, E_gen_raw));
 
   return {
-    E_gen: round(E_gen),
+    E_gen: E_gen_raw,
     E_direct: round(E_direct),
     E_charge: round(E_charge),
     E_battery_used: round(E_battery_used),
-    E_sold: round(E_sold),
-    E_waste: round(E_waste),
-    E_grid: round(E_grid),
-    utilization: round(ratio(E_sold, E_gen)),
+    E_sold,
+    E_waste,
+    E_grid,
+    utilization,
+    wasteRate,
     coverage: round(ratio(E_sold, input.monthlyDemandKwh)),
   };
 }

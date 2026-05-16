@@ -83,7 +83,7 @@ export default function BuildingOwnerBasicsScreen() {
         <TextField label="Address" value={address} onChangeText={setAddress} onBlur={geocodeAddress} placeholder="Street, town, country" />
         <TextField label="Unit count" value={unitCount} onChangeText={setUnitCount} keyboardType="number-pad" placeholder="12" />
         <TextField label="Occupancy estimate (%)" value={occupancy} onChangeText={setOccupancy} keyboardType="numeric" placeholder="85" />
-        <Text style={styles.helper}>Readiness gates use these basics before funding, supplier lock, installer scheduling, and go-live.</Text>
+        <Text style={styles.helper}>Readiness gates use these basics before funding, provider lock, electrician scheduling, and go-live.</Text>
         {geocode ? <Text style={styles.success}>Geocoded: {geocode.formattedAddress}</Text> : null}
         {isGeocoding ? (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 }}>

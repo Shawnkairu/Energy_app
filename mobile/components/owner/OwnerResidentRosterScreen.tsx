@@ -30,7 +30,7 @@ export function OwnerResidentRosterScreen() {
               { label: "Invited", value: "38", detail: "All units reached" },
               { label: "Joined", value: "32", detail: "84% of invited" },
               { label: "Funded", value: "28", detail: "Cash-cleared tokens" },
-              { label: "Target", value: "80%", detail: "Participation band" },
+              { label: "Target", value: "Scenario", detail: "Pledged demand band — not a deploy threshold" },
             ]}
           />
           <OwnerBriefCard

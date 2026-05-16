@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } from "react-native";
+import { ScrollView, StyleSheet, Text, View, type DimensionValue } from "react-native";
 import { getRoleHome } from "@emappa/api-client";
 import type { DeploymentDecision, ProjectedBuilding } from "@emappa/shared";
 import {
@@ -197,7 +197,7 @@ export function OwnerIntroCard({
 export function OwnerProfileCard({ building }: { building: ProjectedBuilding }) {
   const view = building.roleViews.owner;
   const letter = (building.project.name.trim().slice(0, 1) || "?").toUpperCase();
-  const sessionReady = building.drs.decision === "approve";
+  const sessionReady = building.drs.decision === "deployment_ready";
 
   return (
     <PaletteCard
@@ -554,7 +554,7 @@ export function OwnerScoreArtifact({
     { label: "Prepaid", value: components.prepaidCommitment, tone: components.prepaidCommitment > 0 ? "good" : "bad" },
     { label: "Load", value: components.loadProfile, tone: components.loadProfile >= 65 ? "good" : "warn" },
     { label: "Install", value: components.installationReadiness, tone: components.installationReadiness >= 65 ? "good" : "warn" },
-    { label: "Labor", value: components.installerReadiness, tone: components.installerReadiness >= 65 ? "good" : "warn" },
+    { label: "Electrician", value: components.electricianReadiness, tone: components.electricianReadiness >= 65 ? "good" : "warn" },
     { label: "Capital", value: components.capitalAlignment, tone: components.capitalAlignment >= 65 ? "good" : "warn" },
   ] as const;
 
@@ -580,7 +580,7 @@ export function OwnerScoreArtifact({
         <Pill tone={tone}>{decision}</Pill>
         <Text style={{ color: colors.text, fontSize: 19, fontWeight: "600", letterSpacing: -0.3, marginTop: 12 }}>{label}</Text>
         <Text style={{ color: colors.muted, lineHeight: 21, marginTop: 6, textAlign: "center" }}>
-          DRS gates capital release, supplier lock, installer scheduling, and go-live.
+          DRS gates capital release, provider lock, electrician scheduling, and go-live.
         </Text>
       </View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 18 }}>
@@ -690,7 +690,7 @@ export function OwnerJourneyCard({
 }
 
 export function decisionTone(decision: DeploymentDecision): OwnerTone {
-  return decision === "approve" ? "good" : decision === "review" ? "warn" : "bad";
+  return decision === "deployment_ready" ? "good" : decision === "review" ? "warn" : "bad";
 }
 
 export function formatKes(value: number) {
@@ -793,8 +793,10 @@ function OwnerActionRail({ actions }: { actions: string[] }) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 18 }}>
       {actions.map((action, index) => (
-        <Pressable
+        <View
           key={action}
+          accessibilityRole="text"
+          accessibilityLabel={action}
           style={{
             borderRadius: radius.pill,
             backgroundColor: colors.panel,
@@ -806,7 +808,7 @@ function OwnerActionRail({ actions }: { actions: string[] }) {
           }}
         >
           <Text style={{ color: index === 0 ? colors.orangeDeep : colors.text, fontSize: 12, fontWeight: "600" }}>{action}</Text>
-        </Pressable>
+        </View>
       ))}
     </ScrollView>
   );

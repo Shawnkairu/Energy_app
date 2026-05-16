@@ -365,3 +365,27 @@ We should now:
 That’s the step where this becomes:
 
 not just a concept… but a buildable system.
+
+---
+
+## Implementation anchor (repo)
+
+e.mappa is designed as a **prepaid-only, AI-native local energy economy OS**: it coordinates physical allocation (dedicated solar bus, Solar DB, per-apartment ATS, metering), stakeholder readiness (**DRS** / **LBRS**), settlement integrity (**E_sold** only), and compliance-aware capital — not a generic marketplace.
+
+### Anchor specs
+
+All product rules, gate definitions, and role flows are authored in **[`README.md`](./README.md)** and the scenario / installation markdown in this folder (with originals in [`original-docx/`](./original-docx/)).
+
+### AI responsibilities (product intent)
+
+- **Interpret messy field evidence** (photos, PDFs, receipts) into structured readiness objects — never override a **failed critical gate**.
+- **Surface blockers with owners** (resident / building owner / homeowner / electrician / provider / financier / admin) per gate failure metadata in shared DRS/LBRS modules.
+- **Conservative settlement**: when `dataQuality` is missing or disputed, pause or downgrade accruals — see energy + settlement modules in `packages/shared`.
+
+### Deprecated mental models
+
+- Common-bus apartment injection as default.
+- Postpaid e.mappa balances or stakeholder payout from unpaid usage.
+- “Approve at 80% DRS” as deployment authority.
+- Host royalty for homeowners on their own roof.
+- Payouts from raw generation without monetized, prepaid delivery.

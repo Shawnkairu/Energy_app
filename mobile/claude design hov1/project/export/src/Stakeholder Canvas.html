@@ -69,7 +69,7 @@
   <div class="row"><span class="dot" style="background:#764927"></span>Owner</div>
   <div class="row"><span class="dot" style="background:#7D5734"></span>Provider</div>
   <div class="row"><span class="dot" style="background:#693719"></span>Financier</div>
-  <div class="row"><span class="dot" style="background:#856444"></span>Installer</div>
+  <div class="row"><span class="dot" style="background:#856444"></span>Electrician</div>
   <div class="row"><span class="dot" style="background:#997757"></span>Supplier</div>
   <div class="row"><span class="dot" style="background:#471708"></span>Cockpit</div>
   <div class="row"><span class="dot" style="background:#A98866"></span>Shared</div>
@@ -124,7 +124,7 @@
     const LANE_H_TOP = (PH + ROW_GAP) * 2 + 200;
     const LANE_H_SINGLE = PH + 220;
 
-    // Bottom: installer, supplier, admin (3 lanes)
+    // Bottom: electrician, supplier, admin (3 lanes)
     const COL_X_BOT = [80, 880, 1680];
     const SHARED_X = 2480; // shared cluster on the right of mid
 
@@ -203,7 +203,7 @@
         <Phone id="sh-notif" role="shared" x={WORLD_W - 80 - PW} y={Y_SHARED_PHONES + PH + 40} label="Updates" sublabel="all roles"><ScreenNotifications/></Phone>
         <Phone id="r-join"   role="resident" x={120 - 30} y={Y_SHARED_PHONES + PH + 40} label="Join via QR" sublabel="resident · onboard"><ResJoinQR/></Phone>
 
-        {/* ───────── INSTALLER ───────── */}
+        {/* ───────── ELECTRICIAN ───────── */}
         <Phone id="i-jobs"  role="installer" {...slot(COL_X_BOT[0], 0, Y_BOTTOM_PHONES)} label="Today's jobs"     sublabel="01"><InstJobs/></Phone>
         <Phone id="i-check" role="installer" {...slot(COL_X_BOT[0], 1, Y_BOTTOM_PHONES)} label="Install checklist" sublabel="02"><InstChecklist/></Phone>
 
@@ -226,7 +226,7 @@
           <Wire from="sh-role" to="o-list"     color={ROLES.owner.wire}     label="owner"/>
           <Wire from="sh-role" to="p-projects" color={ROLES.provider.wire}  label="provider"/>
           <Wire from="sh-role" to="f-deals"    color={ROLES.financier.wire} label="financier"/>
-          <Wire from="sh-role" to="i-jobs"     color={ROLES.installer.wire} label="installer"/>
+          <Wire from="sh-role" to="i-jobs"     color={ROLES.installer.wire} label="electrician"/>
           <Wire from="sh-role" to="s-orders"   color={ROLES.supplier.wire}  label="supplier"/>
 
           {/* Resident: QR entry feeds verify; home → energy/wallet/own; profile/notif from home */}
@@ -253,7 +253,7 @@
           <Wire from="f-room"  to="sh-building"   color={ROLES.financier.wire} dashed/>
           <Wire from="f-deals" to="sh-notif"      color={ROLES.financier.wire} dashed/>
 
-          {/* Installer */}
+          {/* Electrician */}
           <Wire from="i-jobs"  to="i-check"       color={ROLES.installer.wire}/>
           <Wire from="i-jobs"  to="sh-building"   color={ROLES.installer.wire} dashed/>
           <Wire from="i-check" to="sh-notif"      color={ROLES.installer.wire} dashed/>

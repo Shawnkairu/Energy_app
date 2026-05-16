@@ -2,6 +2,7 @@ import {
   getProjects,
   getRoleHome,
 } from "@emappa/api-client";
+import { getSyntheticRoleTimeline, replaySyntheticScenario } from "@emappa/shared";
 import type {
   BuildingRecord,
   BusinessType,
@@ -14,6 +15,7 @@ import type {
   ProjectCard,
   ProjectedBuilding,
   PublicRole,
+  SyntheticTimelineEvent,
   User,
   WalletTransaction,
 } from "@emappa/shared";
@@ -65,6 +67,7 @@ export interface PortalData {
   portfolio: FinancierPosition[];
   walletBalance: WalletBalance | null;
   walletTransactions: WalletTransaction[];
+  syntheticTimeline: SyntheticTimelineEvent[];
 }
 
 export function initializeApi() {
@@ -113,6 +116,78 @@ export async function verifyEmailOtp(email: string, code: string): Promise<WebSe
   const session = remote ?? createFallbackSession(email);
   persistSession(session);
   return session;
+}
+
+/** POST with JSON body; throws on transport or non-2xx (for onboarding flows). */
+export async function apiPostJson<T>(path: string, body: unknown): Promise<T> {
+  const baseUrl = getApiBaseUrl();
+  if (!baseUrl) {
+    throw new Error("API base URL not configured");
+  }
+  const token = readSession()?.token;
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    let detail: string = response.statusText;
+    try {
+      const data = (await response.json()) as { detail?: unknown; error?: unknown };
+      detail = String(data.detail ?? data.error ?? detail);
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail);
+  }
+  return response.json() as Promise<T>;
+}
+
+export async function apiGetJson<T>(path: string): Promise<T> {
+  const baseUrl = getApiBaseUrl();
+  if (!baseUrl) {
+    throw new Error("API base URL not configured");
+  }
+  const token = readSession()?.token;
+  const response = await fetch(`${baseUrl}${path}`, {
+    headers: {
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!response.ok) {
+    let detail: string = response.statusText;
+    try {
+      const data = (await response.json()) as { detail?: unknown; error?: unknown };
+      detail = String(data.detail ?? data.error ?? detail);
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail);
+  }
+  return response.json() as Promise<T>;
+}
+
+export async function selectRole(body: {
+  role: PublicRole;
+  displayName?: string;
+  businessType?: BusinessType;
+}): Promise<{ user: User }> {
+  return apiPostJson<{ user: User }>("/me/select-role", {
+    role: body.role,
+    displayName: body.displayName,
+    businessType: body.businessType,
+  });
+}
+
+export async function fetchAuthMeFresh(): Promise<User | null> {
+  try {
+    return await apiGetJson<User>("/auth/me");
+  } catch {
+    return null;
+  }
 }
 
 export async function getCurrentUser() {
@@ -172,6 +247,7 @@ export async function loadPortalData(role: PublicRole, user: User, primary: Proj
     portfolio,
     walletBalance,
     walletTransactions,
+    syntheticTimeline: getSyntheticRoleTimeline(role, replaySyntheticScenario({ phase: "settlement" })),
   };
 }
 
@@ -220,11 +296,32 @@ export async function saveRoof(buildingId: string, body: { polygon_geojson?: unk
   });
 }
 
-export async function completeOnboarding(body: { display_name?: string; business_type?: BusinessType }) {
-  return apiRequest<{ user: User }>("/me/onboarding-complete", {
-    method: "POST",
-    body: JSON.stringify(body),
+export async function completeOnboarding(body: {
+  displayName?: string;
+  businessType?: BusinessType;
+  profile?: Record<string, unknown>;
+}) {
+  return apiPostJson<{ user: User }>("/me/onboarding-complete", {
+    displayName: body.displayName,
+    businessType: body.businessType,
+    profile: body.profile,
   });
+}
+
+export async function joinBuildingWithCode(code: string) {
+  return apiPostJson<{
+    building: { id: string; name: string; address: string; kind: string; unitCount: number };
+  }>("/me/join-building", { code: code.trim() });
+}
+
+export async function commitPrepaidWeb(buildingId: string, amountKes: number) {
+  return apiPostJson<{ commitment: { amountKes: number; status: string } }>("/prepaid/commit", { buildingId, amountKes });
+}
+
+export async function geocodeQuery(q: string) {
+  return apiGetJson<{ lat: number; lon: number; formattedAddress: string }>(
+    `/geocode?q=${encodeURIComponent(q.trim())}`,
+  );
 }
 
 async function getEnergyToday(buildingId: string) {

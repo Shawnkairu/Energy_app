@@ -1,3 +1,4 @@
+import { ImmersiveProjectHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalWorkflow } from "../../../components/PortalPrimitives";
 import { ProjectCardList, kes, kwh, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -7,10 +8,11 @@ export default function FinancierDiscover({ project, data }: PortalScreenProps) 
   const visibleDeals = data.discover.length || 1;
   const askCoverage = project.project.capitalRequiredKes ? view.remainingCapitalKes / project.project.capitalRequiredKes : 0;
   const recoveryYield = view.committedCapitalKes ? view.monthlyRecoveryKes / view.committedCapitalKes : 0;
-  const gateStatus = project.drs.decision === "approve" ? "clear" : project.drs.decision === "review" ? "review" : "paused";
+  const gateStatus = project.drs.decision === "deployment_ready" ? "clear" : project.drs.decision === "review" ? "review" : "paused";
 
   return (
     <>
+      <ImmersiveProjectHero project={project} mode="financier" portfolio={data.portfolio} />
       <PortalKpiBar items={[
         { label: "Open ask", value: kes(view.remainingCapitalKes), detail: `${pct(askCoverage)} of stack still open` },
         { label: "Recovery pool", value: kes(view.monthlyRecoveryKes), detail: `${kwh(project.energy.E_sold)} sold solar` },

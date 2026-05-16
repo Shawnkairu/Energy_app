@@ -16,8 +16,9 @@ export default function FinancierProfile({ project, user }: PortalScreenProps) {
             { label: "Investor type", value: "Individual / institution", note: "pilot profile" },
             { label: "Target deal size", value: targetBand, note: `${kes(view.remainingCapitalKes)} currently open` },
             { label: "Target return", value: project.transparency.roiRange, note: "modeled from utilization" },
-            { label: "Risk preference", value: project.drs.decision === "approve" ? "Ready deals" : "Gated review", note: `${project.drs.score} DRS score` },
+            { label: "Risk preference", value: project.drs.decision === "deployment_ready" ? "Ready deals" : "Gated review", note: `${project.drs.score} DRS score` },
             { label: "Deployment limit", value: pct(view.fundingProgress), note: "capital stack already funded" },
+            { label: "KYC / escrow", value: view.kycEscrow?.status.replace(/_/g, " ") ?? "prototype", note: view.kycEscrow?.detail ?? "pilot-only capital status" },
           ]} />
         </PortalPanel>
       )}

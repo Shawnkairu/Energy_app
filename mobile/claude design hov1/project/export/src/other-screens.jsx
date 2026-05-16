@@ -1,4 +1,4 @@
-// other-screens.jsx — Owner, Provider, Financier, Installer, Supplier, Admin
+// other-screens.jsx — Owner, Provider, Financier, Electrician, Supplier, Admin
 
 // ════════════ OWNER ════════════
 function OwnList() {

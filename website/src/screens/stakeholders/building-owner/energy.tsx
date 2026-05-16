@@ -1,3 +1,4 @@
+import { ImmersiveEnergyHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel } from "../../../components/PortalPrimitives";
 import { EnergyTodayChart, GenerationPanel, kes, kwh, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -8,9 +9,10 @@ export default function BuildingOwnerEnergy({ project, data }: PortalScreenProps
 
   return (
     <>
+      <ImmersiveEnergyHero project={project} energyToday={data.energyToday} variant="building" />
       <EnergyTodayChart project={project} today={data.energyToday} />
       <PortalKpiBar items={[
-        { label: "Today generation", value: kwh(project.energy.E_gen / 30), detail: "whole building" },
+        { label: "Today generation", value: kwh(project.energy.E_gen / 30), detail: "Solar plant on dedicated path" },
         { label: "Today usage", value: kwh((project.energy.E_sold + project.energy.E_grid) / 30), detail: "aggregate load" },
         { label: "Today revenue", value: kes(project.settlement.revenue / 30), detail: "sold solar only" },
       ]} />

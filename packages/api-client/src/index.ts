@@ -9,6 +9,7 @@
 
 import {
   demoProjects,
+  replaySyntheticScenario,
   projectBuilding,
   roles,
   type BuildingProject,
@@ -137,7 +138,15 @@ export function createApiClient(cfg: ApiClientConfig) {
       displayName?: string;
       businessType?: "panels" | "infrastructure" | "both";
       profile?: Record<string, unknown>;
+      /** Must never be `admin`; server returns 403 (IA §8.5—onboarding-complete). */
+      role?: string;
     }) => post<{ user: User }>(`/me/onboarding-complete`, body),
+    /** Persist public role before multi-step onboarding (does not set onboarding complete). */
+    selectRole: (body: {
+      role: string;
+      displayName?: string;
+      businessType?: "panels" | "infrastructure" | "both";
+    }) => post<{ user: User }>(`/me/select-role`, body),
     joinBuilding: (code: string) =>
       post<{
         building: { id: string; name: string; address: string; kind: string; unitCount: number };
@@ -280,16 +289,19 @@ export type ApiClient = ReturnType<typeof createApiClient>;
 const mockClient = (cfg: ApiClientConfig = {}): ApiClient => createApiClient(cfg);
 
 export async function getProjects(): Promise<ProjectedBuilding[]> {
-  return demoProjects.map((p) => projectBuilding(p));
+  return [replaySyntheticScenario({ phase: "settlement" }).project, ...demoProjects.slice(1).map((p) => projectBuilding(p))];
 }
 
 export async function getRoleHome(role: StakeholderRole): Promise<RoleHome> {
+  const scenario = replaySyntheticScenario({ phase: "settlement" });
   const projects = await getProjects();
   return {
     role,
     primary: projects[0] ?? null,
     projects,
-    activity: [],
+    activity: (scenario.roleTimelines[role === "admin" ? "admin" : role] ?? []).map(
+      (event) => `${event.status}: ${event.title}`,
+    ),
   };
 }
 

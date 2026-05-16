@@ -10,8 +10,8 @@ export function EnergyFlow({ project, compact = false }: { project: ProjectedBui
   return (
     <article className={`energy-flow ${compact ? "compact" : ""}`}>
       <div className="energy-flow-header">
-        <span>Live allocation path</span>
-        <strong>Solar first. Battery second. Grid fallback third.</strong>
+        <span>Participating apartment path</span>
+        <strong>e.mappa solar path first · battery support · ATS selects KPLC PAYG fallback.</strong>
       </div>
       <div className="energy-flow-track">
         <div className="flow-node solar">
@@ -21,7 +21,7 @@ export function EnergyFlow({ project, compact = false }: { project: ProjectedBui
         </div>
         <div className="flow-rail active"><i /></div>
         <div className="flow-node home">
-          <span>Home load</span>
+          <span>Enrolled load</span>
           <strong>{coverage}%</strong>
           <small>{sold} monetized kWh</small>
         </div>
@@ -33,9 +33,9 @@ export function EnergyFlow({ project, compact = false }: { project: ProjectedBui
         </div>
         <div className="flow-rail muted"><i /></div>
         <div className="flow-node grid">
-          <span>Grid</span>
+          <span>KPLC / grid</span>
           <strong>{grid}</strong>
-          <small>fallback kWh</small>
+          <small>PAYG fallback kWh</small>
         </div>
       </div>
     </article>

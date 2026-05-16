@@ -10,7 +10,7 @@ export interface PilotBannerProps {
 
 export function PilotBanner({
   title = "Pilot mode",
-  message = "Figures may use synthetic or gated data until a named building is fully ready.",
+  message = "Pledges are non-binding, no money is charged, and energy figures may use synthetic data until live settlement is trusted.",
   compact = false,
 }: PilotBannerProps) {
   return (

@@ -1,6 +1,15 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import type { ProjectedBuilding, SettlementPeriod } from "@emappa/shared";
+import {
+  compareSyntheticScenarioOutcomes,
+  replaySyntheticScenario,
+  syntheticFailureModes,
+  syntheticScenarioPhases,
+  type ProjectedBuilding,
+  type SettlementPeriod,
+  type SyntheticFailureMode,
+  type SyntheticScenarioPhase,
+} from "@emappa/shared";
 import {
   clearSession,
   getLatestSettlement,
@@ -36,6 +45,8 @@ export function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
   const [decisionFilter, setDecisionFilter] = useState<DecisionFilter>("all");
+  const [scenarioPhase, setScenarioPhase] = useState<SyntheticScenarioPhase>("settlement");
+  const [scenarioFailureMode, setScenarioFailureMode] = useState<SyntheticFailureMode>("none");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [syntheticMode, setSyntheticMode] = useState<SyntheticMode>("mixed");
@@ -84,8 +95,17 @@ export function App() {
       .finally(() => setLoading(false));
   }, [session?.token, session?.user.role]);
 
+  const syntheticScenario = useMemo(
+    () => replaySyntheticScenario({ phase: scenarioPhase, failureMode: scenarioFailureMode }),
+    [scenarioFailureMode, scenarioPhase],
+  );
+  const cockpitProjects = [
+    syntheticScenario.project,
+    ...projects.filter((item) => item.project.id !== syntheticScenario.project.project.id),
+  ];
+
   const filteredProjects = useMemo(() => {
-    return projects.filter((item) => {
+    return cockpitProjects.filter((item) => {
       const settlement = settlementDates[item.project.id];
       const createdAt = settlement?.createdAt ? new Date(settlement.createdAt) : null;
       const afterFrom = fromDate && createdAt ? createdAt >= new Date(fromDate) : true;
@@ -97,10 +117,10 @@ export function App() {
         beforeTo
       );
     });
-  }, [decisionFilter, fromDate, projects, settlementDates, stageFilter, toDate]);
+  }, [cockpitProjects, decisionFilter, fromDate, settlementDates, stageFilter, toDate]);
 
-  const selectedProject = projects.find((item) => item.project.id === selectedProjectId) ?? filteredProjects[0] ?? projects[0];
-  const totals = projects.reduce(
+  const selectedProject = cockpitProjects.find((item) => item.project.id === selectedProjectId) ?? filteredProjects[0] ?? cockpitProjects[0];
+  const totals = cockpitProjects.reduce(
     (acc, item) => ({
       revenue: acc.revenue + item.settlement.revenue,
       sold: acc.sold + item.energy.E_sold,
@@ -111,6 +131,10 @@ export function App() {
     }),
     { revenue: 0, sold: 0, alerts: 0, pledged: 0, capital: 0, funded: 0 },
   );
+  const comparison =
+    scenarioFailureMode === "none"
+      ? null
+      : compareSyntheticScenarioOutcomes(scenarioFailureMode, scenarioPhase);
 
   function logout() {
     clearSession();
@@ -216,7 +240,7 @@ export function App() {
                 <div className="filter-bar">
                   <select value={stageFilter} onChange={(event) => setStageFilter(event.target.value as StageFilter)}>
                     <option value="all">All stages</option>
-                    {[...new Set(projects.map((item) => item.project.stage))].map((stage) => (
+                    {[...new Set(cockpitProjects.map((item) => item.project.stage))].map((stage) => (
                       <option key={stage} value={stage}>
                         {stage}
                       </option>
@@ -224,9 +248,9 @@ export function App() {
                   </select>
                   <select value={decisionFilter} onChange={(event) => setDecisionFilter(event.target.value as DecisionFilter)}>
                     <option value="all">All decisions</option>
-                    <option value="approve">Approve</option>
+                    <option value="deployment_ready">Deployment-ready</option>
                     <option value="review">Review</option>
-                    <option value="block">Block</option>
+                    <option value="blocked">Blocked</option>
                   </select>
                   <input aria-label="Settlement from date" type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
                   <input aria-label="Settlement to date" type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
@@ -237,6 +261,7 @@ export function App() {
                     <strong>Name</strong>
                     <strong>Stage</strong>
                     <strong>DRS</strong>
+                    <strong>LBRS</strong>
                     <strong>Pledged</strong>
                     <strong>Last settlement</strong>
                   </div>
@@ -258,12 +283,59 @@ export function App() {
                           <b>{item.drs.score}</b>
                           <em className={`pill ${item.drs.decision}`}>{item.drs.decision}</em>
                         </span>
+                        <span>
+                          <b>{item.lbrs.score}</b>
+                          <em className={`pill ${item.lbrs.decision}`}>{item.lbrs.decision}</em>
+                        </span>
                         <span>KSh {Math.round(item.project.prepaidCommittedKes).toLocaleString()}</span>
                         <span>{settlement?.createdAt ? formatDate(settlement.createdAt) : "—"}</span>
                       </button>
                     );
                   })}
                 </div>
+              </article>
+
+              <article className="panel">
+                <p className="eyebrow">Simulator controls</p>
+                <h2>Run synthetic scenario</h2>
+                <div className="toggle-list">
+                  <label className="toggle-row">
+                    <span>Lifecycle phase</span>
+                    <select value={scenarioPhase} onChange={(event) => setScenarioPhase(event.target.value as SyntheticScenarioPhase)}>
+                      {syntheticScenarioPhases.map((phase) => (
+                        <option key={phase} value={phase}>
+                          {phase.replace(/_/g, " ")}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="toggle-row">
+                    <span>Failure injection</span>
+                    <select value={scenarioFailureMode} onChange={(event) => setScenarioFailureMode(event.target.value as SyntheticFailureMode)}>
+                      {syntheticFailureModes.map((mode) => (
+                        <option key={mode} value={mode}>
+                          {mode.replace(/_/g, " ")}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="alert">
+                  <strong>{syntheticScenario.title}</strong>
+                  <span>
+                    {syntheticScenario.phase.replace(/_/g, " ")} · DRS {syntheticScenario.outcomes.drsDecision} · LBRS{" "}
+                    {syntheticScenario.outcomes.lbrsDecision}
+                  </span>
+                </div>
+                {comparison ? (
+                  <div className="alert">
+                    <strong>Outcome comparison</strong>
+                    <span>
+                      {comparison.delta.settlementRevenueKes.toLocaleString()} KES revenue delta · DRS changed:{" "}
+                      {String(comparison.delta.drsChanged)}
+                    </span>
+                  </div>
+                ) : null}
               </article>
 
               <article className="panel">

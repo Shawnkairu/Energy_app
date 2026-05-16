@@ -1,5 +1,6 @@
+import { ImmersiveProjectHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalWorkflow } from "../../../components/PortalPrimitives";
-import { PilotBanner, ProjectHero, TokenHero, kes, kwh, pct } from "../../../portal/PortalWidgets";
+import { PilotBanner, TokenHero, kes, kwh, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
 
 export default function HomeownerHome({ project }: PortalScreenProps) {
@@ -23,7 +24,7 @@ export default function HomeownerHome({ project }: PortalScreenProps) {
   return (
     <>
       <PilotBanner />
-      <ProjectHero project={project} compact={isLive} />
+      <ImmersiveProjectHero project={project} mode="building_owner" />
       <PortalKpiBar items={[
         { label: isLive ? "Live pledge balance" : "Activation balance", value: isLive ? kes(resident.prepaidBalanceKes) : "Pending go-live", detail: "home solar demand" },
         { label: "Monthly solar view", value: kwh(resident.monthlySolarKwh), detail: "forecast share" },

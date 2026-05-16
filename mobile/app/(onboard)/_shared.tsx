@@ -305,10 +305,12 @@ export function PledgeStep({
         </View>
       }
     >
-      <PilotBanner title="Pilot pledge" message="Pledges are non-binding until the building clears readiness gates." />
+      <PilotBanner title="Pilot pledge" message="Pledges are non-binding until cash rails are live. A pledge does not guarantee e.mappa supply until your apartment is capacity-cleared and ATS-activated." />
       <GlassCard>
         <TextField label="Amount in KES" value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="1000" />
-        <Text style={styles.helper}>Prepaid-only allocation means solar tokens activate only from confirmed prepaid demand.</Text>
+        <Text style={styles.helper}>
+          Pledged demand helps DRS, but usable solar tokens only unlock after capacity fit, apartment ATS/PAYG mapping, and verified switching between the e.mappa solar path and KPLC.
+        </Text>
       </GlassCard>
       <StatusText status={pledgeStatus} tone="success" />
       <StatusText status={pledgeError ?? error} tone="error" />

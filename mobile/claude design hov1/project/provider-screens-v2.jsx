@@ -12,7 +12,7 @@ const PROVIDER_ACTIONS = {
   Performance: { label: 'Read flow',     detail: 'Confirm sold/waste/grid split.',                                  status: 'flow',   tone: 'neutral' },
   Earnings:    { label: 'Track payout',  detail: 'Reconcile pool and ownership against monetized solar.',          status: 'payout', tone: 'neutral' },
   Shares:      { label: 'Review ledger', detail: 'Check retained vs sold rights and future-only impact.',          status: 'ledger', tone: 'neutral' },
-  Deployment:  { label: 'Watch gates',   detail: 'Watch DRS, supplier lock, and monitoring before activation.',    status: 'gates',  tone: 'warn' },
+  Deployment:  { label: 'Watch gates',   detail: 'Watch DRS, provider lock, and monitoring before activation.',    status: 'gates',  tone: 'warn' },
   Maintenance: { label: 'Open tickets',  detail: 'Service work that protects monitoring and warranty proof.',      status: 'service', tone: 'warn' },
 };
 
@@ -230,8 +230,8 @@ function ProviderDeploymentScreenV2() {
     <ProviderDashboard
       section="Deployment"
       title="Readiness Gate Path"
-      subtitle="DRS, supplier lock, installer lead, monitoring, and settlement trust before go-live."
-      actions={["Review gates", "Supplier lock", "Go-live proof"]}
+      subtitle="DRS, provider lock, electrician lead, monitoring, and settlement trust before go-live."
+      actions={["Review gates", "Provider lock", "Go-live proof"]}
       hero={{
         label: 'DRS decision',
         value: b.drs.label,
@@ -246,17 +246,17 @@ function ProviderDeploymentScreenV2() {
       <GateList gates={view.deploymentGates} title="Provider deployment gates"/>
       <RowsCard title="Readiness basis" eyebrow="DRS and field proof"
         rows={[
-          { label: 'DRS decision',    value: b.drs.label, note: `Score ${Math.round(b.drs.score)} with ${completeGates}/${view.deploymentGates.length} gates ready.`, tone: b.drs.decision === 'approve' ? 'good' : b.drs.decision === 'review' ? 'warn' : 'bad' },
+          { label: 'DRS decision',    value: b.drs.label, note: `Score ${Math.round(b.drs.score)} with ${completeGates}/${view.deploymentGates.length} gates ready.`, tone: b.drs.decision === 'deployment_ready' ? 'good' : b.drs.decision === 'review' ? 'warn' : 'bad' },
           { label: 'Demand coverage', value: pfmtPct(b.energy.utilization), note: 'Demand below 60% blocks deployment.', tone: b.energy.utilization >= 0.6 ? 'good' : 'bad' },
-          { label: 'Supplier quote',  value: b.project.drs.hasVerifiedSupplierQuote ? 'locked' : 'missing', note: 'Supplier lock requires verified BOM and quote.', tone: b.project.drs.hasVerifiedSupplierQuote ? 'good' : 'bad' },
-          { label: 'Installer lead',  value: b.project.drs.hasCertifiedLeadElectrician ? 'assigned' : 'missing', note: 'A certified lead is required before scheduling.', tone: b.project.drs.hasCertifiedLeadElectrician ? 'good' : 'bad' },
+          { label: 'Supplier quote',  value: b.project.drs.hasVerifiedSupplierQuote ? 'locked' : 'missing', note: 'Provider lock requires verified BOM and quote.', tone: b.project.drs.hasVerifiedSupplierQuote ? 'good' : 'bad' },
+          { label: 'Electrician lead',  value: b.project.drs.hasCertifiedLeadElectrician ? 'assigned' : 'missing', note: 'A certified lead is required before scheduling.', tone: b.project.drs.hasCertifiedLeadElectrician ? 'good' : 'bad' },
           { label: 'Monitoring',      value: view.monitoringStatus, note: 'Unresolved monitoring connectivity blocks go-live.', tone: b.project.drs.monitoringConnectivityResolved ? 'good' : 'bad' },
         ]}
       />
       <TruthCard
         title="Go-live waits for readiness."
-        body="DRS gates capital release, supplier lock, installer scheduling, and activation. Provider assets should not be treated as live before those gates clear."
-        tone={b.drs.decision === 'approve' ? 'good' : 'warn'}
+        body="DRS gates capital release, provider lock, electrician scheduling, and activation. Provider assets should not be treated as live before those gates clear."
+        tone={b.drs.decision === 'deployment_ready' ? 'good' : 'warn'}
       />
       <ProviderActionPlan section="Deployment"/>
     </ProviderDashboard>

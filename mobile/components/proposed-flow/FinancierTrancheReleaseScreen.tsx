@@ -24,7 +24,7 @@ export function FinancierTrancheReleaseScreen() {
       hero={{
         label: "Next tranche",
         value: "KSh 850,000",
-        sub: "Tranche 2 of 3. Releases when supplier lock + installer scheduling are both verified.",
+        sub: "Tranche 2 of 3. Releases when provider lock + electrician scheduling are both verified.",
         status: "gate pending",
         statusTone: "warn",
       }}
@@ -35,7 +35,7 @@ export function FinancierTrancheReleaseScreen() {
         body="Recovery follows milestones, not time. A tranche is a contract - once released, it cannot be clawed back."
         rows={[
           { label: "Tranche 1", value: "released", note: "Site survey + owner permission + supplier shortlist.", tone: "good" },
-          { label: "Tranche 2", value: "gate pending", note: "Awaiting verified supplier BOM + installer scheduling.", tone: "warn" },
+          { label: "Tranche 2", value: "gate pending", note: "Awaiting verified provider BOM + electrician scheduling.", tone: "warn" },
           { label: "Tranche 3", value: "queued", note: "Awaiting monitoring online + first settlement run.", tone: "neutral" },
         ]}
       />
@@ -44,7 +44,7 @@ export function FinancierTrancheReleaseScreen() {
         <Text style={{ color: colors.text, fontSize: 17, fontWeight: "600", marginTop: 6 }}>Confirm release amount and recipient</Text>
         {[
           { k: "Amount", p: "KSh 850,000", h: "As specified in the term sheet for tranche 2." },
-          { k: "Recipient", p: "e.mappa escrow → supplier + installer", h: "Funds flow through escrow; never directly to provider." },
+          { k: "Recipient", p: "e.mappa escrow → supplier + electrician", h: "Funds flow through escrow; never directly to provider." },
           { k: "Effective date", p: "On gate clearance", h: "Recorded immutably in the recovery ledger." },
         ].map((row) => (
           <View key={row.k} style={{ marginTop: 12 }}>

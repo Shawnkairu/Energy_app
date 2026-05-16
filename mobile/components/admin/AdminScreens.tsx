@@ -5,6 +5,7 @@ import { AppMark, colors, radius, shadows, typography } from "@emappa/ui";
 import { useAuth } from "../AuthContext";
 import { useApi } from "../../lib/api";
 import { useApiData } from "../../lib/useApiData";
+import { ProfileEssentials } from "../ProfileEssentials";
 
 type AdminProject = BuildingRecord & {
   prepaidCommittedKes?: number;
@@ -504,6 +505,13 @@ export function AdminProfileScreen() {
           <Row label="Building scope" value={user?.buildingId ?? "Portfolio"} />
           <Row label="Last seen" value={user?.lastSeenAt ? new Date(user.lastSeenAt).toLocaleString() : "Unavailable"} />
         </Card>
+        <ProfileEssentials
+          roleLabel="Admin"
+          accountRows={[
+            { label: "Scope", value: "Cockpit-first", note: "mobile is read-only" },
+          ]}
+          supportSubject="Admin mobile support"
+        />
       </ScrollView>
     </View>
   );

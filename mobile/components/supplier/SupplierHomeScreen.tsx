@@ -31,8 +31,8 @@ export function SupplierHomeScreen() {
           value: `${view.openRequests}`,
           sub:
             view.openRequests === 1
-              ? "One request needs a clear owner before supplier lock."
-              : `${view.openRequests} requests need a clear owner before supplier lock.`,
+              ? "One request needs a clear owner before provider lock."
+              : `${view.openRequests} requests need a clear owner before provider lock.`,
         };
       }}
       renderPanels={(building) => {

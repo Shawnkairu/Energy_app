@@ -25,7 +25,7 @@ const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
   deployment: "trail-sign-outline",
   deals: "briefcase-outline",
   "deal-detail": "document-text-outline",
-  portfolio: "pie-chart-outline",
+  generation: "flash-outline",
   certification: "ribbon-outline",
   checklist: "checkbox-outline",
   "job-detail": "camera-outline",
@@ -42,10 +42,11 @@ function TabBarChromeBackground() {
 }
 
 const hiddenTabRoutes: Partial<Record<StakeholderRole, string[]>> = {
-  provider: ["qualified-projects", "commit-capacity", "accept-terms"],
+  provider: ["inventory", "qualified-projects", "commit-capacity", "accept-terms", "deployment", "maintenance", "performance"],
   financier: ["tranche-release"],
-  electrician: ["jobs-inbox"],
+  electrician: ["jobs-inbox", "compliance"],
   building_owner: ["compare-today", "resident-roster", "approve-terms", "owner-account"],
+  admin: ["home"],
 };
 
 export function RoleTabs({ role }: { role: StakeholderRole }) {
@@ -63,6 +64,7 @@ export function RoleTabs({ role }: { role: StakeholderRole }) {
 
   return (
     <Tabs
+      initialRouteName={role === "admin" ? "alerts" : undefined}
       screenOptions={({ route }) => {
         const label = sectionByRoute[route.name]?.label ?? titleizeRoute(route.name);
         return {

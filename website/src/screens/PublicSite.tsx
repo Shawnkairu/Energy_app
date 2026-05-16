@@ -26,11 +26,11 @@ export function PublicSite({
 
       <section className="public-hero">
         <div className="hero-story">
-          <p className="eyebrow">Prepaid solar for apartment buildings</p>
+          <p className="eyebrow">Prepaid solar for participating apartments</p>
           <h1>Turn buildings into cleaner, cheaper energy economies.</h1>
           <p>
-            e.mappa helps residents buy pledged solar, building owners host productive assets, and capital partners
-            fund named projects with visible demand before a single panel goes live.
+            e.mappa helps residents signal demand and buy solar tokens once their unit is capacity-cleared and ATS-active, building owners host the rooftop plant and enrollments, and capital partners
+            fund named projects with visible readiness before hardware locks in.
           </p>
           <div className="hero-actions">
             <button onClick={onOpenLogin}>Open stakeholder portal</button>
@@ -52,14 +52,14 @@ export function PublicSite({
           </div>
           <div className="visual-caption">
             <strong>{project ? `${project.project.name} solar economy` : "Building solar economy"}</strong>
-            <span>Prepaid demand, verified supply, transparent settlement.</span>
+            <span>Prepaid demand, verified dedicated solar path, transparent settlement.</span>
           </div>
         </div>
       </section>
 
       <section className="public-strip" aria-label="e.mappa product highlights">
         {[
-          ["For residents", "Buy cleaner pledged energy without guessing what is available."],
+          ["For residents", "Pledge demand, then buy usable solar tokens only after capacity fit and apartment ATS activation at your PAYG meter."],
           ["For owners", "Host solar infrastructure with transparent readiness and revenue logic."],
           ["For capital", "Back named buildings where demand, supply, and verification are visible."],
         ].map(([title, body]) => (
@@ -73,17 +73,15 @@ export function PublicSite({
       <section className="marketing-block" id="product">
         <div className="section-copy">
           <p className="eyebrow">What e.mappa sells</p>
-          <h2>Solar that behaves like a pledged building service.</h2>
+          <h2>Solar that behaves like a pledged apartment service.</h2>
           <p>
-            Residents make non-binding pledges, the building consumes verified solar first, and grid fallback remains there
-            when solar is unavailable. The experience is simple on the surface because the messy parts are handled
-            underneath: readiness, procurement, installation, monitoring, settlement, and ownership attribution.
+            Residents make non-binding pledges during pilot; post-pilot, prepaid cash still gates allocation. Participating apartments ride a dedicated e.mappa solar path through an apartment-level ATS at or near the PAYG meter, with KPLC when the ATS selects grid fallback. The experience stays simple on the surface because readiness, procurement, installation, monitoring, settlement, and ownership attribution stay explicit underneath.
           </p>
         </div>
         <div className="product-stack">
           {[
             ["Pledge", "Residents commit real demand before deployment."],
-            ["Generate", "Panels and batteries serve building load first."],
+            ["Generate", "Rooftop plant feeds a dedicated e.mappa path for enrolled apartments."],
             ["Settle", "Only sold solar creates payouts and ownership value."],
           ].map(([title, body]) => (
             <article key={title}>
@@ -106,24 +104,24 @@ export function PublicSite({
           <h2>Deployment waits for proof, not optimism.</h2>
           <p>
             e.mappa does not treat solar deployment as a pitch deck promise. Every project moves through a readiness
-            score, named capital, provider lock, installation proof, and live metering before the economy opens.
+            score, named capital, provider lock, installation proof, live metering, and apartment ATS and switching verification before token economics open for participating units.
           </p>
         </div>
         <div className="model-quote">
-          <strong>No confirmed pledge means no solar allocation and no payout.</strong>
+          <strong>No confirmed pledge means no allocation signal and no payout.</strong>
           <span>
-            That one rule keeps the system honest: generated energy is not value until a building actually buys and
-            uses it.
+            That one rule keeps the system honest: generated energy is not value until a participating apartment actually buys and
+            uses monetized solar through the cleared ATS path.
           </span>
         </div>
       </section>
 
       <section className="doctrine-grid">
         {[
-          ["01", "Building fit", "A site is screened for load, resident demand, owner terms, technical feasibility, and install complexity."],
+          ["01", "Building fit", "Screen load, enrolled resident demand, owner terms, dedicated solar path feasibility, ATS/meter complexity, and install risk."],
           ["02", "Prepaid demand", "Residents are invited before go-live so demand is visible, committed, and easy to understand."],
           ["03", "Named funding", "Capital goes into a specific building with clear assumptions, not an opaque pool of projects."],
-          ["04", "Verified launch", "Hardware, installation proof, metering, and settlement logic must line up before launch."],
+          ["04", "Verified launch", "Hardware, installation proof, metering, apartment ATS mapping, switching tests, and settlement logic must line up before launch."],
         ].map(([step, title, body]) => (
           <article key={step}>
             <span>{step}</span>
@@ -135,7 +133,7 @@ export function PublicSite({
 
       <section className="customer-band">
         {[
-          ["Residents get", "Lower-cost pledged solar, usage clarity, fallback confidence, and optional ownership once trust is earned."],
+          ["Residents get", "Lower-cost solar tokens on the e.mappa path when your unit is cleared, usage clarity, KPLC fallback when the ATS selects grid, and optional ownership once trust is earned."],
           ["Owners get", "A stronger building utility story, host economics, resident readiness tools, and live deployment visibility."],
           ["Partners get", "A measurable project pipeline where providers, electricians, and financiers work from the same truth."],
         ].map(([title, body]) => (

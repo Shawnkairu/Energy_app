@@ -4,12 +4,12 @@ import type { PortalScreenProps } from "../../../portal/types";
 
 export default function ElectricianWallet({ project, user, data }: PortalScreenProps) {
   const milestoneRateKes = 8500;
-  const openMilestones = Math.max(0, project.roleViews.installer.checklistTotal - project.roleViews.installer.checklistComplete);
+  const openMilestones = Math.max(0, project.roleViews.electrician.checklistTotal - project.roleViews.electrician.checklistComplete);
   const pendingMilestonesKes = openMilestones * milestoneRateKes;
   const activeJobPayKes = data.jobs
     .filter((job) => job.status === "active")
     .reduce((sum, job) => sum + job.payEstimateKes, 0);
-  const projectedPipelineKes = Math.max(activeJobPayKes, project.roleViews.installer.checklistTotal * milestoneRateKes);
+  const projectedPipelineKes = Math.max(activeJobPayKes, project.roleViews.electrician.checklistTotal * milestoneRateKes);
   const transactions = data.walletTransactions.length ? data.walletTransactions : [
     {
       id: "install-mobilization",
@@ -49,7 +49,7 @@ export default function ElectricianWallet({ project, user, data }: PortalScreenP
           <PortalLedger rows={[
             { label: "Paid on", value: "Signed proof", note: "checklist item accepted" },
             { label: "Rate model", value: kes(milestoneRateKes), note: "per demo milestone" },
-            { label: "Hold reason", value: openMilestones ? "Open proof" : "None", note: project.roleViews.installer.certified ? "compliance clear" : "certification pending" },
+            { label: "Hold reason", value: openMilestones ? "Open proof" : "None", note: project.roleViews.electrician.certified ? "compliance clear" : "certification pending" },
             { label: "Next payout", value: openMilestones ? kes(milestoneRateKes) : "Ready", note: openMilestones ? "after next sign-off" : "queue clear" },
           ]} />
         </PortalPanel>

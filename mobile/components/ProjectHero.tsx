@@ -12,7 +12,7 @@ export function ProjectHero({
   name = "Building project",
   location = "Location pending",
   readinessLabel = "DRS not started",
-  summary = "Funding, supplier lock, installer scheduling, and go-live remain gated until readiness is verified.",
+  summary = "Funding, provider lock, electrician scheduling, and go-live remain gated until readiness is verified.",
 }: ProjectHeroProps) {
   return (
     <View style={styles.card}>

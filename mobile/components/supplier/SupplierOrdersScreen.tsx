@@ -51,7 +51,7 @@ export function SupplierOrdersScreen() {
                   },
                   {
                     label: "Delivery proof captured",
-                    detail: "Delivery note, site handoff, and installer acknowledgement are attached to the project lane.",
+                    detail: "Delivery note, site handoff, and electrician acknowledgement are attached to the project lane.",
                     complete: false,
                   },
                   {
@@ -82,7 +82,7 @@ export function SupplierOrdersScreen() {
                   {
                     label: "PO-229 protection gear",
                     primary: `${view.warrantyDocuments} warranty document${view.warrantyDocuments === 1 ? "" : "s"} attached`,
-                    secondary: "Closeout waits for delivery note, serials, and installer acknowledgement.",
+                    secondary: "Closeout waits for delivery note, serials, and electrician acknowledgement.",
                     status: "proof",
                   },
                 ]}

@@ -7,12 +7,12 @@ import { useAuth } from "./AuthContext";
 
 const homeByRole: Record<StakeholderRole, string> = {
   resident: "/(resident)/home",
-  homeowner: "/(building-owner)/home",
+  homeowner: "/(homeowner)/home",
   building_owner: "/(building-owner)/home",
-  provider: "/(provider)/home",
-  financier: "/(financier)/portfolio",
-  electrician: "/(electrician)/jobs",
-  admin: "/(admin)/home",
+  provider: "/(provider)/discover",
+  financier: "/(financier)/discover",
+  electrician: "/(electrician)/discover",
+  admin: "/(admin)/alerts",
 };
 
 export function RoleGuard({ role, children }: { role: StakeholderRole; children: ReactNode }) {

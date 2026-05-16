@@ -1,9 +1,10 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { completeOnboarding, createBuildingForOnboarding, saveRoof } from "../../lib/api";
+import type { BuildingRecord } from "@emappa/shared";
+import { apiPostJson, completeOnboarding } from "../../lib/api";
 
 const steps = ["Welcome", "Address", "Roof capture", "Terms preview", "First pledge"];
 
-export function HomeownerOnboarding({ onExit }: { onExit: () => void }) {
+export function HomeownerOnboarding({ onFinished }: { onFinished: () => void | Promise<void> }) {
   const [step, setStep] = useState(0);
   const [buildingId, setBuildingId] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -31,16 +32,16 @@ export function HomeownerOnboarding({ onExit }: { onExit: () => void }) {
     setBusy(true);
     setMessage(null);
     try {
-      const result = await createBuildingForOnboarding({
+      const result = await apiPostJson<{ building: BuildingRecord }>("/buildings", {
         name: form.name.trim(),
         address: form.address.trim(),
         lat: form.lat,
         lon: form.lon,
-        unit_count: 1,
+        unitCount: 1,
         occupancy: 1,
         kind: "single_family",
       });
-      setBuildingId(result?.building.id ?? "demo-home");
+      setBuildingId(result.building.id);
       setStep(2);
     } catch {
       setMessage("We could not save the address. Please try again.");
@@ -60,7 +61,10 @@ export function HomeownerOnboarding({ onExit }: { onExit: () => void }) {
     setMessage(null);
     try {
       if (buildingId) {
-        await saveRoof(buildingId, { area_m2: form.roofArea, source: "owner_typed" });
+        await apiPostJson<{ building: BuildingRecord }>(
+          `/buildings/${encodeURIComponent(buildingId)}/roof`,
+          { areaM2: form.roofArea, source: "owner_typed" },
+        );
       }
       setStep(3);
     } catch {
@@ -74,8 +78,8 @@ export function HomeownerOnboarding({ onExit }: { onExit: () => void }) {
     setBusy(true);
     setMessage(null);
     try {
-      await completeOnboarding({ display_name: form.displayName.trim() || undefined });
-      onExit();
+      await completeOnboarding({ displayName: form.displayName.trim() || undefined });
+      await onFinished();
     } catch {
       setMessage("We could not finish onboarding. Please try once more.");
     } finally {

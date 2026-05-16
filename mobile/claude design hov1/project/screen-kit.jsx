@@ -355,7 +355,7 @@ function ScoreArtifact({ score, label, decision, components, blockers, decisionT
         <div style={{ marginTop: 10 }}><Pill tone={decisionTone}>{decision}</Pill></div>
         <div style={{ color: KIT.text, fontSize: 14, fontWeight: 600, marginTop: 8 }}>{label}</div>
         <div style={{ color: KIT.muted, fontSize: 11, lineHeight: 1.45, marginTop: 5, textAlign: 'center' }}>
-          DRS gates capital release, supplier lock, installer scheduling, and go-live.
+          DRS gates capital release, provider lock, electrician scheduling, and go-live.
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 8 }}>
@@ -959,7 +959,7 @@ function RiskCaseCard({ cases }) {
   );
 }
 
-// ── Site map card (installer job detail) ─────────────────────
+// ── Site map card (electrician job detail) ────────────────────
 function SiteMapCard({ access, meter, inverter, mapped }) {
   return (
     <GlassCard>

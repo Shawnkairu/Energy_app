@@ -1,3 +1,4 @@
+import { ImmersiveEnergyHero, ImmersiveProjectHero } from "@emappa/web-immersive";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
@@ -13,7 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { DrsResult, EnergyReading, PrepaidCommitment, ProjectedBuilding, SettlementPeriod } from "@emappa/shared";
+import type { DrsResult, EnergyReading, OperationalWorkflowSnapshot, PrepaidCommitment, ProjectedBuilding, SettlementPeriod } from "@emappa/shared";
 import {
   extractBuildingRecord,
   getDrs,
@@ -31,7 +32,7 @@ import {
 } from "../api";
 import { SyntheticBadge, type SyntheticMode } from "../components/SyntheticBadge";
 
-type Tab = "overview" | "energy" | "pledges" | "drs" | "settlement" | "roof";
+type Tab = "overview" | "energy" | "pledges" | "drs" | "lbrs" | "ops" | "settlement" | "roof";
 
 type Props = {
   project: ProjectedBuilding;
@@ -45,6 +46,8 @@ const tabs: Array<{ id: Tab; label: string }> = [
   { id: "energy", label: "Energy" },
   { id: "pledges", label: "Pledges" },
   { id: "drs", label: "DRS" },
+  { id: "lbrs", label: "LBRS" },
+  { id: "ops", label: "Ops" },
   { id: "settlement", label: "Settlement" },
   { id: "roof", label: "Roof" },
 ];
@@ -182,10 +185,13 @@ export function BuildingDetail({ project, token, syntheticMode, onProjectChange 
       {error && <div className="notice error">{error}</div>}
 
       {activeTab === "overview" && (
-        <section className="detail-grid">
+        <>
+          <ImmersiveProjectHero project={project} mode="building_owner" />
+          <section className="detail-grid">
           <MetricCard label="Pledged total" value={kes(project.project.prepaidCommittedKes)} />
           <MetricCard label="Projected revenue" value={kes(project.settlement.revenue)} />
           <MetricCard label="DRS score" value={`${drs?.score ?? project.drs.score}`} />
+          <MetricCard label="LBRS" value={project.lbrs.label} />
           <MetricCard label="Last settlement" value={latestSettlement ? formatDate(latestSettlement.createdAt) : "—"} />
 
           <div className="panel wide">
@@ -211,10 +217,13 @@ export function BuildingDetail({ project, token, syntheticMode, onProjectChange 
             </div>
           </div>
         </section>
+        </>
       )}
 
       {activeTab === "energy" && (
-        <section className="detail-grid two">
+        <>
+          <ImmersiveEnergyHero project={project} energyToday={today} variant="building" />
+          <section className="detail-grid two">
           <ChartPanel title="24h energy profile" source={source} mode={syntheticMode}>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={todayRows}>
@@ -240,6 +249,7 @@ export function BuildingDetail({ project, token, syntheticMode, onProjectChange 
             </ResponsiveContainer>
           </ChartPanel>
         </section>
+        </>
       )}
 
       {activeTab === "pledges" && (
@@ -260,7 +270,9 @@ export function BuildingDetail({ project, token, syntheticMode, onProjectChange 
       )}
 
       {activeTab === "drs" && (
-        <section className="detail-grid two">
+        <>
+          <ImmersiveProjectHero project={project} mode="provider" />
+          <section className="detail-grid two">
           <div className="panel">
             <p className="eyebrow">Current DRS</p>
             <h2>{drs?.score ?? project.drs.score} / 100</h2>
@@ -324,6 +336,106 @@ export function BuildingDetail({ project, token, syntheticMode, onProjectChange 
               )}
             </ResponsiveContainer>
           </ChartPanel>
+        </section>
+        </>
+      )}
+
+      {activeTab === "lbrs" && (
+        <>
+          <ImmersiveProjectHero project={project} mode="lbrs" />
+          <section className="detail-grid two">
+          <div className="panel">
+            <p className="eyebrow">Live Building Readiness</p>
+            <h2>{project.lbrs.score} / 100</h2>
+            <span className={`pill ${project.lbrs.decision}`}>{project.lbrs.decision}</span>
+            <p className="lede">Go-live requires every critical LBRS test to pass — display score is informational only.</p>
+            <div className="alert-stack">
+              {project.lbrs.reasons.length ? (
+                project.lbrs.reasons.map((reason) => (
+                  <div className="alert" key={reason}>
+                    <strong>Blocker</strong>
+                    <span>{reason}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="alert">
+                  <strong>No LBRS blockers</strong>
+                  <span>All critical launch tests are passing for this snapshot.</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="panel">
+            <p className="eyebrow">Launch checklist</p>
+            <h2>Critical tests</h2>
+            <div className="toggle-list">
+              {project.lbrs.checklist.map((item) => (
+                <div className="settlement-row" key={item.id}>
+                  <span>
+                    {item.label}
+                    {item.critical ? " · critical" : ""}
+                  </span>
+                  <strong className={item.complete ? "good" : "bad"}>{item.complete ? "pass" : "fail"}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="panel wide">
+            <p className="eyebrow">Settlement pools (from E_sold)</p>
+            <h2>Stakeholder claim mapping</h2>
+            <div className="waterfall-grid">
+              <MetricCard label="Reserve" value={kes(project.settlement.reserve)} />
+              <MetricCard label="Providers" value={kes(project.settlement.providerPool)} />
+              <MetricCard label="Financiers / infra" value={kes(project.settlement.financierPool)} />
+              <MetricCard label="Building owner host" value={kes(project.settlement.ownerRoyalty)} />
+              <MetricCard label="e.mappa" value={kes(project.settlement.emappaFee)} />
+              {(project.settlement.shortfallKes ?? 0) > 0 && (
+                <MetricCard label="Shortfall (scaled)" value={kes(project.settlement.shortfallKes ?? 0)} />
+              )}
+            </div>
+            <p className="lede">
+              Payback uses monetized revenue only. Financier count changes per-person payout, not physics duration for a fixed pool.
+            </p>
+          </div>
+        </section>
+        </>
+      )}
+
+      {activeTab === "ops" && (
+        <section className="detail-grid two">
+          <div className="panel">
+            <p className="eyebrow">Imported scenario operations</p>
+            <h2>Prototype workflow status</h2>
+            <p className="lede">
+              These rows make Scenario A-F blockers visible without claiming production escrow, KYC, or AI integrations.
+            </p>
+            <DataTable
+              columns={["Workflow", "Status", "Owner"]}
+              rows={project.operationalWorkflows.map((item) => [
+                item.label,
+                item.status.replace(/_/g, " "),
+                item.ownerRole,
+              ])}
+              empty="No operational workflow snapshot was returned."
+            />
+          </div>
+          <div className="panel">
+            <p className="eyebrow">Evidence queue</p>
+            <h2>Traceability notes</h2>
+            <div className="toggle-list">
+              {project.operationalWorkflows.map((item) => (
+                <div className="settlement-row" key={item.id}>
+                  <span>
+                    {item.evidenceLabel}
+                    {item.prototypeScope ? " · prototype" : ""}
+                  </span>
+                  <strong className={statusClass(item)}>{item.detail}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       )}
 
@@ -495,6 +607,12 @@ function seriesSource(readings: EnergyReading[], fallback: string) {
   if (!readings.length) return fallback;
   const sources = new Set(readings.map((reading) => reading.source));
   return sources.size > 1 ? "mixed" : [...sources][0];
+}
+
+function statusClass(item: OperationalWorkflowSnapshot) {
+  if (item.status === "ready") return "good";
+  if (item.status === "blocked") return "bad";
+  return "";
 }
 
 function kes(value: number) {

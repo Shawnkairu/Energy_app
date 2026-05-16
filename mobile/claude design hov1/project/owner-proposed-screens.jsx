@@ -78,7 +78,7 @@ function OwnerListBuildingScreen() {
         section="Onboard"
         roleLabel="Owner private app"
         title="List your Building"
-        subtitle="Tell e.mappa about the building so qualification can begin. Required before DRS, supplier, and installer steps unlock."
+        subtitle="Tell e.mappa about the building so qualification can begin. Required before DRS, supplier, and electrician steps unlock."
         actions={["Save draft", "Request inspection", "Cancel"]}
         ownerStyle
         hero={{
@@ -140,7 +140,7 @@ function OwnerComparisonScreen() {
         <SectionBriefCard
           eyebrow="How to read this"
           title="A range, not a guarantee."
-          body="Numbers below assume 80% participation and median utilization. Both move with deployment readiness and resident sign-up."
+          body="Numbers below assume pledged demand scenarios and median utilization. Both move with deployment readiness and resident sign-up."
         />
         <GlassCard>
           <Label>Side-by-side</Label>
@@ -170,7 +170,7 @@ function OwnerComparisonScreen() {
           title="What changes the projection."
           body="The comparison reflects only monetized prepaid solar. Free generation, waste, and curtailment do not improve owner royalty."
           rows={[
-            { label: 'Resident participation', value: '80% assumed',  note: 'Below 60% blocks deployment.', tone: 'good' },
+            { label: 'Resident participation', value: 'scenario range',  note: 'Below 60% blocks deployment.', tone: 'good' },
             { label: 'Utilization',            value: '75% assumed',  note: 'Below 70% lowers royalty.',   tone: 'good' },
             { label: 'Grid tariff',            value: '+ shocks',     note: 'Tariff rises favor e.mappa more, never less.', tone: 'neutral' },
           ]}
@@ -253,7 +253,7 @@ function OwnerApproveTermsScreen() {
         hero={{
           label: 'Awaiting owner signature',
           value: '3 terms',
-          sub: 'Provider royalty split, financier milestones, supplier lock window.',
+          sub: 'Provider royalty split, financier milestones, provider lock window.',
           status: 'pending', statusTone: 'warn',
         }}
       >
@@ -269,13 +269,13 @@ function OwnerApproveTermsScreen() {
           rows={[
             { label: 'Royalty split',     value: '12% owner', note: 'Of monetized solar after provider pool. Future periods only.', tone: 'good' },
             { label: 'Financier raise',  value: 'milestone', note: '3 tranches, released against verified evidence — not against time.' },
-            { label: 'Supplier lock',    value: '30 days', note: 'BOM and quote held for owner to confirm before installer scheduling.' },
+            { label: 'Provider lock',    value: '30 days', note: 'BOM and quote held for owner to confirm before electrician scheduling.' },
           ]}
         />
         <WorkflowCard eyebrow="Owner accountability" title="Once approved" items={[
           { label: 'Provider asset terms', detail: 'Provider can list this building as "named exposure" for capital matching.', status: 'unlocks', tone: 'good' },
           { label: 'Financier deal room',  detail: 'Capital matching opens for the deal up to the agreed raise.', status: 'unlocks', tone: 'good' },
-          { label: 'Supplier scheduling',  detail: 'Installer can be paired with a locked BOM and dispatch window.', status: 'unlocks', tone: 'good' },
+          { label: 'Supplier scheduling',  detail: 'An electrician can be paired with a locked BOM and dispatch window.', status: 'unlocks', tone: 'good' },
         ]}/>
         <GlassCard>
           <Label>Signature</Label>

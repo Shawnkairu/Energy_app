@@ -42,6 +42,9 @@ export default function ResidentConfirmBuildingScreen() {
         <Text style={styles.helper}>
           {kind.replace("_", " ")} · {Number(unitCount).toLocaleString()} unit{unitCount === "1" ? "" : "s"}
         </Text>
+        <Text style={styles.helper}>
+          Confirm this is the building where your apartment will participate. Non-participating units remain on KPLC only; usable solar tokens require capacity clearance and ATS activation after hardware is live.
+        </Text>
       </GlassCard>
     </OnboardShell>
   );

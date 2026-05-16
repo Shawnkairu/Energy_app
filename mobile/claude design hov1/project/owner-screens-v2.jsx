@@ -5,7 +5,7 @@
 const ofmtKes = (v) => `KSh ${Math.round(v).toLocaleString()}`;
 const ofmtPct = (v) => `${Math.round(v * 100)}%`;
 const stageLabel = (s) => s.replace(/_/g, ' ').split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
-const decTone = (d) => d === 'approve' ? 'good' : d === 'review' ? 'warn' : 'bad';
+const decTone = (d) => d === 'deployment_ready' ? 'good' : d === 'review' ? 'warn' : 'bad';
 
 function OwnerHomeScreenV2() {
   const b = window.MOCK; const view = b.roleViews.owner;
@@ -101,7 +101,7 @@ function OwnerDrsScreenV2() {
         blockers={null}
       />
       <MiniGrid items={[
-        { label: 'Decision',     value: b.drs.decision, detail: 'Capital, supplier lock, installer scheduling, and go-live follow this gate.', tone: decTone(b.drs.decision) },
+        { label: 'Decision',     value: b.drs.decision, detail: 'Capital, provider lock, electrician scheduling, and go-live follow this gate.', tone: decTone(b.drs.decision) },
         { label: 'Open gates',   value: `${openGates.length}`, detail: openGates.length === 0 ? 'All deployment gates are ready.' : 'Resolve before activation.', tone: openGates.length === 0 ? 'good' : 'warn' },
         { label: 'Participation', value: ofmtPct(view.residentParticipation), detail: 'Demand below 60% blocks deployment.', tone: view.residentParticipation >= 0.6 ? 'good' : 'bad' },
         { label: 'Prepaid',      value: ofmtPct(view.prepaidCoverage), detail: 'No prepaid funds blocks deployment.', tone: view.prepaidCoverage > 0 ? 'good' : 'bad' },
@@ -111,7 +111,7 @@ function OwnerDrsScreenV2() {
         { label: 'Prepaid commitment', value: b.drs.components.prepaidCommitment,    detail: 'Prepaid cash committed before allocation.', tone: b.drs.components.prepaidCommitment > 0 ? 'good' : 'bad' },
         { label: 'Load profile',       value: b.drs.components.loadProfile,           detail: 'Quality of building demand shape.',        tone: b.drs.components.loadProfile >= 65 ? 'good' : 'warn' },
         { label: 'Installation',       value: b.drs.components.installationReadiness, detail: 'Site and permission readiness.',           tone: b.drs.components.installationReadiness >= 65 ? 'good' : 'warn' },
-        { label: 'Installer/labor',    value: b.drs.components.installerReadiness,    detail: 'Certified labor readiness.',               tone: b.drs.components.installerReadiness >= 65 ? 'good' : 'warn' },
+        { label: 'Electrician/labor',    value: b.drs.components.installerReadiness,    detail: 'Certified labor readiness.',               tone: b.drs.components.installerReadiness >= 65 ? 'good' : 'warn' },
         { label: 'Capital alignment',  value: b.drs.components.capitalAlignment,      detail: 'Named building capital progress.',         tone: b.drs.components.capitalAlignment >= 65 ? 'good' : 'warn' },
       ]}/>
       <GateList gates={view.gates} title="Activation gates"/>
@@ -188,7 +188,7 @@ function OwnerDeploymentScreenV2() {
       section="Deployment"
       roleLabel="Owner private app"
       title="Deployment Journey"
-      subtitle="A timeline for owner access, resident readiness, supplier lock, installer proof, monitoring, and go-live."
+      subtitle="A timeline for owner access, resident readiness, provider lock, electrician proof, monitoring, and go-live."
       actions={["Confirm access", "Invite residents", "Track go-live"]}
       ownerStyle
       hero={{
@@ -204,8 +204,8 @@ function OwnerDeploymentScreenV2() {
       <MiniGrid items={[
         { label: 'Journey progress', value: `${readyGates}/${view.gates.length}`, detail: 'Required handoffs ready.', tone: readyGates === view.gates.length ? 'good' : 'warn' },
         { label: 'Residents',        value: ofmtPct(view.residentParticipation), detail: 'Pre-onboarding demand signal.', tone: view.residentParticipation >= 0.8 ? 'good' : 'warn' },
-        { label: 'Supplier lock',    value: drs.hasVerifiedSupplierQuote ? 'locked' : 'pending', detail: 'BOM and quote proof before scheduling.', tone: drs.hasVerifiedSupplierQuote ? 'good' : 'bad' },
-        { label: 'Installer proof',  value: drs.hasCertifiedLeadElectrician ? 'assigned' : 'missing', detail: 'Certified lead electrician is a deployment kill switch.', tone: drs.hasCertifiedLeadElectrician ? 'good' : 'bad' },
+        { label: 'Provider lock',    value: drs.hasVerifiedSupplierQuote ? 'locked' : 'pending', detail: 'BOM and quote proof before scheduling.', tone: drs.hasVerifiedSupplierQuote ? 'good' : 'bad' },
+        { label: 'Electrician proof',  value: drs.hasCertifiedLeadElectrician ? 'assigned' : 'missing', detail: 'Certified lead electrician is a deployment kill switch.', tone: drs.hasCertifiedLeadElectrician ? 'good' : 'bad' },
       ]}/>
       <BriefCard
         eyebrow="Go-live path"
@@ -220,8 +220,8 @@ function OwnerDeploymentScreenV2() {
       <JourneyCard title="Owner and partner handoffs" items={[
         { label: 'Access window',         detail: 'Keep permission, rooftop access, and meter room availability explicit.', status: drs.ownerPermissionsComplete ? 'ready' : 'blocked', tone: drs.ownerPermissionsComplete ? 'good' : 'bad' },
         { label: 'Resident pre-onboarding', detail: 'Deployment should not move ahead of prepaid demand.', status: view.residentParticipation >= 0.6 ? 'qualified' : 'short', tone: view.residentParticipation >= 0.6 ? 'good' : 'bad' },
-        { label: 'Supplier lock',         detail: 'BOM and quote proof are required before installer scheduling.', status: drs.hasVerifiedSupplierQuote ? 'locked' : 'pending', tone: drs.hasVerifiedSupplierQuote ? 'good' : 'warn' },
-        { label: 'Installer assignment',  detail: 'Certified labor must be assigned before installation can start.', status: drs.hasCertifiedLeadElectrician ? 'assigned' : 'missing', tone: drs.hasCertifiedLeadElectrician ? 'good' : 'bad' },
+        { label: 'Provider lock',         detail: 'BOM and quote proof are required before electrician scheduling.', status: drs.hasVerifiedSupplierQuote ? 'locked' : 'pending', tone: drs.hasVerifiedSupplierQuote ? 'good' : 'warn' },
+        { label: 'Electrician assignment',  detail: 'Certified labor must be assigned before installation can start.', status: drs.hasCertifiedLeadElectrician ? 'assigned' : 'missing', tone: drs.hasCertifiedLeadElectrician ? 'good' : 'bad' },
         { label: 'Monitoring go-live',    detail: 'Connectivity and settlement trust must be clean before activation.', status: drs.monitoringConnectivityResolved ? 'online' : 'blocked', tone: drs.monitoringConnectivityResolved ? 'good' : 'bad' },
       ]}/>
     </ScreenShell>

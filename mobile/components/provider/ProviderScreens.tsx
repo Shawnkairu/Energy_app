@@ -6,5 +6,5 @@ export { ProviderWalletScreen } from "./ProviderWalletScreen";
 export { ProviderSharesScreen } from "./ProviderSharesScreen";
 export { ProviderEarningsScreen } from "./ProviderEarningsScreen";
 export { ProviderMaintenanceScreen } from "./ProviderMaintenanceScreen";
-export { ProviderDeploymentScreen } from "./ProviderDeploymentScreen";
+export { ProviderDeploymentScreen, ProviderProjectsScreen } from "./ProviderDeploymentScreen";
 export { ProviderProfileScreen } from "./ProviderProfileScreen";

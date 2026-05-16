@@ -14,8 +14,8 @@ export const webRoles: RoleConfig[] = [
     label: "Homeowner",
     shortLabel: "Homeowner",
     accessLabel: "I own and live in my home",
-    promise: "Track your home solar project, then manage tokens, energy, and rooftop earnings.",
-    unlockCopy: "See adaptive project/token home, energy, three-stream wallet, and roof profile.",
+    promise: "Track your home solar project, then manage tokens, energy, and savings — no host royalty on your own roof.",
+    unlockCopy: "See adaptive project/token home, energy, segmented wallet, and roof profile.",
   },
   {
     id: "building_owner",

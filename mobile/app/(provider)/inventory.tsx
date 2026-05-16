@@ -1,3 +1,5 @@
-import { ProviderAssetsScreen } from "../../components/provider/ProviderScreens";
+import { Redirect } from "expo-router";
 
-export default ProviderAssetsScreen;
+export default function LegacyProviderInventoryRoute() {
+  return <Redirect href="/(provider)/projects" />;
+}

@@ -20,7 +20,7 @@ Represents inverter, battery, DB upgrades, monitoring, balance-of-system, and fi
 
 Tracks BOM, quote, selected supplier, price, lead time, delivery, serial numbers, warranty docs, and fulfillment status.
 
-## Installer Job
+## Electrician Job
 
 Tracks electrician ownership of site inspection, install checklist, photos, test readings, and go-live signoff.
 

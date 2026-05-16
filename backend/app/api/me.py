@@ -29,12 +29,95 @@ def _serialize_user(user: User) -> dict:
     return base(user)
 
 
+PUBLIC_STAKEHOLDER_ROLES: frozenset[str] = frozenset(
+    {
+        "resident",
+        "homeowner",
+        "building_owner",
+        "provider",
+        "financier",
+        "electrician",
+    }
+)
+
+
+class SelectRoleBody(BaseModel):
+    """Pick a public stakeholder role before multi-step onboarding completes."""
+
+    display_name: str | None = Field(default=None, alias="displayName")
+    business_type: Literal["panels", "infrastructure", "both"] | None = Field(
+        default=None, alias="businessType"
+    )
+    role: str = Field(..., alias="role")
+
+    class Config:
+        populate_by_name = True
+
+
+@router.post("/select-role")
+async def select_role(
+    body: SelectRoleBody,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set role (+ optional display name / business type) without finishing onboarding.
+
+    IA §7: after OTP, users choose a public role, then complete role-specific onboarding.
+    This endpoint persists the role but leaves ``onboarding_complete`` false until
+    ``POST /me/onboarding-complete``.
+    """
+    if body.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="admin_role_forbidden",
+        )
+
+    if user.role == "admin":
+        return {"user": _serialize_user(user)}
+
+    if user.onboarding_complete:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="onboarding_already_complete",
+        )
+
+    if body.role not in PUBLIC_STAKEHOLDER_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="invalid_role",
+        )
+
+    if body.role == "provider" and not body.business_type and not user.business_type:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="business_type_required_for_provider",
+        )
+
+    values: dict[str, Any] = {"role": body.role}
+    if body.display_name is not None:
+        values["display_name"] = body.display_name
+    if body.business_type is not None:
+        values["business_type"] = body.business_type
+
+    await session.execute(update(User).where(User.id == user.id).values(**values))
+    await session.commit()
+
+    refreshed = await users_repo.get_by_id(session, user.id)
+    assert refreshed is not None
+    return {"user": _serialize_user(refreshed)}
+
+
 class OnboardingCompleteBody(BaseModel):
     display_name: str | None = Field(default=None, alias="displayName")
     business_type: Literal["panels", "infrastructure", "both"] | None = Field(
         default=None, alias="businessType"
     )
     profile: dict[str, Any] | None = None
+    role: str | None = Field(
+        default=None,
+        alias="role",
+        description="Optional; must never be 'admin' (rejected per IA_SPEC §8.5).",
+    )
 
     class Config:
         populate_by_name = True
@@ -46,6 +129,12 @@ async def onboarding_complete(
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
+    if body.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="admin_onboarding_forbidden",
+        )
+
     if user.role == "admin":
         return {"user": _serialize_user(user)}
 

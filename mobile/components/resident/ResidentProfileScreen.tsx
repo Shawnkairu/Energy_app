@@ -1,5 +1,6 @@
 import { Linking, StyleSheet, Text, View } from "react-native";
 import { PaletteCard, Pill, colors, officialPalette, spacing, typography } from "@emappa/ui";
+import { ProfileEssentials } from "../ProfileEssentials";
 import { ResidentInfoCard, ResidentMetricGrid, ResidentPrimaryButton, ResidentScreenFrame } from "./ResidentScaffold";
 import { ROLE_TINT } from "./residentTint";
 
@@ -84,6 +85,14 @@ export function ResidentProfileScreen() {
                 </ResidentPrimaryButton>
               </View>
             </ResidentInfoCard>
+
+            <ProfileEssentials
+              roleLabel="Resident"
+              accountRows={[
+                { label: "Building", value: building.project.name, note: building.project.locationBand },
+              ]}
+              supportSubject={`Resident support - ${building.project.name}`}
+            />
           </>
         );
       }}

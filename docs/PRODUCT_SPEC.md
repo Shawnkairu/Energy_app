@@ -1,6 +1,6 @@
 # Product Spec
 
-e.mappa turns apartment buildings into prepaid, locally financed energy economies. Residents buy cheaper solar when available, fall back to grid when needed, and can optionally own shares in local energy assets. Building owners host productive energy sites. Providers deploy panels into DRS-qualified buildings. Financiers fund named projects with live performance data. Electricians, labor, and suppliers execute verified deployments.
+e.mappa turns apartment buildings into prepaid, locally financed energy economies on a **dedicated e.mappa solar supply path**. Rooftop solar, inverter, and battery feed that path—not a common-bus injection into arbitrary building loads. Each **participating** apartment connects through an **apartment-level automatic transfer switch (ATS)** at or near its **PAYG (KPLC prepay) meter**; the ATS selects between e.mappa solar and KPLC/grid fallback. **Non-participating apartments remain on KPLC** and are not tied to the e.mappa path. Residents buy cheaper solar when their unit is capacity-cleared and ATS-active, fall back to grid when the ATS selects KPLC, and can optionally own shares in local energy assets. Building owners host the site and enrollment. Providers deploy panels into DRS-qualified buildings. Financiers fund named projects with live performance data. Electricians execute verified deployments; providers supply panels and infrastructure under `businessType`.
 
 ## Product Doctrine
 
@@ -15,7 +15,7 @@ e.mappa turns apartment buildings into prepaid, locally financed energy economie
 
 ## Primary Surfaces
 
-- Mobile app: native role-based product for residents, owners, providers, financiers, installers, and suppliers. Each role is guarded and owns its own route/component folder.
+- Mobile app: native role-based product for residents, homeowners, building owners, providers, financiers, and electricians. Each role is guarded and owns its own route/component folder.
 - Cockpit: e.mappa-internal analytics, tables, DRS command center, settlement monitor, stress testing, and operating workflows. It is not a stakeholder portal.
 - Website: public explanation plus isolated stakeholder web portals for all non-e.mappa roles.
 

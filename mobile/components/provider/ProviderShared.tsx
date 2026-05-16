@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, type DimensionValue } from "react-native";
+import { ScrollView, StyleSheet, Text, View, type DimensionValue } from "react-native";
 import { getRoleHome } from "@emappa/api-client";
 import { getMobileSections, type ProjectedBuilding } from "@emappa/shared";
 import {
@@ -17,6 +17,7 @@ import { PilotBanner } from "../PilotBanner";
 
 export type ProviderSection =
   | "Discover"
+  | "Projects"
   | "Assets"
   | "Generation"
   | "Performance"
@@ -65,12 +66,15 @@ export function ProviderDashboard({
   subtitle,
   actions,
   renderPanels,
+  minimalChrome = false,
 }: {
   section: ProviderSection;
   title: string;
   subtitle: string;
   actions: string[];
   renderPanels: (building: ProjectedBuilding) => ReactNode;
+  /** Full-bleed project status hero (Tesla / Enphase system-overview direction). */
+  minimalChrome?: boolean;
 }) {
   const [building, setBuilding] = useState<ProjectedBuilding | null>(null);
 
@@ -113,51 +117,55 @@ export function ProviderDashboard({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 34, paddingHorizontal: spacing.lg }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.md }}>
-          <View>
-            <Text style={styles.overline}>Provider</Text>
+        {minimalChrome ? null : (
+          <>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.md }}>
+              <View>
+                <Text style={styles.overline}>Provider</Text>
+                <Text
+                  style={{
+                    color: colors.muted,
+                    fontSize: typography.micro,
+                    fontWeight: "600",
+                    letterSpacing: 0.7,
+                    marginTop: 10,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {sectionIndex + 1}/{sections.length} · {section}
+                </Text>
+              </View>
+              <View style={styles.markShell}>
+                <AppMark size={36} />
+              </View>
+            </View>
             <Text
               style={{
-                color: colors.muted,
-                fontSize: typography.micro,
-                fontWeight: "600",
-                letterSpacing: 0.7,
-                marginTop: 10,
-                textTransform: "uppercase",
+                color: colors.text,
+                fontSize: 36,
+                fontWeight: "700",
+                letterSpacing: -1.5,
+                lineHeight: 39,
+                marginTop: spacing.lg,
               }}
             >
-              {sectionIndex + 1}/{sections.length} · {section}
+              {title}
             </Text>
-          </View>
-          <View style={styles.markShell}>
-            <AppMark size={36} />
-          </View>
-        </View>
-        <Text
-          style={{
-            color: colors.text,
-            fontSize: 36,
-            fontWeight: "700",
-            letterSpacing: -1.5,
-            lineHeight: 39,
-            marginTop: spacing.lg,
-          }}
-        >
-          {title}
-        </Text>
-        <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 21, marginTop: spacing.sm, marginBottom: 0 }}>
-          {subtitle}
-        </Text>
+            <Text style={{ color: colors.muted, fontSize: typography.body, lineHeight: 21, marginTop: spacing.sm, marginBottom: 0 }}>
+              {subtitle}
+            </Text>
 
-        <View style={{ marginTop: spacing.md, marginBottom: spacing.sm }}>
-          <PilotBanner
-            title="Pilot mode"
-            message="Projected figures use synthetic building data until a named asset is fully live in settlement."
-          />
-        </View>
+            <View style={{ marginTop: spacing.md, marginBottom: spacing.sm }}>
+              <PilotBanner
+                title="Pilot mode"
+                message="Projected figures use synthetic building data until a named asset is fully live in settlement."
+              />
+            </View>
 
-        <ProviderActionRail actions={actions} />
-        <ProviderHeroCard hero={hero} />
+            <ProviderActionRail actions={actions} />
+            <ProviderHeroCard hero={hero} />
+          </>
+        )}
         {renderPanels(building)}
       </ScrollView>
     </Surface>
@@ -307,6 +315,7 @@ export function ProviderTruthCard({ title, body, tone = "warn" }: { title: strin
 /** Next provider action — aligned to provider-screens-v2.jsx `PROVIDER_ACTIONS` (single focus item). */
 const PROVIDER_NEXT_ACTION: Record<ProviderSection, { label: string; detail: string; status: string; tone?: Tone }> = {
   Discover: { label: "Review array status", detail: "Generation, revenue, maintenance, and gates.", status: "now", tone: "good" },
+  Projects: { label: "Watch project status", detail: "DRS gates, quote lock, delivery proof, and go-live readiness.", status: "projects", tone: "warn" },
   Assets: { label: "Inspect asset proof", detail: "Generation and warranty evidence.", status: "asset", tone: "neutral" },
   Generation: { label: "Read generation", detail: "Array output and unused energy.", status: "array", tone: "good" },
   Performance: { label: "Read flow", detail: "Sold, unpaid, grid fallback.", status: "flow", tone: "neutral" },
@@ -466,8 +475,10 @@ function ProviderActionRail({ actions }: { actions: string[] }) {
       {actions.map((action, index) => {
         const active = index === 0;
         return (
-          <Pressable
+          <View
             key={action}
+            accessibilityRole="text"
+            accessibilityLabel={action}
             style={{
               borderRadius: radius.pill,
               backgroundColor: active ? orange : colors.white,
@@ -488,7 +499,7 @@ function ProviderActionRail({ actions }: { actions: string[] }) {
             >
               {action}
             </Text>
-          </Pressable>
+          </View>
         );
       })}
     </ScrollView>
@@ -581,6 +592,14 @@ function getProviderHero(
   const completeGates = view.deploymentGates.filter((gate) => gate.complete).length;
 
   switch (section) {
+    case "Projects":
+      return {
+        eyebrow: "DRS decision",
+        value: building.drs.label,
+        label: "",
+        detail: `${completeGates}/${view.deploymentGates.length} gates ready · score ${building.drs.score}/100.`,
+        tone: building.drs.decision === "deployment_ready" ? "good" : "warn",
+      };
     case "Assets":
       return {
         eyebrow: "Generated this month",
@@ -642,7 +661,7 @@ function getProviderHero(
         value: building.drs.label,
         label: "",
         detail: `${completeGates}/${view.deploymentGates.length} gates ready · score ${building.drs.score}/100.`,
-        tone: building.drs.decision === "approve" ? "good" : "warn",
+        tone: building.drs.decision === "deployment_ready" ? "good" : "warn",
       };
     case "Profile":
       return {
@@ -693,6 +712,7 @@ function ProviderTinyFact({ building, section }: { building: ProjectedBuilding; 
   const view = building.roleViews.provider;
   const valueBySection: Record<ProviderSection, string> = {
     Discover: `${formatKwh(view.generatedKwh)} generated`,
+    Projects: building.drs.label,
     Assets: `${formatKwh(view.monetizedKwh)} sold`,
     Generation: `${formatKwh(view.generatedKwh)} generated`,
     Performance: `${formatPercent(view.utilization)} utilization`,

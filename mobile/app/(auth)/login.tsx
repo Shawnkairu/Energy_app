@@ -1,12 +1,24 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { createSyntheticDemoSession, type PublicRole } from "@emappa/shared";
 import { AppMark, colors, GlassCard, Label, PrimaryButton, spacing, typography } from "@emappa/ui";
+import { useAuth } from "../../components/AuthContext";
 import { __API_BASE_URL, useApi } from "../../lib/api";
+
+const demoRoles: Array<{ role: PublicRole; label: string }> = [
+  { role: "resident", label: "Resident" },
+  { role: "homeowner", label: "Homeowner" },
+  { role: "building_owner", label: "Building owner" },
+  { role: "provider", label: "Provider" },
+  { role: "financier", label: "Financier" },
+  { role: "electrician", label: "Electrician" },
+];
 
 export default function Login() {
   const router = useRouter();
   const api = useApi();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("Use the email from your invite. We will send a one-time code.");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +40,12 @@ export default function Login() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function openSyntheticDemo(role: PublicRole) {
+    const session = createSyntheticDemoSession(role, { phase: "settlement" });
+    signIn(session);
+    router.replace(roleHomeHref(role));
   }
 
   return (
@@ -59,6 +77,23 @@ export default function Login() {
       >
         {isSubmitting ? "Sending..." : "Send code"}
       </PrimaryButton>
+      <GlassCard>
+        <Label>Synthetic demo</Label>
+        <Text style={styles.note}>Open any stakeholder workspace with scenario-backed synthetic data.</Text>
+        <View style={styles.demoGrid}>
+          {demoRoles.map((item) => (
+            <Pressable
+              key={item.role}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${item.label} synthetic demo`}
+              onPress={() => openSyntheticDemo(item.role)}
+              style={({ pressed }) => [styles.demoChip, pressed && styles.demoChipPressed]}
+            >
+              <Text style={styles.demoChipText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </GlassCard>
     </View>
   );
 }
@@ -88,4 +123,27 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   note: { color: colors.muted, fontSize: typography.small, lineHeight: 20, marginTop: 8 },
+  demoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  demoChip: {
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  demoChipPressed: { backgroundColor: `${colors.orangeDeep}12` },
+  demoChipText: { color: colors.text, fontSize: typography.micro, fontWeight: "800" },
 });
+
+function roleHomeHref(role: PublicRole) {
+  const routes: Record<PublicRole, string> = {
+    resident: "/(resident)/home",
+    homeowner: "/(homeowner)/home",
+    building_owner: "/(building-owner)/home",
+    provider: "/(provider)/discover",
+    financier: "/(financier)/discover",
+    electrician: "/(electrician)/discover",
+  };
+
+  return routes[role];
+}

@@ -19,13 +19,13 @@ export function InstallerEarningsScreen() {
       actions={["Capture proof", "Service ticket", "Profile"]}
       hero={(building) => ({
         label: "Closeout",
-        value: building.roleViews.installer.checklistComplete === building.roleViews.installer.checklistTotal ? "Ready" : "Pending",
+        value: building.roleViews.electrician.checklistComplete === building.roleViews.electrician.checklistTotal ? "Ready" : "Pending",
         sub: "Payout follows approved work",
-        tone: building.roleViews.installer.checklistComplete === building.roleViews.installer.checklistTotal ? "good" : "warn",
+        tone: building.roleViews.electrician.checklistComplete === building.roleViews.electrician.checklistTotal ? "good" : "warn",
       })}
     >
       {(building) => {
-        const view = building.roleViews.installer;
+        const view = building.roleViews.electrician;
         const complete = view.checklistComplete === view.checklistTotal;
 
         return (

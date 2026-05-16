@@ -24,7 +24,7 @@ export function ProviderAcceptTermsScreen() {
       hero={{
         label: "For",
         value: building?.project.name ?? "…",
-        sub: "After accepting, the supplier lock window opens for BOM proof.",
+        sub: "After accepting, the provider lock window opens for BOM proof.",
         status: "awaiting signature",
         statusTone: "warn",
       }}

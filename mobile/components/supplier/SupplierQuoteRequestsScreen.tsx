@@ -48,7 +48,7 @@ export function SupplierQuoteRequestsScreen() {
                   {
                     label: "RFQ-1045 mounting hardware",
                     primary: "KSh 218k range · 4 day dispatch window",
-                    secondary: "Substitution note is explicit and requires installer roof rail confirmation.",
+                    secondary: "Substitution note is explicit and requires electrician roof rail confirmation.",
                     status: "qualified",
                   },
                   {

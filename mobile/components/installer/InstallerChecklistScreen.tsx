@@ -16,16 +16,16 @@ export function InstallerChecklistScreen() {
       actions={["Capture proof", "Request signoff", "Crew queue"]}
       hero={(building) => ({
         label: "Checklist",
-        value: `${building.roleViews.installer.checklistComplete}/${building.roleViews.installer.checklistTotal}`,
+        value: `${building.roleViews.electrician.checklistComplete}/${building.roleViews.electrician.checklistTotal}`,
         sub: "Evidence complete",
         tone:
-          building.roleViews.installer.checklistComplete === building.roleViews.installer.checklistTotal
+          building.roleViews.electrician.checklistComplete === building.roleViews.electrician.checklistTotal
             ? "good"
             : "warn",
       })}
     >
       {(building) => {
-        const view = building.roleViews.installer;
+        const view = building.roleViews.electrician;
         const drs = building.project.drs;
         const checklistComplete = view.checklistComplete === view.checklistTotal;
 
@@ -34,25 +34,35 @@ export function InstallerChecklistScreen() {
             <InstallerBrief
               eyebrow="Activation"
               title={checklistComplete ? "Ready for ops." : "Finish proof."}
-              body="Four gates."
+              body="DRS deployment gates."
               rows={[
                 {
                   label: "Photos",
                   value: "Needed",
-                  note: "DB, roof, cable, inverter.",
+                  note: "DB, roof, solar path, apartment ATS.",
                   tone: "warn",
                 },
                 {
-                  label: "Readings",
-                  value: drs.meterInverterMatchResolved ? "Aligned" : "Mismatch",
-                  note: "Meter + inverter.",
-                  tone: drs.meterInverterMatchResolved ? "good" : "bad",
+                  label: "Apartment path",
+                  value:
+                    drs.solarApartmentCapacityFitVerified &&
+                    drs.apartmentAtsMeterMappingVerified &&
+                    drs.atsKplcSwitchingVerified
+                      ? "Aligned"
+                      : "Open",
+                  note: "Capacity fit, ATS map, KPLC switch test.",
+                  tone:
+                    drs.solarApartmentCapacityFitVerified &&
+                    drs.apartmentAtsMeterMappingVerified &&
+                    drs.atsKplcSwitchingVerified
+                      ? "good"
+                      : "bad",
                 },
                 {
                   label: "Signoff",
-                  value: checklistComplete ? "Ready" : "Pending",
-                  note: "After proof.",
-                  tone: checklistComplete ? "good" : "warn",
+                  value: view.signoff?.status.replace(/_/g, " ") ?? (checklistComplete ? "Ready" : "Pending"),
+                  note: view.signoff?.detail ?? "After proof.",
+                  tone: view.signoff?.status === "ready" || checklistComplete ? "good" : "warn",
                 },
               ]}
             />
@@ -60,10 +70,13 @@ export function InstallerChecklistScreen() {
             <InstallerEvidenceList
               title="Proof checklist"
               items={[
-                { label: "Site photos", detail: "DB, roof, cable, inverter.", complete: drs.meterInverterMatchResolved },
-                { label: "Meter readings", detail: "Commissioning values.", complete: drs.meterInverterMatchResolved },
+                { label: "Site photos", detail: "DB, roof, e.mappa solar path, apartment ATS.", complete: drs.apartmentAtsMeterMappingVerified },
+                { label: "Capacity fit", detail: "Solar vs participating apartments.", complete: drs.solarApartmentCapacityFitVerified },
+                { label: "ATS / PAYG map", detail: "Per-unit ATS at or near PAYG meter.", complete: drs.apartmentAtsMeterMappingVerified },
+                { label: "Switching test", detail: "ATS selects solar path vs KPLC.", complete: drs.atsKplcSwitchingVerified },
                 { label: "Connectivity", detail: "Monitoring online.", complete: drs.monitoringConnectivityResolved },
                 { label: "Ops signoff", detail: "Activation approval.", complete: checklistComplete && drs.settlementDataTrusted },
+                { label: "AI evidence queue", detail: view.aiEvidenceIngestion?.detail ?? "Placeholder only; no automatic gate approval.", complete: false },
               ]}
             />
 
@@ -89,8 +102,24 @@ export function InstallerChecklistScreen() {
               title="Capture in order"
               items={[
                 { label: "Photo pack", detail: "Physical install proof.", status: "photos", tone: "neutral" },
-                { label: "Readings pack", detail: "Meter and inverter.", status: "readings", tone: drs.meterInverterMatchResolved ? "good" : "warn" },
+                {
+                  label: "Readings pack",
+                  detail: "Commissioning + ATS switching proof.",
+                  status: "readings",
+                  tone:
+                    drs.solarApartmentCapacityFitVerified &&
+                    drs.apartmentAtsMeterMappingVerified &&
+                    drs.atsKplcSwitchingVerified
+                      ? "good"
+                      : "warn",
+                },
                 { label: "Signoff", detail: "Monitoring and telemetry trusted.", status: "ops", tone: drs.monitoringConnectivityResolved && drs.settlementDataTrusted ? "good" : "warn" },
+                {
+                  label: "Evidence ingestion",
+                  detail: view.evidenceCapture?.evidenceLabel ?? "Photo, serial, and reading pack.",
+                  status: view.evidenceCapture?.status.replace(/_/g, " ") ?? "pending",
+                  tone: view.evidenceCapture?.status === "ready" ? "good" : "warn",
+                },
               ]}
             />
           </>

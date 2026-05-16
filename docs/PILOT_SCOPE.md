@@ -2,7 +2,9 @@
 
 Single source of truth for what the pilot covers and what is deferred. Where this document conflicts with [ROADMAP.md](../ROADMAP.md), [TEST.md](../TEST.md), or other product docs, **PILOT_SCOPE.md wins for the pilot release**.
 
-> **IA companion:** [IA_SPEC.md](IA_SPEC.md) is the canonical screen layout for mobile and website portals — seven roles, max 5 tabs each, profile always rightmost. Provider and Supplier are merged into a single Provider role with `business_type` (panels / infrastructure / both). Installer is renamed to Electrician. Owner is renamed to Building Owner (role string `building_owner`). **Homeowner** is a new role: a single-family-home owner who is also the sole resident, combining the building_owner project lifecycle with the resident token/consumption flow. Admin is never publicly selectable — see [IA_SPEC §8.5](IA_SPEC.md).
+> **Product anchor:** [imported-specs/](imported-specs/README.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [DRS_FORMULA.md](DRS_FORMULA.md) · [LBRS_FORMULA.md](LBRS_FORMULA.md)
+
+> **IA companion:** [IA_SPEC.md](IA_SPEC.md) is the canonical screen layout for mobile and website portals — seven roles, max 5 tabs each, profile always rightmost. Provider and Supplier are merged into a single Provider role with `business_type` (panels / infrastructure / both). Legacy Installer naming is renamed to Electrician in product copy. Owner is renamed to Building Owner (role string `building_owner`). **Homeowner** is a new role: a single-family-home owner who is also the sole resident, combining the building_owner project lifecycle with the resident token/consumption flow. Admin is never publicly selectable — see [IA_SPEC §8.5](IA_SPEC.md).
 
 ## Doctrine carve-outs (pilot only)
 
@@ -67,7 +69,7 @@ Trivial. ~15 minutes of integration. No carrier approvals.
 
 ### Doctrine reconciliation
 
-The Core Rule "no prepaid → no allocation" becomes **"no pledge → no allocation simulation"** for pilot mode. The invariant that DRS, projector, and settlement only run with positive committed value at the building level is preserved — pledges replace prepaid as the gating signal.
+The Core Rule "no prepaid → no allocation" becomes **"no pledge → no allocation simulation"** for pilot mode. The invariant that DRS, projector, and settlement only run with positive committed value for the **participating demand signal** is preserved — pledges replace prepaid as the gating signal. Pledges do **not** guarantee that any given apartment receives e.mappa supply; capacity fit, apartment ATS/PAYG mapping, and switching verification remain explicit DRS kill switches before usable tokens.
 
 ### Feasibility & cost
 
@@ -150,7 +152,7 @@ Three-tier waterfall, each step is optional fallback:
    Render a Google Maps Static API or Mapbox satellite tile centered on the address. Owner taps roof corners; app draws polygon and computes area on a Web Mercator → equirectangular projection (shoelace formula scaled by latitude).
 
 3. **Manual sqm entry**
-   For owners who can't use either (low connectivity, missing imagery), accept a typed m² number with a sworn-by-owner flag. DRS scores this lower until verified by installer site visit.
+   For owners who can't use either (low connectivity, missing imagery), accept a typed m² number with a sworn-by-owner flag. DRS scores this lower until verified by electrician site visit.
 
 ### What does NOT ship in the pilot
 

@@ -111,8 +111,8 @@ function FinancierDealDetailScreenV2() {
       <DiligenceCard items={[
         { label: 'Owner permission',  detail: 'Inspection, roof access, and meter-room access confirmed.', status: 'verified', tone: 'good' },
         { label: 'Resident demand',   detail: '84% participation; 2 prepaid months committed.',           status: 'qualified', tone: 'good' },
-        { label: 'Supplier lock',     detail: 'BOM and quote proof attached on PO-221, PO-226, PO-229.',  status: 'locked',   tone: 'good' },
-        { label: 'Installer lead',    detail: 'Certified lead electrician assigned and bound to site.',    status: 'assigned', tone: 'good' },
+        { label: 'Provider lock',     detail: 'BOM and quote proof attached on PO-221, PO-226, PO-229.',  status: 'locked',   tone: 'good' },
+        { label: 'Electrician lead',    detail: 'Certified lead electrician assigned and bound to site.',    status: 'assigned', tone: 'good' },
         { label: 'Monitoring',        detail: 'Heartbeat and inverter feed online; readings trusted.',     status: 'online',   tone: 'good' },
       ]}/>
       <BriefCard
@@ -120,8 +120,8 @@ function FinancierDealDetailScreenV2() {
         title="Capital release schedule"
         body="Capital is released against verified milestones, not against time."
         rows={[
-          { label: 'Tranche 1', value: 'released', note: 'Site survey, owner permission, supplier lock.', tone: 'good' },
-          { label: 'Tranche 2', value: 'pending',  note: 'Installer scheduling and BOM delivery proof.',  tone: 'warn' },
+          { label: 'Tranche 1', value: 'released', note: 'Site survey, owner permission, provider lock.', tone: 'good' },
+          { label: 'Tranche 2', value: 'pending',  note: 'Electrician scheduling and BOM delivery proof.',  tone: 'warn' },
           { label: 'Tranche 3', value: 'queued',   note: 'Monitoring online and first settlement run.' },
         ]}
       />

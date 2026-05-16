@@ -5,11 +5,12 @@
 function InstallerHomeScreenV2() {
   const b = window.MOCK; const view = b.roleViews.installer;
   const drs = b.project.drs;
+  const pathReady = drs.solarApartmentCapacityFitVerified && drs.apartmentAtsMeterMappingVerified && drs.atsKplcSwitchingVerified;
   const stable = drs.monitoringConnectivityResolved && drs.settlementDataTrusted;
   return (
     <ScreenShell
       section="Home"
-      roleLabel="installer workspace"
+      roleLabel="electrician workspace"
       title="Today's Field Board"
       subtitle="A calm snapshot for the crew: active site, lead gate, proof progress, and post-live risk."
       actions={["Review site", "Capture proof", "Sync crew"]}
@@ -28,7 +29,7 @@ function InstallerHomeScreenV2() {
         rows={[
           { label: 'Lead gate',  value: view.certified ? 'Ready' : 'Blocked', note: 'Certified lead electrician is required before scheduling.', tone: view.certified ? 'good' : 'bad' },
           { label: 'Proof count', value: `${view.checklistComplete}/${view.checklistTotal}`, note: 'Only the active go-live proof count is surfaced here.', tone: view.checklistComplete === view.checklistTotal ? 'good' : 'warn' },
-          { label: 'DRS',        value: b.drs.label, note: 'Installer work advances only when readiness gates allow it.', tone: b.drs.decision === 'approve' ? 'good' : 'warn' },
+          { label: 'DRS',        value: b.drs.label, note: 'Electrician work advances only when readiness gates allow it.', tone: b.drs.decision === 'deployment_ready' ? 'good' : 'warn' },
         ]}
       />
       <FieldCard
@@ -39,12 +40,12 @@ function InstallerHomeScreenV2() {
         statusLabel={stable ? 'stable' : 'watch'}
         fields={[
           { label: 'Site focus',    value: b.project.locationBand, note: 'Named building job, not pooled work.' },
-          { label: 'Next proof',    value: drs.meterInverterMatchResolved ? 'Connectivity' : 'Meter map', note: 'Capture the artifact that unblocks ops review.' },
+          { label: 'Next proof',    value: pathReady ? 'Connectivity' : 'Meter map', note: 'Capture the artifact that unblocks ops review.' },
           { label: 'Closeout risk', value: view.maintenanceTickets === 0 ? 'None open' : `${view.maintenanceTickets} service item`, note: 'Post-live tickets stay visible without crowding commissioning.' },
         ]}
       />
       <MiniGrid items={[
-        { label: 'Installer readiness', value: `${b.drs.components.installerReadiness}`, detail: 'DRS installer/labor component for the active building.' },
+        { label: 'Electrician readiness', value: `${b.drs.components.installerReadiness}`, detail: 'DRS electrician/labor component for the active building.' },
         { label: 'Open service risk',   value: `${view.maintenanceTickets}`, detail: 'Post-live items that can affect monitoring trust.' },
       ]}/>
     </ScreenShell>
@@ -52,17 +53,19 @@ function InstallerHomeScreenV2() {
 }
 
 function InstallerJobDetailScreenV2() {
-  const b = window.MOCK; const drs = b.project.drs;
+  const b = window.MOCK;
+  const drs = b.project.drs;
+  const pathReady = drs.solarApartmentCapacityFitVerified && drs.apartmentAtsMeterMappingVerified && drs.atsKplcSwitchingVerified;
   return (
     <ScreenShell
       section="Job Detail"
-      roleLabel="installer workspace"
+      roleLabel="electrician workspace"
       title="Site Evidence"
       subtitle="The site packet for map context, physical evidence, and readings tied to one named building."
       actions={["Capture site", "Map meters", "Log readings"]}
       hero={{
         label: 'Site proof',
-        value: drs.meterInverterMatchResolved ? 'Aligned' : 'Mismatch',
+        value: pathReady ? 'Aligned' : 'Mismatch',
         sub: 'Meter and inverter proof for this named building',
       }}
     >
@@ -73,16 +76,16 @@ function InstallerJobDetailScreenV2() {
         title="Every field artifact stays attached to this building."
         body="Job detail is the crew's source of truth for physical proof, map context, and commissioning readings."
         rows={[
-          { label: 'Site',         value: b.project.locationBand, note: 'The installer works against a named building, not an opaque pooled deployment.' },
-          { label: 'Meter map',    value: drs.meterInverterMatchResolved ? 'Matched' : 'Review', note: 'Meter/inverter mismatch is a DRS kill switch.', tone: drs.meterInverterMatchResolved ? 'good' : 'bad' },
+          { label: 'Site',         value: b.project.locationBand, note: 'The electrician works against a named building, not an opaque pooled deployment.' },
+          { label: 'Meter map',    value: pathReady ? 'Matched' : 'Review', note: 'Meter/inverter mismatch is a DRS kill switch.', tone: pathReady ? 'good' : 'bad' },
           { label: 'Owner access', value: drs.ownerPermissionsComplete ? 'Complete' : 'Blocked', note: 'Roof and meter access depends on completed building owner permission.', tone: drs.ownerPermissionsComplete ? 'good' : 'bad' },
         ]}
       />
       <SiteMapCard
         access={drs.ownerPermissionsComplete ? 'Open' : 'Hold'}
-        meter={drs.meterInverterMatchResolved ? 'Matched' : 'Mismatch'}
+        meter={pathReady ? 'Matched' : 'Mismatch'}
         inverter={drs.settlementDataTrusted ? 'Reading' : 'Pending'}
-        mapped={drs.meterInverterMatchResolved}
+        mapped={pathReady}
       />
       <MiniGrid items={[
         { label: 'Array size', value: `${b.project.energy.arrayKw} kW`,    detail: 'Mock projected system size for the active job.' },
@@ -93,7 +96,7 @@ function InstallerJobDetailScreenV2() {
         <div style={{ color: KIT.text, letterSpacing: '-0.02em', fontWeight: 600, fontSize: 17, marginTop: 5 }}>Commissioning evidence</div>
         <div style={{ marginTop: 10, border: `1px solid ${KIT.border}`, borderRadius: 14, overflow: 'hidden', background: KIT.sky }}>
           {[
-            ['Meter map',          drs.meterInverterMatchResolved ? 'Matched' : 'Mismatch blocks go-live'],
+            ['Meter map',          pathReady ? 'Matched' : 'Mismatch blocks go-live'],
             ['Cable route',        drs.ownerPermissionsComplete ? 'Access confirmed' : 'Owner access incomplete'],
             ['Settlement readings', drs.settlementDataTrusted ? 'Trusted' : 'Needs fresh capture'],
           ].map(([label, value], i) => (
@@ -114,11 +117,12 @@ function InstallerJobDetailScreenV2() {
 
 function InstallerChecklistScreenV2() {
   const b = window.MOCK; const view = b.roleViews.installer; const drs = b.project.drs;
+  const pathReady = drs.solarApartmentCapacityFitVerified && drs.apartmentAtsMeterMappingVerified && drs.atsKplcSwitchingVerified;
   const checklistComplete = view.checklistComplete === view.checklistTotal;
   return (
     <ScreenShell
       section="Checklist"
-      roleLabel="installer workspace"
+      roleLabel="electrician workspace"
       title="Go-Live Checklist"
       subtitle="The commissioning proof lane: photos, readings, connectivity, and ops signoff before activation."
       actions={["Upload photos", "Add readings", "Request signoff"]}
@@ -133,16 +137,16 @@ function InstallerChecklistScreenV2() {
       <BriefCard
         eyebrow="Activation proof"
         title={checklistComplete ? 'Checklist evidence is ready for ops review.' : 'Checklist evidence still has blockers.'}
-        body="This is the only installer screen with the full go-live checklist, keeping proof capture concentrated instead of repeated everywhere."
+        body="This is the only electrician screen with the full go-live checklist, keeping proof capture concentrated instead of repeated everywhere."
         rows={[
           { label: 'Photos',      value: 'Required',                                                   note: 'Distribution board, roof works, cable route, inverter, and meter photos.', tone: 'warn' },
-          { label: 'Readings',    value: drs.meterInverterMatchResolved ? 'Aligned' : 'Mismatch',     note: 'Meter and inverter readings must agree before activation.', tone: drs.meterInverterMatchResolved ? 'good' : 'bad' },
+          { label: 'Readings',    value: pathReady ? 'Aligned' : 'Mismatch',     note: 'Meter and inverter readings must agree before activation.', tone: pathReady ? 'good' : 'bad' },
           { label: 'Ops signoff', value: checklistComplete ? 'Ready' : 'Pending',                     note: 'Ops acceptance happens after evidence and connectivity are complete.', tone: checklistComplete ? 'good' : 'warn' },
         ]}
       />
       <EvidenceList title="Commissioning checklist" items={[
-        { label: 'Site photos',      detail: 'Capture physical proof for DB, roof, cable route, and inverter install.', complete: drs.meterInverterMatchResolved },
-        { label: 'Meter readings',   detail: 'Record commissioning readings for meter/inverter reconciliation.',         complete: drs.meterInverterMatchResolved },
+        { label: 'Site photos',      detail: 'Capture physical proof for DB, roof, cable route, and inverter install.', complete: pathReady },
+        { label: 'Meter readings',   detail: 'Record commissioning readings for meter/inverter reconciliation.',         complete: pathReady },
         { label: 'Connectivity test', detail: 'Confirm monitoring is online before go-live.',                              complete: drs.monitoringConnectivityResolved },
         { label: 'Ops signoff',      detail: 'Final internal acceptance before solar allocation starts.',                  complete: checklistComplete && drs.settlementDataTrusted },
       ]}/>
@@ -152,7 +156,7 @@ function InstallerChecklistScreenV2() {
       ]}/>
       <WorkflowCard eyebrow="Proof capture order" title="Capture in order" items={[
         { label: 'Photo pack',                   detail: 'Upload site proof before readings so ops can compare physical layout.', status: 'photos',   tone: 'neutral' },
-        { label: 'Readings pack',                 detail: 'Add meter and inverter readings after commissioning checks.',          status: 'readings', tone: drs.meterInverterMatchResolved ? 'good' : 'warn' },
+        { label: 'Readings pack',                 detail: 'Add meter and inverter readings after commissioning checks.',          status: 'readings', tone: pathReady ? 'good' : 'warn' },
         { label: 'Connectivity and signoff',      detail: 'Request ops signoff once monitoring and settlement data are trusted.', status: 'signoff',  tone: drs.monitoringConnectivityResolved && drs.settlementDataTrusted ? 'good' : 'warn' },
       ]}/>
     </ScreenShell>
@@ -164,7 +168,7 @@ function InstallerMaintenanceScreenV2() {
   return (
     <ScreenShell
       section="Maintenance"
-      roleLabel="installer workspace"
+      roleLabel="electrician workspace"
       title="Service Trust"
       subtitle="A post-live trust loop for restoring telemetry, readings, and closeout proof when service issues appear."
       actions={["Open tickets", "Restore data", "Close with proof"]}
@@ -211,9 +215,9 @@ function InstallerCertificationScreenV2() {
   return (
     <ScreenShell
       section="Certification"
-      roleLabel="installer workspace"
+      roleLabel="electrician workspace"
       title="Lead Eligibility"
-      subtitle="A focused eligibility lane for the accountable lead electrician before any installer schedule opens."
+      subtitle="A focused eligibility lane for the accountable lead electrician before any electrician schedule opens."
       actions={["Review lead", "Attach license", "Clear dispatch"]}
       hero={{
         label: 'Lead electrician',
@@ -229,8 +233,8 @@ function InstallerCertificationScreenV2() {
         body="Certification stays narrow: one accountable lead, one named building, and a clear DRS kill switch if eligibility is missing."
         rows={[
           { label: 'Lead proof',    value: certified ? 'Verified' : 'Missing',                  note: 'License, assignment, and safety accountability stay attached to the job.', tone: certified ? 'good' : 'bad' },
-          { label: 'Installer DRS', value: `${b.drs.components.installerReadiness}`,            note: 'Displayed as the readiness outcome, not recalculated in the UI.',         tone: b.drs.components.installerReadiness >= 80 ? 'good' : 'warn' },
-          { label: 'Dispatch',      value: certified ? 'Allowed' : 'Blocked',                   note: 'Installer scheduling opens only after lead electrician eligibility is verified.', tone: certified ? 'good' : 'bad' },
+          { label: 'Electrician DRS', value: `${b.drs.components.installerReadiness}`,            note: 'Displayed as the readiness outcome, not recalculated in the UI.',         tone: b.drs.components.installerReadiness >= 80 ? 'good' : 'warn' },
+          { label: 'Dispatch',      value: certified ? 'Allowed' : 'Blocked',                   note: 'Electrician scheduling opens only after lead electrician eligibility is verified.', tone: certified ? 'good' : 'bad' },
         ]}
       />
       <FieldCard

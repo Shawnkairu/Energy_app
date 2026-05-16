@@ -6,14 +6,18 @@ const months = (target: number, monthlyPayout: number) =>
 
 export function calculatePayback(input: PaybackInputs): PaybackResult {
   const targetMultiple = input.targetMultiple ?? 1.5;
-  const principalMonths = months(input.investment, input.monthlyPayout);
-  const targetMonths = months(input.investment * targetMultiple, input.monthlyPayout);
+  const notCurrentlyRecovering = input.monthlyPayout <= 0;
+  const principalMonths = notCurrentlyRecovering ? Number.POSITIVE_INFINITY : months(input.investment, input.monthlyPayout);
+  const targetMonths = notCurrentlyRecovering
+    ? Number.POSITIVE_INFINITY
+    : months(input.investment * targetMultiple, input.monthlyPayout);
 
   return {
-    principalMonths: round(principalMonths),
-    targetMonths: round(targetMonths),
-    yearsToPrincipal: round(principalMonths / 12),
-    yearsToTarget: round(targetMonths / 12),
+    principalMonths: notCurrentlyRecovering ? Number.POSITIVE_INFINITY : round(principalMonths),
+    targetMonths: notCurrentlyRecovering ? Number.POSITIVE_INFINITY : round(targetMonths),
+    yearsToPrincipal: notCurrentlyRecovering ? Number.POSITIVE_INFINITY : round(principalMonths / 12),
+    yearsToTarget: notCurrentlyRecovering ? Number.POSITIVE_INFINITY : round(targetMonths / 12),
+    notCurrentlyRecovering,
   };
 }
 

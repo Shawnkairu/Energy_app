@@ -315,6 +315,11 @@ small,
   text-transform: uppercase;
 }
 
+.deployment_ready {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+}
+
 .approve {
   color: #16a34a;
   background: rgba(22, 163, 74, 0.1);
@@ -323,6 +328,11 @@ small,
 .review {
   color: #f59e0b;
   background: rgba(245, 158, 11, 0.12);
+}
+
+.blocked {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
 }
 
 .block {
@@ -370,7 +380,7 @@ small,
 .portfolio-head,
 .portfolio-row {
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr 0.9fr 1fr 1fr;
+  grid-template-columns: 1.4fr 0.8fr 0.85fr 0.85fr 1fr 1fr;
   gap: 12px;
   align-items: center;
 }

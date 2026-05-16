@@ -58,7 +58,7 @@ const ROLES = {
   owner:    { name: 'Owner',       color: PALETTE.deep_wood,     soft: '#EFD9C2', wire: '#764927' },
   provider: { name: 'Provider',    color: PALETTE.studio_cocoa,  soft: '#E9D6BA', wire: '#7D5734' },
   financier:{ name: 'Financier',   color: PALETTE.burnt_chestnut,soft: '#EFCFB7', wire: '#693719' },
-  installer:{ name: 'Installer',   color: PALETTE.warm_umbar,    soft: '#E7D4BA', wire: '#856444' },
+  installer:{ name: 'Electrician',   color: PALETTE.warm_umbar,    soft: '#E7D4BA', wire: '#856444' },
   supplier: { name: 'Supplier',    color: PALETTE.toasted_clay,  soft: '#EAD8BC', wire: '#997757' },
   admin:    { name: 'Cockpit',     color: PALETTE.near_black_brown, soft: '#E2C9AD', wire: '#471708' },
   shared:   { name: 'Shared',      color: PALETTE.scarf_oat,     soft: '#F1E0C5', wire: '#A98866' },

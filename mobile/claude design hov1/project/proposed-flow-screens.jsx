@@ -7,7 +7,7 @@
 //   Resident: Join (QR), Verify (OTP)
 //   Provider: Projects, Commit capacity, Accept terms
 //   Financier: Tranche release
-//   Installer: Jobs inbox
+//   Electrician: Jobs inbox
 // ─────────────────────────────────────────────────────────────
 
 // (Reuses ProposedScreen / ProposedRibbon / WirePlaceholder / WireField
@@ -228,7 +228,7 @@ function ProviderTermsScreen() {
         hero={{
           label: 'For',
           value: 'Riverside Apartments',
-          sub: 'After accepting, the supplier lock window opens for BOM proof.',
+          sub: 'After accepting, the provider lock window opens for BOM proof.',
           status: 'awaiting signature', statusTone: 'warn',
         }}
       >
@@ -274,7 +274,7 @@ function FinancierTrancheScreen() {
         hero={{
           label: 'Next tranche',
           value: 'KSh 850,000',
-          sub: 'Tranche 2 of 3. Releases when supplier lock + installer scheduling are both verified.',
+          sub: 'Tranche 2 of 3. Releases when provider lock + electrician scheduling are both verified.',
           status: 'gate pending', statusTone: 'warn',
         }}
       >
@@ -284,7 +284,7 @@ function FinancierTrancheScreen() {
           body="Recovery follows milestones, not time. A tranche is a contract — once released, it cannot be clawed back."
           rows={[
             { label: 'Tranche 1', value: 'released',         note: 'Site survey + owner permission + supplier shortlist.', tone: 'good' },
-            { label: 'Tranche 2', value: 'gate pending',     note: 'Awaiting verified supplier BOM + installer scheduling.', tone: 'warn' },
+            { label: 'Tranche 2', value: 'gate pending',     note: 'Awaiting verified supplier BOM + electrician scheduling.', tone: 'warn' },
             { label: 'Tranche 3', value: 'queued',           note: 'Awaiting monitoring online + first settlement run.',     tone: 'neutral' },
           ]}
         />
@@ -293,7 +293,7 @@ function FinancierTrancheScreen() {
           <div style={{ color: KIT.text, fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', marginTop: 5 }}>Confirm release amount and recipient</div>
           <div style={{ marginTop: 10 }}>
             <WireField label="Amount" placeholder="KSh 850,000" helper="As specified in the term sheet for tranche 2."/>
-            <WireField label="Recipient" placeholder="e.mappa escrow → supplier + installer" helper="Funds flow through escrow; never directly to provider."/>
+            <WireField label="Recipient" placeholder="e.mappa escrow → supplier + electrician" helper="Funds flow through escrow; never directly to provider."/>
             <WireField label="Effective date" placeholder="On gate clearance" helper="Recorded immutably in the recovery ledger."/>
           </div>
         </GlassCard>
@@ -315,7 +315,7 @@ function InstallerJobsScreen() {
     <ProposedScreen>
       <ScreenShell
         section="Jobs"
-        roleLabel="installer workspace"
+        roleLabel="electrician workspace"
         title="Jobs Inbox"
         subtitle="The crew's job queue across buildings. Today's site, what's next, and what's blocked."
         actions={["Accept job", "Reschedule", "Filter"]}

@@ -1,3 +1,4 @@
+import { ImmersiveEnergyHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel } from "../../../components/PortalPrimitives";
 import { EnergyTodayChart, GenerationPanel, kwh, kes, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -12,6 +13,7 @@ export default function ResidentEnergy({ project, data }: PortalScreenProps) {
 
   return (
     <>
+      <ImmersiveEnergyHero project={project} energyToday={data.energyToday} />
       <EnergyTodayChart project={project} today={data.energyToday} />
       <PortalKpiBar items={[
         { label: "Resident solar", value: kwh(view.monthlySolarKwh), detail: "prepaid monthly allocation" },

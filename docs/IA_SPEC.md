@@ -14,7 +14,7 @@ Canonical screen layout and navigation for the e.mappa pilot. **Frozen at sprint
 5. **No non-working buttons.** Every interactive element has a real handler — push to a real route, open a real modal, or fire a real API call.
 6. **No mock data anywhere.** Every metric is real or shows `—` with a synthetic-source badge.
 7. **Settings, support, and (for electricians) compliance live embedded in Profile** — not as separate tabs.
-8. **Profile screen always contains**: account info, settings section, support section, logout. Electrician profile additionally contains compliance section header that links to the Compliance tab.
+8. **Profile screen always contains**: account info, settings section, support section, logout. Electrician certification/compliance lives **embedded in Profile** (not a main tab).
 9. **Generation visibility is gated by share ownership**, applied identically across resident, owner, and provider roles: a Generation panel only appears in their Energy/Generation screen if they hold shares ≥ 0% of any array tied to that role's scope. Empty state is shown when shares = 0, not the screen hidden.
 10. **Mobile and website portals must show the same screens, the same data, in the same order.** Nothing is mobile-only or web-only.
 
@@ -27,9 +27,9 @@ Canonical screen layout and navigation for the e.mappa pilot. **Frozen at sprint
 | **Resident** | Home (Tokens) | Energy | Wallet | Profile | — | 4 |
 | **Homeowner** | Home (Adaptive) | Energy | Wallet | Profile | — | 4 |
 | **Building Owner** | Home (Project) | Energy | Wallet | Profile | — | 4 |
-| **Provider** (panels + infra merged) | Discover | Inventory | Generation | Wallet | Profile | 5 |
-| **Electrician** | Discover | Jobs | Wallet | Compliance | Profile | 5 |
-| **Financier** | Discover | Portfolio | Wallet | Profile | — | 4 |
+| **Provider** (panels + infra merged) | Discover | Projects | Generation | Wallet | Profile | 5 |
+| **Electrician** | Discover | Projects | Wallet | Profile | — | 4 |
+| **Financier** | Discover | Project status | Energy generation | Wallet | Profile | 5 |
 | **Admin (mobile)** | Alerts | Projects | Profile | — | — | 3 |
 
 > **Homeowner = single-family-home owner who is also the sole resident.** Their building has `kind='single_family'` and `unit_count=1`. They combine the building_owner project lifecycle (list, capture roof, watch DRS, approve terms) with the resident token/consumption flow (pledge tokens, see usage, optionally buy shares). Their Home tab adapts: pre-live shows project readiness as the hero; post-live shows token balance as the hero. The other always appears as a secondary card.
@@ -227,20 +227,18 @@ User chose the merge. Inside the provider app, segments differentiate panels vs 
 - Project detail: full DRS breakdown, BOM ask, pledge trajectory, "Submit quote" CTA
 - Quote submission flow
 
-### 3.2 Inventory
-**Purpose:** track stock, fulfillment, reliability.
+### 3.2 Projects
+**Purpose:** track current project status, commitments, readiness gates, and delivery/go-live proof.
 
-**Layout (segmented control inside):**
-- Top toggle: **All / Panels / Infrastructure**
-- SKU list with stock count, reliability score, recent orders
-- Add SKU FAB
-- Bottom strip: open quote requests count, pending orders count
+**Layout (like Electrician Projects):**
+- Active/current project cards with DRS/LBRS state, quote/BOM status, delivery tasks, and next blocker
+- Project detail with readiness gates, supplier lock, electrician dependency, monitoring status, and go-live proof
+- Status strip: open quote requests, pending deliveries, warranty/proof gaps
 
 **Embedded screens:**
-- SKU detail
-- Order detail (PO, fulfillment, tracking)
 - Quote request detail
-- Reliability history with proof gaps
+- Order / delivery detail (PO, fulfillment, tracking)
+- Warranty/proof gap detail
 
 ### 3.3 Generation — share-gated
 **Purpose:** see live performance of arrays they retain shares of.
@@ -256,13 +254,14 @@ User chose the merge. Inside the provider app, segments differentiate panels vs 
 - Projected next-month royalty
 
 ### 3.5 Profile
-- Account, business profile (panels / infra / both), **Settings**, **Support**, logout
+- Account, business profile (panels / infra / both), inventory/catalog, supply/service area, warranties, reliability proof, **Settings**, **Support**, logout
+- Inventory, supply, catalog, warranties, and SKU management live here or in Profile-embedded flows, not as a primary tab.
 
 ---
 
-## 4. Electrician (5 screens)
+## 4. Electrician (4 screens)
 
-User chose the rename from "installer". Role enum becomes `electrician`. Folder: `mobile/app/(electrician)/`.
+Product role is **electrician** (legacy code may still use `Installer*` component names). Folder: `mobile/app/(electrician)/`. Certification/compliance is embedded in Profile; route `compliance` is hidden from the tab bar.
 
 ### 4.1 Discover
 **Purpose:** find projects to take on.
@@ -304,11 +303,11 @@ User chose the rename from "installer". Role enum becomes `electrician`. Folder:
 - Course detail / enrolment
 
 ### 4.5 Profile
-- Account, **Settings**, **Support**, link to Compliance tab, logout
+- Account, **Settings**, **Support**, certification/compliance (embedded), logout
 
 ---
 
-## 5. Financier (4 screens)
+## 5. Financier (5 screens)
 
 ### 5.1 Discover — Airbnb-inspired
 - Filter bar: deal size, projected return, region, stage
@@ -320,17 +319,20 @@ User chose the rename from "installer". Role enum becomes `electrician`. Folder:
 - Deal room: full DRS breakdown, deal terms, milestone gates, "Pledge capital" CTA
 - Pledge capital flow
 
-### 5.2 Portfolio — Robinhood-inspired
-- Top: total deployed, total returns, compounding curve
-- Position list: per-deal investment, current value, payout YTD, IRR
-- Tap position → deal detail (same component as deal room, "your view")
+### 5.2 Project status (route: `portfolio`)
+- Escrow / milestones, DRS/LBRS gates, capital deployed vs gap
+- Position list per deal; tap → deal room
 
-### 5.3 Wallet
+### 5.3 Energy generation
+- **E_gen** vs **E_sold**, utilization, data quality — payout basis is monetized kWh only
+- Projections pre-live; measured post-LBRS
+
+### 5.4 Wallet
 - Cash available, cash deployed, returns received
 - Cashflow list (deployments out, returns in)
 
-### 5.4 Profile
-- Account, investor profile (institution / individual, target deal size, target return), **Settings**, **Support**, logout
+### 5.5 Profile
+- KYC/KYB, eligibility, limits, disclosures; investor profile; **Settings**, **Support**, logout
 
 ---
 
@@ -481,7 +483,7 @@ mobile/app/(installer)/maintenance.tsx    →  embedded inside (electrician)/job
 mobile/app/(installer)/job-detail.tsx     →  embedded
 mobile/app/(provider)/home.tsx            →  (provider)/discover.tsx
 mobile/app/(provider)/earnings.tsx        →  (provider)/wallet.tsx
-mobile/app/(provider)/catalog.tsx         →  (provider)/inventory.tsx (with quote-requests + orders + reliability merged in)
+mobile/app/(provider)/catalog.tsx         →  (provider)/profile.tsx (inventory/catalog + quote-requests + orders + reliability embedded)
 mobile/app/(financier)/home.tsx           →  (financier)/discover.tsx
 mobile/app/(financier)/portfolio.tsx      →  unchanged (portfolio.tsx)
 mobile/app/(financier)/profile.tsx        →  unchanged
@@ -500,7 +502,8 @@ mobile/app/(homeowner)/energy.tsx         — usage + always-on generation
 mobile/app/(homeowner)/wallet.tsx         — three-stream wallet
 mobile/app/(homeowner)/profile.tsx        — building/roof profile + account
 mobile/app/(homeowner)/_embedded/         — DRS detail, deployment, roof, marketplace, etc.
-mobile/app/(provider)/inventory.tsx       — new merged file
+mobile/app/(provider)/projects.tsx        — new current project status file
+mobile/app/(provider)/inventory.tsx       — legacy alias only; redirects/hides behind projects/profile, not a primary tab
 mobile/app/(provider)/generation.tsx      — new merged file
 mobile/app/(provider)/wallet.tsx          — new
 mobile/app/(electrician)/wallet.tsx       — new

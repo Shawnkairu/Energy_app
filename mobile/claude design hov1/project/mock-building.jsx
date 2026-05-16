@@ -2,7 +2,7 @@
 // mock-building.jsx
 // One stable, deterministic ProjectedBuilding so every screen renders
 // the same labels, percentages, and tone branches as a live demo.
-// Values chosen so most copy paths land on "Conditional approve / Ready".
+// Values chosen so most copy paths land on deployment_ready / review / blocked (see packages/shared drs.ts).
 // ─────────────────────────────────────────────────────────────
 
 const MOCK = {
@@ -17,15 +17,17 @@ const MOCK = {
       hasVerifiedSupplierQuote: true,
       hasCertifiedLeadElectrician: true,
       ownerPermissionsComplete: true,
-      meterInverterMatchResolved: true,
+      solarApartmentCapacityFitVerified: true,
+      apartmentAtsMeterMappingVerified: true,
+      atsKplcSwitchingVerified: true,
       monitoringConnectivityResolved: true,
       settlementDataTrusted: true,
     },
   },
   drs: {
     score: 78,
-    label: 'Conditional approve',
-    decision: 'approve',
+    label: 'Review',
+    decision: 'deployment_ready',
     reasons: [],
     components: {
       demandCoverage: 72,
@@ -62,7 +64,7 @@ const MOCK = {
       gates: [
         { label: 'Demand coverage ≥ 60%', complete: true },
         { label: 'Prepaid commitment received', complete: true },
-        { label: 'Supplier lock', complete: true },
+        { label: 'Provider lock', complete: true },
         { label: 'Certified lead electrician', complete: true },
         { label: 'Monitoring online', complete: true },
       ],
@@ -81,8 +83,8 @@ const MOCK = {
       monitoringStatus: 'online',
       deploymentGates: [
         { label: 'DRS approval', complete: true },
-        { label: 'Supplier lock', complete: true },
-        { label: 'Installer lead assigned', complete: true },
+        { label: 'Provider lock', complete: true },
+        { label: 'Electrician lead assigned', complete: true },
         { label: 'Monitoring online', complete: true },
         { label: 'Settlement data trusted', complete: true },
       ],
@@ -95,8 +97,8 @@ const MOCK = {
     },
     installer: {
       certified: true,
-      checklistComplete: 3,
-      checklistTotal: 4,
+      checklistComplete: 8,
+      checklistTotal: 9,
       maintenanceTickets: 1,
     },
     supplier: {
@@ -110,7 +112,7 @@ const MOCK = {
   },
   // Owner activity (used by OwnerScreenShell)
   activity: [
-    'Resident participation crossed 80% on Tuesday — supplier lock window opens.',
+    'Resident participation crossed 80% on Tuesday — provider lock window opens.',
     'Inspection access window confirmed for Thursday 09:00–13:00.',
     'Settlement readings re-aligned to inverter feed; no open exceptions.',
   ],

@@ -40,6 +40,10 @@ Tesla reference: energy status, sparse controls, large calm numbers, and premium
 
 Enphase reference: solar/grid/home/battery flow clarity and system health communication.
 
+![Tesla / Enphase system overview (3D hero)](./ui-references/tesla-enphase-system-overview-3d-hero.png)
+
+**System overview (primary direction for Energy + project status):** dark immersive hero, large system diagram (home, PV, battery, grid), glowing flow lines, kW callouts on the asset, and a bottom sheet with live status, an SOC-style ring, and a tight row of daily KPI tiles. This sits next to the Tesla Powerwall chart and Enphase flow references above — use all three together. **Implement this pattern on mobile and web stakeholder Energy routes (resident, homeowner, building owner)** and on **project / deployment status** surfaces **(provider Projects / asset command, financier portfolio, electrician jobs, owner DRS, provider deployment, building-owner DRS embed, cockpit building tabs)**. **Shared web implementation:** `@emappa/web-immersive` (import the package and its `immersive.css`) so cockpit and stakeholder portals stay visually aligned; mobile uses `SystemImmersiveOverview.tsx`. Elsewhere, e.mappa stays light-first per product doctrine; these routes are deliberate full-bleed exceptions so operators read system state the way Tesla/Enphase train the market to read it.
+
 ![Airbnb profile trust card](./ui-references/airbnb-profile-trust-card.png)
 
 Airbnb reference: warm trust cards, soft spacing, profile credibility, friendly onboarding.
@@ -55,6 +59,6 @@ Robinhood reference: finance hierarchy, bold numbers, simple chart controls, and
 - Owner: Airbnb-style trust/onboarding plus DRS deployment confidence.
 - Provider: Robinhood-style asset and payout clarity.
 - Financier: deal-room finance clarity without guaranteed returns.
-- Installer/Supplier: operational checklists and order status with clean, high-trust cards.
+- Electrician/Provider: operational checklists and order status with clean, high-trust cards.
 - Internal cockpit: light-first command center, not consumer marketing.
 - Marketing `How it Works`: use `emappa-gpt-workflow-reference.png` as the primary visual reference and the e.mappa system relationship map as source material. Build a native light orange/white workflow, not a dark screenshot clone.

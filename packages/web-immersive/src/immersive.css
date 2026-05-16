@@ -1,0 +1,279 @@
+/* Tesla / Enphase system-overview (shared web: portals + cockpit) */
+.immersive-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  margin: 0 0 24px;
+  min-height: 420px;
+  color: rgba(248, 246, 242, 0.92);
+  background: linear-gradient(180deg, #0d0f12 0%, #12151a 45%, #1a1d24 100%);
+  border: 1px solid rgba(247, 242, 236, 0.08);
+  box-shadow:
+    0 24px 48px rgba(4, 6, 10, 0.45),
+    inset 0 1px 0 rgba(247, 242, 236, 0.06);
+}
+
+.immersive-hero__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 0%, rgba(245, 198, 91, 0.12), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(47, 159, 107, 0.08), transparent 50%);
+  pointer-events: none;
+}
+
+.immersive-hero__top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 8px;
+}
+
+.immersive-hero__site {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.immersive-hero__chev {
+  opacity: 0.55;
+  font-size: 0.75rem;
+}
+
+.immersive-hero__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(248, 246, 242, 0.55);
+}
+
+.immersive-hero__diagram {
+  position: relative;
+  z-index: 1;
+  padding: 0 12px;
+  min-height: 200px;
+}
+
+.immersive-hero__svg {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  height: auto;
+}
+
+.immersive-hero__callouts {
+  list-style: none;
+  margin: 0;
+  padding: 8px 16px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  font-size: 0.78rem;
+}
+
+.immersive-hero__callouts li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.immersive-hero__callouts small {
+  color: rgba(248, 246, 242, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+}
+
+.immersive-hero__callouts strong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f8f6f2;
+}
+
+.immersive-hero__sheet {
+  position: relative;
+  z-index: 2;
+  margin-top: 8px;
+  border-radius: 22px 22px 0 0;
+  background: linear-gradient(180deg, rgba(34, 38, 45, 0.97) 0%, #1f2329 100%);
+  border: 1px solid rgba(247, 242, 236, 0.1);
+  border-bottom: none;
+  padding: 10px 18px 20px;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.immersive-hero__sheet-handle {
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(247, 242, 236, 0.2);
+  margin: 0 auto 14px;
+}
+
+.immersive-hero__sheet-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.immersive-hero__sheet-top--compact {
+  margin-bottom: 0;
+}
+
+.immersive-hero__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.immersive-hero__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2f9f6b;
+  box-shadow: 0 0 0 4px rgba(47, 159, 107, 0.25);
+}
+
+.immersive-hero__tou {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: rgba(248, 246, 242, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.immersive-hero__ring {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.immersive-hero__ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.immersive-hero__ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.immersive-hero__ring-label span:first-child {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.immersive-hero__ring-label strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.immersive-hero__ring-label small {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(248, 246, 242, 0.4);
+}
+
+.immersive-hero__kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.immersive-hero__kpis > div {
+  border-radius: 14px;
+  padding: 12px 10px;
+  background: rgba(13, 15, 18, 0.55);
+  border: 1px solid rgba(247, 242, 236, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.immersive-hero__kpi-ic {
+  font-size: 1rem;
+  opacity: 0.55;
+}
+
+.immersive-hero__kpis small {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(248, 246, 242, 0.42);
+}
+
+.immersive-hero__kpis strong {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.immersive-hero__save {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(247, 242, 236, 0.08);
+  font-size: 0.85rem;
+  color: rgba(248, 246, 242, 0.55);
+}
+
+.immersive-hero__save strong {
+  font-size: 1.05rem;
+  color: #f5c65b;
+  font-weight: 800;
+}
+
+.immersive-hero__kpi-hint {
+  font-size: 0.62rem;
+  color: rgba(248, 246, 242, 0.38);
+  margin-top: 2px;
+  line-height: 1.25;
+}
+
+.immersive-hero__ring-caption {
+  margin: 0 0 14px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: rgba(248, 246, 242, 0.48);
+}
+
+.immersive-hero--project .immersive-hero__pill--project {
+  color: rgba(248, 246, 242, 0.92);
+}
+
+.immersive-hero__dot--project {
+  background: #f5c65b;
+  box-shadow: 0 0 0 4px rgba(245, 198, 91, 0.22);
+}
+
+.immersive-hero__svg--project {
+  max-width: 400px;
+}
+
+.immersive-hero--lbrs .immersive-hero__dot--project {
+  background: #2f9f6b;
+  box-shadow: 0 0 0 4px rgba(47, 159, 107, 0.22);
+}

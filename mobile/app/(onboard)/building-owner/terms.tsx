@@ -20,7 +20,7 @@ export default function BuildingOwnerTermsScreen() {
       <GlassCard>
         <Text style={styles.cardTitle}>Deployment waits for readiness.</Text>
         <Text style={styles.helper}>
-          DRS gates funding, supplier lock, electrician scheduling, and go-live so the building launches only when demand and infrastructure are ready.
+          DRS gates funding, provider lock, electrician scheduling, and go-live so the building launches only when demand and infrastructure are ready.
         </Text>
       </GlassCard>
       <StatusText status={error} tone="error" />

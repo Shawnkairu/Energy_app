@@ -14,14 +14,14 @@ export function BuildingPulse({
   const drs = building.drs;
   const { project } = building;
   const activated =
-    drs.decision === "approve" &&
+    drs.decision === "deployment_ready" &&
     project.drs.monitoringConnectivityResolved &&
     project.drs.settlementDataTrusted;
 
   const statePill =
     activated
       ? { tone: "good" as const, label: "Live · settling" }
-      : drs.decision === "approve"
+      : drs.decision === "deployment_ready"
         ? { tone: "good" as const, label: "Approved · pre-go-live" }
         : drs.decision === "review"
           ? { tone: "warn" as const, label: "In review" }

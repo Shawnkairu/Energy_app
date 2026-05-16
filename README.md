@@ -1,6 +1,6 @@
 # e.mappa
 
-e.mappa is a mobile-first operating system for building-level energy economies. It qualifies buildings before deployment, pre-onboards prepaid demand, coordinates deal-level capital, verifies installation quality, and settles cashflows only from monetized solar energy.
+e.mappa is a mobile-first operating system for **apartment-level** energy economies on a dedicated solar supply path. It qualifies buildings before deployment, pre-onboards prepaid demand from participating apartments, coordinates deal-level capital, verifies installation quality (including per-unit ATS and switching), and settles cashflows only from monetized solar energy.
 
 ## Stack
 
@@ -23,6 +23,15 @@ e.mappa is a mobile-first operating system for building-level energy economies. 
 
 > **Pilot mode** relaxes three of these rules until external integrations land: email OTP instead of SMS, non-binding pledges instead of prepaid cash, and synthesized energy/irradiance instead of on-site meters. See [docs/PILOT_SCOPE.md](docs/PILOT_SCOPE.md) for the authoritative pilot scope and exit criteria.
 
+## Canonical docs
+
+- [docs/imported-specs/](docs/imported-specs/README.md) — anchor product specs (scenarios A–F, DRS/LBRS installation)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — monorepo surfaces and physical/economic model
+- [docs/DRS_FORMULA.md](docs/DRS_FORMULA.md) · [docs/LBRS_FORMULA.md](docs/LBRS_FORMULA.md)
+- [docs/ENERGY_FORMULAS.md](docs/ENERGY_FORMULAS.md) · [docs/SETTLEMENT_AND_PAYBACK.md](docs/SETTLEMENT_AND_PAYBACK.md)
+- [docs/USER_FLOWS.md](docs/USER_FLOWS.md) · [docs/ROLE_MATRIX.md](docs/ROLE_MATRIX.md) · [docs/COMPLIANCE_AND_RISK.md](docs/COMPLIANCE_AND_RISK.md)
+- [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md) — maturity tiers (local → demo → pilot → prod), ops/readiness matrix, deployment gap log (distinct from spec/IA checklist)
+
 ## Commands
 
 ```bash
@@ -33,3 +42,24 @@ npm run dev:mobile
 npm run audit:shared
 npm run build
 ```
+
+## CI & deployment
+
+**Ship/ops readiness** (synthetic vs pilot vs production, integrations, gap log): [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md).
+
+**Required checks** (mirrors `.github/workflows/ci.yml`): `npm run typecheck`, `npm run lint`, `npm run audit:shared`, `npm run test:shared`, `npm run build`, backend `alembic upgrade head` + `pytest tests`.
+
+**Frontend-only gate (local):** `npm run ci` runs audit + shared tests + typecheck + lint + build in one command.
+
+**Local backend:** copy `backend/.env.example` → `backend/.env`, start Postgres, then:
+
+```bash
+cd backend && python -m pip install -r requirements.txt
+alembic upgrade head
+.venv/bin/python -m pytest tests -q   # or: npm run test:backend
+.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Docker:** `docker compose up --build`. Then apply schema: `docker compose exec backend alembic upgrade head` (first run only).
+
+**Frontends:** `website` uses root `vercel.json` (`npm run build:website` → `website/dist`). `cockpit/` has its own `vercel.json` (install/build from repo root for workspace packages). Staging workflow: `.github/workflows/deploy-staging.yml` (tags `v*-pilot`, optional Fly + Vercel secrets).

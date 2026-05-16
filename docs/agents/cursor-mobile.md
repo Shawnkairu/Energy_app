@@ -100,7 +100,7 @@ git add -A && git commit -m "ia: delete supplier role, rename installer→electr
 You should now have:
 - `mobile/app/(resident)/` with: `_layout.tsx`, `home.tsx`, `profile.tsx` only (energy + wallet to be created)
 - `mobile/app/(building-owner)/` with: `_layout.tsx`, `home.tsx`, `wallet.tsx`, `_embedded/*` (energy + profile to be created)
-- `mobile/app/(provider)/` with: `_layout.tsx`, `discover.tsx`, `inventory.tsx`, `wallet.tsx`, `profile.tsx` (generation to be created)
+- `mobile/app/(provider)/` with: `_layout.tsx`, `discover.tsx`, `projects.tsx`, `generation.tsx`, `wallet.tsx`, `profile.tsx` (`inventory.tsx` may exist only as a legacy alias/profile-scoped route)
 - `mobile/app/(electrician)/` with: `_layout.tsx`, `discover.tsx`, `jobs.tsx`, `compliance.tsx` (wallet + profile to be created)
 - `mobile/app/(financier)/` with: `_layout.tsx`, `discover.tsx`, `portfolio.tsx`, `profile.tsx` (wallet to be created)
 - `mobile/app/(admin)/` with: `_layout.tsx`, `home.tsx` (renames to `alerts.tsx`), `projects.tsx`, `profile.tsx` (to be created)
@@ -422,9 +422,9 @@ Reuse Building Owner's embedded screen logic where it's identical (DRS, deployme
 Three roles, all "Discover-first." Implement per [IA_SPEC.md §3, §4, §5](../IA_SPEC.md). Use the shared `ProjectCard` for all Discover screens; pass `role={user.role}` so cards render the right "ask" copy.
 
 ### Provider (`(provider)/`)
-- `_layout.tsx`: Discover, Inventory, Generation, Wallet, Profile
+- `_layout.tsx`: Discover, Projects, Generation, Wallet, Profile
 - `discover.tsx`: filter bar + `FlatList<ProjectCard>` from `getDiscover('provider', filters)`. Tap → `_embedded/project/[id].tsx` (BOM ask, quote submission)
-- `inventory.tsx`: top segmented control (All / Panels / Infrastructure), SKU list from `getInventory(user.id)`, FAB to add SKU. Tabs internal: SKUs / Quote requests / Orders / Reliability
+- `projects.tsx`: current project status, DRS/LBRS gates, quote/BOM commitments, delivery proof, and go-live readiness. Inventory/catalog/SKUs live under Profile, not as a primary tab.
 - `generation.tsx`: list arrays where user holds shares > 0. Empty state when shares=0 ("When residents buy your shares, you receive payouts but lose live generation visibility."). For each array: `<EnergyTodayChart>` + share fraction + payout share.
 - `wallet.tsx`: equipment-sale + share-royalty streams; cashflow list
 - `profile.tsx`: account + business profile (panels/infra/both — editable) + Settings + Support + Logout

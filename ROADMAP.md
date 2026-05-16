@@ -2,7 +2,11 @@
 
 > This document is the single source of truth for any coding agent (Cursor, Claude Code, Codex) working on e.mappa. Follow the steps in order. Do not skip ahead. Each step has acceptance benchmarks — do not mark a step complete until every benchmark passes. If you are unsure about a design decision, refer to the Core Rules section.
 
+> **Canonical product model:** [docs/imported-specs/](docs/imported-specs/README.md) + [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). DRS/LBRS use **critical-gate completion** (not 80% score). Public role is **electrician** (not installer). Settlement is from **E_sold** only.
+
 > **Pilot mode (READ THIS FIRST):** [docs/PILOT_SCOPE.md](docs/PILOT_SCOPE.md) is the authoritative scope for the current pilot release and overrides any conflicting guidance below. The pilot uses **email OTP** (no SMS), **pledge mode** (no real money / no M-Pesa), and **synthesized solar generation, load, and irradiance** plus **owner-traced roof polygons** (no on-site meters, no Google Solar API). Long-term doctrine in the Core Rules is preserved; pilot carve-outs are temporary with explicit exit criteria.
+
+> **Deployment maturity (ship/ops vs spec/IA):** [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md) defines tiers (local prototype → synthetic demo → staged pilot → production), a readiness matrix, and a gap log — complementary to [docs/SPEC_COMPLIANCE_CHECKLIST.md](docs/SPEC_COMPLIANCE_CHECKLIST.md).
 
 ## North Star
 
@@ -70,7 +74,7 @@ emappa/
 │   │   ├── (owner)/           # Tabs: home, drs, deployment, earnings
 │   │   ├── (provider)/        # Tabs: home, assets, shares, earnings
 │   │   ├── (financier)/       # Tabs: home, deals, deal-detail, portfolio
-│   │   ├── (installer)/       # Tabs: home, checklist, job-detail, profile
+│   │   ├── (electrician)/      # Tabs: discover, jobs, wallet, profile
 │   │   ├── (supplier)/        # Tabs: home, quote-requests, orders, profile
 │   │   └── (admin)/           # Tabs: home, projects, alerts, profile
 │   └── components/
@@ -548,7 +552,7 @@ Add to `buildings` table:
 
 #### 5.5.4 DRS integration
 - DRS score uses `roof_area_m2` to validate that proposed array kWp fits within the rooftop budget (5.5 m²/kWp default for residential modules)
-- `roof_confidence < 0.6` adds a soft blocker until installer site visit verifies
+- `roof_confidence < 0.6` adds a soft blocker until electrician site visit verifies
 
 ### Benchmarks
 - [ ] Microsoft footprints fetch returns a polygon for a known Nairobi address within 3 seconds
@@ -584,7 +588,7 @@ DRS gates every deployment decision. Building owners and admins need to see the 
 #### 5.3 Mobile: DRS views per role
 - **Owner**: DRS card (already exists) + gate list (already exists) + ability to see what's blocking and share with stakeholders
 - **Admin**: DRS card + ability to toggle boolean gates (mark electrician certified, verify supplier quote, etc.)
-- **Installer**: sees their specific gates (certified lead electrician, installation readiness)
+- **Electrician**: sees their specific gates (certified lead electrician, installation readiness)
 - The action buttons "View DRS", "Review DRS" must navigate to a detail screen
 
 #### 5.4 Mobile: DRS detail screen
@@ -600,7 +604,7 @@ DRS gates every deployment decision. Building owners and admins need to see the 
 - [ ] Mobile owner: DRS card shows correct score, decision, and reasons
 - [ ] Mobile admin: can toggle gates and see DRS update
 - [ ] Mobile: DRS detail screen shows all 6 components with correct weights
-- [ ] Domain test: toggling all kill switches from false to true changes decision from "block" to "approve" (given sufficient score)
+- [ ] Domain test: toggling all critical gates from false to true yields `deployment_ready` (display score is informational only)
 
 ---
 
@@ -724,7 +728,7 @@ This step is the first agent, not the whole AI-native architecture. e.mappa must
   - Building with all gates passing → agent should recommend approval
   - Building with low utilization → agent should flag demand risk
   - Building with no prepaid → agent should flag prepaid requirement
-  - Building with missing electrician → agent should flag installer gate
+  - Building with missing electrician → agent should flag electrician gate
 - Each eval checks: did the agent call the right tools? Did it reach the right conclusion? Did it provide actionable recommendations?
 - Add hallucination checks: every numeric claim in the response must match tool output or persisted data.
 - Add permission checks: the agent must not reveal private counterparty finances or unauthorized building data.
@@ -804,7 +808,7 @@ Currently all action buttons in the mobile app (Top up, View usage, Buy shares, 
 - "Stress test" → navigate to cockpit stress test (or embedded version)
 - "Track recovery" → payback timeline with actual vs projected
 
-#### 10.5 Installer actions
+#### 10.5 Electrician actions
 - "Upload photos" → camera capture + photo upload for verification
 - "Complete checklist" → interactive gate checklist with completion marking
 - "Request parts" → BOM request form sent to suppliers
@@ -829,6 +833,8 @@ Currently all action buttons in the mobile app (Top up, View usage, Buy shares, 
 ---
 
 ## Step 11: Deployment & Hosting
+
+See **[docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md)** for what “deployable” means per tier (demo vs pilot vs production) before treating any step below as complete.
 
 ### Actions
 
@@ -962,7 +968,7 @@ This step turns e.mappa from a conventional app with AI features into an AI-nati
 
 #### 13.7 Ticket routing and operations cockpit
 - Add a typed ticket model: `id`, `building_id`, `role_scope`, `severity`, `category`, `status`, `owner`, `evidence`, `agent_summary`, `created_at`, `updated_at`, `resolved_at`.
-- Create routing queues for DRS blockers, prepaid/payment issues, supplier quote gaps, installer readiness, monitoring outages, settlement anomalies, ownership disputes, security findings, and support requests.
+- Create routing queues for DRS blockers, prepaid/payment issues, supplier quote gaps, electrician readiness, monitoring outages, settlement anomalies, ownership disputes, security findings, and support requests.
 - Agents can draft ticket summaries and recommended actions; humans approve resolution for financial, security, deployment, or ownership-impacting tickets.
 - Cockpit must show queue health, SLA status, blocked buildings, unresolved evidence, and agent confidence.
 
@@ -1001,7 +1007,7 @@ This step turns e.mappa from a conventional app with AI features into an AI-nati
 - [ ] Eval suite covers DRS, prepaid, settlement, ownership, query accuracy, privacy leakage, ticket routing, code review, and security triage.
 - [ ] Security tests prove building-level tenant isolation and role-based access control.
 - [ ] Audit logs exist for every mutating endpoint and agent action.
-- [ ] Ticket routing queues work for DRS blockers, prepaid issues, supplier gaps, installer readiness, monitoring outages, settlement anomalies, ownership disputes, security findings, and support requests.
+- [ ] Ticket routing queues work for DRS blockers, prepaid issues, supplier gaps, electrician readiness, monitoring outages, settlement anomalies, ownership disputes, security findings, and support requests.
 - [ ] Formula parity tests pass between TypeScript shared logic and Python backend services.
 - [ ] Reconciliation checks prove prepaid, sold solar, settlement, ownership, payout, and DRS invariants.
 - [ ] CI runs typecheck, shared tests, backend tests, and evals.

@@ -1,3 +1,4 @@
+import { ImmersiveProjectHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalTable, PortalWorkflow } from "../../../components/PortalPrimitives";
 import { kes } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -12,7 +13,7 @@ export default function ElectricianJobs({ project, user, data }: PortalScreenPro
       buildingId: project.project.id,
       scope: "install" as const,
       status: "active" as const,
-      checklist: project.roleViews.installer.gates.map((gate, index) => ({
+      checklist: project.roleViews.electrician.gates.map((gate, index) => ({
         id: String(index),
         label: gate.label,
         status: gate.complete ? "done" as const : "pending" as const,
@@ -26,14 +27,14 @@ export default function ElectricianJobs({ project, user, data }: PortalScreenPro
       electricianUserId: user.id,
       buildingId: project.project.id,
       scope: "inspection" as const,
-      status: project.roleViews.installer.certified ? "completed" as const : "active" as const,
+      status: project.roleViews.electrician.certified ? "completed" as const : "active" as const,
       checklist: [
-        { id: "cert", label: "Lead electrician certification checked", status: project.roleViews.installer.certified ? "done" as const : "pending" as const },
+        { id: "cert", label: "Lead electrician certification checked", status: project.roleViews.electrician.certified ? "done" as const : "pending" as const },
         { id: "roof", label: "Roof access and DB route photographed", status: "done" as const },
       ],
       payEstimateKes: 18500,
       startedAt: null,
-      completedAt: project.roleViews.installer.certified ? new Date().toISOString() : null,
+      completedAt: project.roleViews.electrician.certified ? new Date().toISOString() : null,
     },
   ];
   const activeJobs = jobs.filter((job) => job.status === "active");
@@ -44,11 +45,12 @@ export default function ElectricianJobs({ project, user, data }: PortalScreenPro
 
   return (
     <>
+      <ImmersiveProjectHero project={project} mode="electrician" />
       <PortalKpiBar items={[
         { label: "Active jobs", value: String(activeJobs.length), detail: kes(activePay) },
         { label: "Completed", value: String(completedJobs.length), detail: "signed off" },
         { label: "Open checklist", value: String(openChecklistItems.length), detail: "proof items" },
-        { label: "Maintenance", value: String(project.roleViews.installer.maintenanceTickets), detail: "tickets" },
+        { label: "Maintenance", value: String(project.roleViews.electrician.maintenanceTickets), detail: "tickets" },
       ]} />
       <div className="portal-two-col">
         <PortalPanel eyebrow="Jobs" title="Work queue">
@@ -75,6 +77,8 @@ export default function ElectricianJobs({ project, user, data }: PortalScreenPro
           <PortalLedger rows={[
             { label: "Building", value: project.project.name, note: project.project.locationBand },
             { label: "Priority", value: openChecklistItems.length ? "Proof required" : "Ready", note: "demo queue" },
+            { label: "Signoff", value: project.roleViews.electrician.signoff?.status.replace(/_/g, " ") ?? "pending", note: project.roleViews.electrician.signoff?.detail ?? "LBRS signoff grid" },
+            { label: "AI evidence", value: project.roleViews.electrician.aiEvidenceIngestion?.status ?? "prototype", note: project.roleViews.electrician.aiEvidenceIngestion?.detail ?? "placeholder only" },
           ]} />
         </PortalPanel>
       </div>

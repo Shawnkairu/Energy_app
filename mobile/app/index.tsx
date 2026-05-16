@@ -10,7 +10,7 @@ export default function Index() {
       <View style={styles.hero}>
         <AppMark size={72} />
         <Text style={styles.title}>e.mappa</Text>
-        <Text style={styles.tagline}>Prepaid solar and fair grid fallback — building-level economics, role-by-role workspaces.</Text>
+        <Text style={styles.tagline}>Prepaid solar per apartment — dedicated e.mappa path, ATS at your PAYG meter, KPLC fallback, role-by-role workspaces.</Text>
       </View>
       <View style={styles.footer}>
         <Link href="/(auth)/join-building" asChild>

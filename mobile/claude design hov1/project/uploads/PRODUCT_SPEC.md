@@ -13,7 +13,7 @@ e.mappa turns apartment buildings into prepaid, locally financed energy economie
 
 ## Primary Surfaces
 
-- Mobile app: native role-based product for residents, owners, providers, financiers, installers, and suppliers. Each role is guarded and owns its own route/component folder.
+- Mobile app: native role-based product for residents, owners, providers, financiers, electricians, and suppliers. Each role is guarded and owns its own route/component folder.
 - Cockpit: e.mappa-internal analytics, tables, DRS command center, settlement monitor, stress testing, and operating workflows. It is not a stakeholder portal.
 - Website: public explanation plus isolated stakeholder web portals for all non-e.mappa roles.
 

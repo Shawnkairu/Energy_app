@@ -60,7 +60,7 @@ export function ResidentUsageScreen() {
                 {
                   label: "Grid fallback",
                   value: formatKwh(householdGridKwh),
-                  detail: "Grid covers the remaining load without becoming an e.mappa postpaid balance.",
+                  detail: "KPLC covers the shortfall; e.mappa stays prepaid-only (no arrears product).",
                   color: colors.muted,
                 },
               ]}

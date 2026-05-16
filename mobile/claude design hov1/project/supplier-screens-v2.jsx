@@ -14,7 +14,7 @@ function SupplierHomeScreenV2() {
       hero={{
         label: 'Desk pressure',
         value: `${view.openRequests}`,
-        sub: `${view.openRequests === 1 ? 'One request needs' : `${view.openRequests} requests need`} a clear owner before supplier lock.`,
+        sub: `${view.openRequests === 1 ? 'One request needs' : `${view.openRequests} requests need`} a clear owner before provider lock.`,
       }}
     >
       <BuildingPulse role="supplier"/>
@@ -124,7 +124,7 @@ function SupplierOrdersScreenV2() {
         <EvidenceList title="Order timeline" items={[
           { label: 'Award confirmed',                  detail: 'Supplier accepts the PO and locks price, stock, and substitution terms.', complete: view.verifiedBom },
           { label: 'Dispatch logged',                  detail: `Movement window is ${view.leadTimeDays} days from award confirmation.`,    complete: view.verifiedBom && view.leadTimeDays <= 7 },
-          { label: 'Delivery proof captured',          detail: 'Delivery note, site handoff, and installer acknowledgement are attached to the project lane.', complete: false },
+          { label: 'Delivery proof captured',          detail: 'Delivery note, site handoff, and electrician acknowledgement is attached to the project lane.', complete: false },
           { label: 'Serials and warranty attached',   detail: 'Component serials and warranty documents close the supplier proof loop.',  complete: view.warrantyDocuments >= 4 },
         ]}/>
       </GlassCard>
@@ -134,7 +134,7 @@ function SupplierOrdersScreenV2() {
         <ProofTable rows={[
           { label: 'PO-221 panels and mounting', primary: view.verifiedBom ? 'Award accepted, dispatch next' : 'Award held for proof', secondary: 'Delivery note and serial capture required at site handoff.',  status: view.verifiedBom ? 'award' : 'blocked', tone: view.verifiedBom ? 'good' : 'warn' },
           { label: 'PO-226 inverter pack',       primary: `${view.leadTimeDays} day estimated lead time`,                                secondary: 'Dispatch proof must include inverter and meter compatibility evidence.', status: 'dispatch' },
-          { label: 'PO-229 protection gear',     primary: `${view.warrantyDocuments} warranty document${view.warrantyDocuments === 1 ? '' : 's'} attached`, secondary: 'Closeout waits for delivery note, serials, and installer acknowledgement.', status: 'proof' },
+          { label: 'PO-229 protection gear',     primary: `${view.warrantyDocuments} warranty document${view.warrantyDocuments === 1 ? '' : 's'} attached`, secondary: 'Closeout waits for delivery note, serials, and electrician acknowledgement.', status: 'proof' },
         ]}/>
       </GlassCard>
     </ScreenShell>
@@ -170,7 +170,7 @@ function SupplierQuoteRequestsScreenV2() {
         <div style={{ color: KIT.muted, fontSize: 12, lineHeight: 1.5, marginTop: 6 }}>Keep responses low-noise: price range, availability confidence, warranty reference, and any substitution rule.</div>
         <ProofTable rows={[
           { label: 'RFQ-1042 inverter and meter pack', primary: `KSh 684k range · ${view.leadTimeDays} day estimated lead time`, secondary: 'Availability confidence, delivery assumption, and warranty file are referenced in the response.', status: view.verifiedBom ? 'complete' : 'proof gap', tone: view.verifiedBom ? 'good' : 'warn' },
-          { label: 'RFQ-1045 mounting hardware',        primary: 'KSh 218k range · 4 day dispatch window',                       secondary: 'Substitution note is explicit and requires installer roof rail confirmation.',                  status: 'qualified' },
+          { label: 'RFQ-1045 mounting hardware',        primary: 'KSh 218k range · 4 day dispatch window',                       secondary: 'Substitution note is explicit and requires electrician roof rail confirmation.',                  status: 'qualified' },
           { label: 'RFQ-1047 protection gear',           primary: 'KSh 96k range · stock held for 48h',                            secondary: 'Hold window and serial evidence requirement are visible before award.',                          status: 'held' },
         ]}/>
       </GlassCard>
@@ -225,7 +225,7 @@ function SupplierReliabilityScreenV2() {
         <Label>Proof gaps</Label>
         <div style={{ color: KIT.text, letterSpacing: '-0.02em', fontWeight: 600, fontSize: 17, marginTop: 5 }}>Close the gaps that weaken fulfillment trust.</div>
         <SupplierRow label="Warranty attachment" detail="Missing warranty files lower confidence in future order closeout." value={view.warrantyDocuments >= 4 ? 'covered' : 'gap'} tone={view.warrantyDocuments >= 4 ? 'good' : 'warn'}/>
-        <SupplierRow label="Lead-time variance"   detail="Longer lead times require earlier installer coordination."         value={`${view.leadTimeDays}d`} tone={view.leadTimeDays <= 7 ? 'good' : 'warn'}/>
+        <SupplierRow label="Lead-time variance"   detail="Longer lead times require earlier electrician coordination."         value={`${view.leadTimeDays}d`} tone={view.leadTimeDays <= 7 ? 'good' : 'warn'}/>
         <SupplierRow label="BOM verification"     detail="Unverified supplier proof creates a historical exception."          value={view.verifiedBom ? 'verified' : 'blocked'} tone={view.verifiedBom ? 'good' : 'bad'}/>
       </GlassCard>
       <GlassCard>

@@ -15,7 +15,12 @@ def run_settlement(store, building_id: str, period_start, period_end) -> dict:
     if not validate_settlement_rates(project["settlementRates"])["isBalanced"]:
         raise ValueError("Settlement rates must sum to 1.0")
     energy = calculate_energy(project["energy"])
-    settlement = calculate_settlement(energy["E_sold"], project["solarPriceKes"], project["settlementRates"])
+    settlement = calculate_settlement(
+        energy["E_sold"],
+        project["solarPriceKes"],
+        project["settlementRates"],
+        project.get("settlementPhase") or "recovery",
+    )
     record = {"id": f"settlement-{building_id}-{period_start.isoformat()}", "buildingId": building_id, "periodStart": period_start.isoformat(), "periodEnd": period_end.isoformat(), "eSoldKwh": energy["E_sold"], **settlement, "providerPayouts": calculate_ownership_payouts(settlement["providerPool"], project["providerOwnership"]), "financierPayouts": calculate_ownership_payouts(settlement["financierPool"], project["financierOwnership"]), "createdAt": datetime.now(timezone.utc).isoformat()}
     store.add_settlement_record(record)
     return record

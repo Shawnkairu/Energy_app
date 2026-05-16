@@ -12,11 +12,13 @@ export function ResidentHomeScreen() {
     <ResidentScreenFrame
       section="Home"
       title="Today"
-      subtitle="Balance, solar access, and the next useful action."
+      subtitle="Wallet, DRS status, and whether your apartment is cleared for the e.mappa solar path."
     >
       {(building) => {
         const view = residentView(building);
         const hasBalance = view.prepaidBalanceKes > 0;
+        const queue = building.roleViews.resident.capacityQueue;
+        const atsStatus = building.roleViews.resident.atsActivation?.status ?? "pending";
 
         return (
           <>
@@ -26,18 +28,18 @@ export function ResidentHomeScreen() {
                   <View style={residentStyles.orangeDot} />
                   <Text style={styles.buildingName}>{building.project.name}</Text>
                 </View>
-                <Pill tone={hasBalance ? "good" : "warn"}>{hasBalance ? "ready" : "top up"}</Pill>
+                <Pill tone={hasBalance ? "good" : "warn"}>{hasBalance ? "funded" : "pledge"}</Pill>
               </View>
               <Text style={styles.balance}>{formatKes(view.prepaidBalanceKes)}</Text>
-              <Text style={styles.balanceLabel}>prepaid balance</Text>
+              <Text style={styles.balanceLabel}>pledged / prepaid balance</Text>
               <View style={styles.actionRow}>
                 <View style={styles.nextAction}>
                   <Text style={styles.nextLabel}>Next</Text>
-                  <Text style={styles.nextText}>{hasBalance ? "Check energy flow" : "Add KSh 1,000"}</Text>
+                  <Text style={styles.nextText}>{hasBalance ? "Track energy + DRS" : "Pledge to join demand signal"}</Text>
                 </View>
                 <ResidentPrimaryButton
                   onPress={() => router.push("/(resident)/wallet")}
-                  accessibilityLabel="Open prepaid wallet"
+                  accessibilityLabel="Open wallet and pledges"
                 >
                   Open wallet
                 </ResidentPrimaryButton>
@@ -49,7 +51,7 @@ export function ResidentHomeScreen() {
                 {
                   label: "Coverage",
                   value: formatPercent(view.solarCoverage),
-                  detail: `${formatKwh(view.monthlySolarKwh)} sold solar.`,
+                  detail: `${formatKwh(view.monthlySolarKwh)} monetized solar (participating path).`,
                   tone: view.solarCoverage > 0 ? "good" : "warn",
                 },
                 {
@@ -67,18 +69,35 @@ export function ResidentHomeScreen() {
                 {
                   label: "Stage",
                   value: building.project.stage,
-                  detail: `${building.project.units} homes.`,
+                  detail: `${building.project.units} units · only enrolled apartments ride the e.mappa ATS path.`,
                   tone: "neutral",
                 },
               ]}
             />
 
             <ResidentInfoCard
-              eyebrow="Rule"
-              title="Cash first."
-              detail="No prepaid cash means no resident solar allocation."
+              eyebrow="Apartment hardware"
+              title="Pledge first; ATS activation unlocks usable tokens."
+              detail="e.mappa solar uses a dedicated supply path. Your unit needs capacity clearance and an apartment-level ATS at or near your PAYG meter before solar tokens apply; non-participating apartments stay on KPLC only. No cleared pledge means no allocation signal."
               synthetic
-            />
+            >
+              <ResidentMetricGrid
+                items={[
+                  {
+                    label: "Queue",
+                    value: queue?.status.replace(/_/g, " ") ?? "capacity review",
+                    detail: queue ? `Position ${queue.position}. ${queue.detail}` : "Capacity status uses pilot project evidence.",
+                    tone: queue?.status === "activated" || queue?.status === "capacity_cleared" ? "good" : "warn",
+                  },
+                  {
+                    label: "ATS",
+                    value: atsStatus.replace(/_/g, " "),
+                    detail: building.roleViews.resident.atsActivation?.evidenceLabel ?? "ATS/PAYG map required before usable tokens.",
+                    tone: atsStatus === "ready" ? "good" : atsStatus === "blocked" ? "bad" : "warn",
+                  },
+                ]}
+              />
+            </ResidentInfoCard>
           </>
         );
       }}

@@ -1,21 +1,25 @@
 import { useCallback, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import type { ProjectedBuilding } from "@emappa/shared";
+import { generationVisibilityForRole, type ProjectedBuilding } from "@emappa/shared";
 import { PaletteCard, Pill, colors, officialPalette, spacing, typography } from "@emappa/ui";
 import { useApi } from "../../lib/api";
 import { useApiData } from "../../lib/useApiData";
 import { getResidentEnergyToday } from "./ResidentApi";
-import { CenteredState, ResidentInfoCard, ResidentMetricGrid, ResidentPrimaryButton, ResidentScreenFrame } from "./ResidentScaffold";
+import {
+  CenteredState,
+  ResidentInfoCard,
+  ResidentMetricGrid,
+  ResidentPrimaryButton,
+  ResidentScreenFrame,
+} from "./ResidentScaffold";
+import { SystemEnergyImmersiveHero } from "../energy/SystemImmersiveOverview";
+import { PilotBanner } from "../PilotBanner";
 import { ROLE_TINT } from "./residentTint";
-import { formatKwh, formatPercent, residentView } from "./residentUtils";
+import { formatKes, formatKwh, formatPercent, residentView } from "./residentUtils";
 
 export function ResidentEnergyScreen() {
   return (
-    <ResidentScreenFrame
-      section="Energy"
-      title="Energy flow"
-      subtitle="Sold solar, battery support, and grid fallback."
-    >
+    <ResidentScreenFrame section="Energy" title="Energy" subtitle="System overview" headerMode="immersive">
       {(building) => <ResidentEnergyPanels building={building} />}
     </ResidentScreenFrame>
   );
@@ -45,9 +49,40 @@ function ResidentEnergyPanels({ building }: { building: ProjectedBuilding }) {
   }));
   const todaySolarKwh = sum(data?.generation_kwh ?? []);
   const todayLoadKwh = sum(data?.load_kwh ?? []);
+  const hasShares = generationVisibilityForRole("resident", { shareOwnershipPct: view.ownedProviderShare }).visible;
+  const genSeries = data?.generation_kwh ?? [];
+  const loadSeries = data?.load_kwh ?? [];
+  const peakGen = genSeries.length ? Math.max(...genSeries) : 0;
+  const peakLoad = loadSeries.length ? Math.max(...loadSeries) : 0;
+  const batterySoc = Math.min(0.96, Math.max(0.08, 0.22 + building.energy.utilization * 0.62));
+  const batteryStatus = peakGen > peakLoad * 1.08 ? "charging" : peakLoad > peakGen * 1.08 ? "discharging" : "idle";
 
   return (
     <>
+      <PilotBanner
+        compact
+        title="Pilot mode"
+        message="Hourly curves use synthesized pilot data. Pledges are non-binding and no money is charged."
+      />
+      <View style={{ marginHorizontal: -20 }}>
+        <SystemEnergyImmersiveHero
+          siteName={building.project.name}
+          weatherHint="Pilot · synthetic curve"
+          generationKwhToday={todaySolarKwh}
+          loadKwhToday={todayLoadKwh}
+          generationHourly={genSeries.length ? genSeries : [todaySolarKwh / 24]}
+          loadHourly={loadSeries.length ? loadSeries : [todayLoadKwh / 24]}
+          batterySoc={batterySoc}
+          batteryStatus={batteryStatus}
+          savingsKesLabel={formatKes(view.savingsKes)}
+          summaryCards={[
+            { label: "Used today", value: formatKwh(todayLoadKwh), hint: "Household curve", icon: "home-outline" },
+            { label: "Produced", value: formatKwh(todaySolarKwh), hint: "Array to bus", icon: "sunny-outline" },
+            { label: "Coverage", value: formatPercent(view.solarCoverage), hint: "Prepaid allocation", icon: "pulse-outline" },
+          ]}
+        />
+      </View>
+
       <EnergyFlowCard
         coverage={view.solarCoverage}
         soldSolar={formatKwh(view.monthlySolarKwh)}
@@ -56,6 +91,19 @@ function ResidentEnergyPanels({ building }: { building: ProjectedBuilding }) {
       />
 
       <SolarTodayCard points={points} total={formatKwh(todaySolarKwh)} load={formatKwh(todayLoadKwh)} />
+
+      {hasShares ? (
+        <ResidentGenerationDetail building={building} />
+      ) : (
+        <PaletteCard borderRadius={28} padding={18} style={{ marginBottom: spacing.lg }}>
+          <Text style={styles.eyebrow}>Generation</Text>
+          <Text style={styles.chartTitle}>Buy a share to see live generation</Text>
+          <Text style={styles.caption}>
+            Generation visibility is gated by share ownership. Energy flow above still reflects your prepaid allocation; array-level
+            generation detail appears once you hold a provider-side share on this building.
+          </Text>
+        </PaletteCard>
+      )}
 
       <ResidentMetricGrid
         items={[
@@ -96,6 +144,23 @@ function ResidentEnergyPanels({ building }: { building: ProjectedBuilding }) {
         </ResidentPrimaryButton>
       </ResidentInfoCard>
     </>
+  );
+}
+
+function ResidentGenerationDetail({ building }: { building: ProjectedBuilding }) {
+  const view = residentView(building);
+  const todayGen = building.energy.E_gen / 30;
+  const monthGen = building.energy.E_gen;
+
+  return (
+    <PaletteCard borderRadius={28} padding={18} style={{ marginBottom: spacing.lg }}>
+      <Text style={styles.eyebrow}>Generation</Text>
+      <Text style={styles.chartTitle}>Array generation & your share</Text>
+      <Text style={[styles.caption, { marginTop: 8, lineHeight: 20 }]}>
+        Today (building prorated): {formatKwh(todayGen)} · 30-day series: {formatKwh(monthGen)} · Your retained pool share:{" "}
+        {formatPercent(view.ownedProviderShare)}
+      </Text>
+    </PaletteCard>
   );
 }
 

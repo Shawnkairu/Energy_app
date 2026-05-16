@@ -1,8 +1,8 @@
 import { useMemo, useState, type FormEvent } from "react";
-import type { PublicRole } from "@emappa/shared";
+import { createSyntheticDemoSession, type PublicRole } from "@emappa/shared";
 import { Brand } from "../components/Brand";
 import { webRoles } from "../data/roles";
-import { requestEmailOtp, verifyEmailOtp, type WebSession } from "../lib/api";
+import { persistSession, readSession, requestEmailOtp, selectRole, verifyEmailOtp, type WebSession } from "../lib/api";
 
 const roleInitials: Record<PublicRole, string> = {
   resident: "R",
@@ -50,7 +50,7 @@ export function LoginLayer({
     setMessage(null);
     try {
       const session = await verifyEmailOtp(normalizedEmail, trimmedCode);
-      if (!session.user.role) {
+      if (!session.user.onboardingComplete) {
         setStep("role");
         return;
       }
@@ -66,13 +66,30 @@ export function LoginLayer({
     setLoading(true);
     setMessage(null);
     try {
-      const session = await verifyEmailOtp(normalizedEmail, trimmedCode || "000000");
-      onSession({ ...session, user: { ...session.user, role: selectedRole } });
+      const sess = readSession();
+      if (!sess) {
+        setMessage("Session expired. Verify your email code again.");
+        setStep("verify");
+        return;
+      }
+      const { user } = await selectRole({
+        role: selectedRole,
+        businessType: selectedRole === "provider" ? "both" : undefined,
+      });
+      const next: WebSession = { token: sess.token, user };
+      persistSession(next);
+      onSession(next);
     } catch {
-      setMessage("We could not attach that role to this demo session. Please verify the code again.");
+      setMessage("We could not save your role. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function openSyntheticDemo(role: PublicRole) {
+    const session = createSyntheticDemoSession(role, { phase: "settlement" });
+    persistSession(session);
+    onSession(session);
   }
 
   return (
@@ -98,7 +115,10 @@ export function LoginLayer({
           </div>
           <div className="access-note" aria-label="Demo account examples">
             <span>Demo accounts</span>
-            <strong>Use resident, homeowner, building-owner, provider-panels, electrician, financier, or admin at emappa.test.</strong>
+            <strong>
+              Stakeholder portals: use resident, homeowner, building-owner, provider-panels, electrician, or financier addresses at emappa.test.
+            </strong>
+            <small>Internal ops sign in through the cockpit with a provisioned admin seed account — admin is never an option on this public role picker.</small>
           </div>
         </div>
 
@@ -112,6 +132,14 @@ export function LoginLayer({
               <label htmlFor="pilot-email">Email</label>
               <input id="pilot-email" value={email} type="email" autoComplete="email" placeholder="resident@emappa.test" onChange={(event) => setEmail(event.target.value)} required />
               <button type="submit" disabled={loading || !normalizedEmail}>{loading ? "Sending..." : "Send code"}</button>
+              <div className="demo-role-grid" aria-label="Open synthetic demo portals">
+                <span>Or open a synthetic demo</span>
+                {webRoles.map((role) => (
+                  <button key={role.id} type="button" className="ghost-action" onClick={() => openSyntheticDemo(role.id)}>
+                    {role.label}
+                  </button>
+                ))}
+              </div>
             </form>
           ) : null}
 
@@ -222,6 +250,24 @@ function LoginLayerStyles() {
         color: var(--muted);
         font-size: 0.82rem;
         font-weight: 900;
+      }
+
+      .demo-role-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .demo-role-grid span {
+        grid-column: 1 / -1;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
       }
 
       .login-access-panel .otp-form input {

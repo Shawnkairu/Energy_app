@@ -128,10 +128,10 @@ function roleHomeHref(role: string) {
     resident: "/(resident)/home",
     homeowner: "/(homeowner)/home",
     building_owner: "/(building-owner)/home",
-    provider: "/(provider)/home",
-    financier: "/(financier)/portfolio",
-    electrician: "/(electrician)/jobs",
-    admin: "/(admin)/home",
+    provider: "/(provider)/discover",
+    financier: "/(financier)/discover",
+    electrician: "/(electrician)/discover",
+    admin: "/(admin)/alerts",
   };
 
   return routes[role] ?? "/(auth)/role-select";

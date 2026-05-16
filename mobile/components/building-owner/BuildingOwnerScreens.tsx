@@ -4,6 +4,8 @@ import { Redirect, Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AppMark, colors, typography } from "@emappa/ui";
 import { readPilotSession } from "../session";
+import { SystemEnergyImmersiveHero } from "../energy/SystemImmersiveOverview";
+import { ProfileEssentials } from "../ProfileEssentials";
 import { createApiClient } from "@emappa/api-client";
 import { useApiData } from "../../lib/useApiData";
 
@@ -34,7 +36,7 @@ interface RoleHomePayload {
 
 interface DrsPayload {
   score: number;
-  decision: "approve" | "review" | "block";
+  decision: "deployment_ready" | "review" | "blocked";
   reasons: string[];
   components: Record<string, number>;
 }
@@ -191,20 +193,43 @@ export function BuildingOwnerEnergyScreen() {
   const state = useApiData(load, []);
 
   return (
-    <OwnerDataFrame state={state} eyebrow="Energy" title="Rooftop signal." subtitle="Clean generation view. Payout lives in Wallet.">
-      {({ project, today }) => {
+    <OwnerDataFrame state={state} eyebrow="Energy" title="Rooftop signal." subtitle="Clean generation view. Payout lives in Wallet." immersive>
+      {({ project, today, drs }) => {
         const generation = sum(today.generation_kwh);
-        const load = sum(today.load_kwh);
-        const utilization = load > 0 ? Math.min(1, generation / load) : 0;
+        const loadKwh = sum(today.load_kwh);
+        const utilization = loadKwh > 0 ? Math.min(1, generation / loadKwh) : 0;
+        const genSeries = today.generation_kwh;
+        const loadSeries = today.load_kwh;
+        const peakGen = genSeries.length ? Math.max(...genSeries) : 0;
+        const peakLoad = loadSeries.length ? Math.max(...loadSeries) : 0;
+        const batteryStatus = peakGen > peakLoad * 1.08 ? "charging" : peakLoad > peakGen * 1.08 ? "discharging" : "idle";
+        const drs01 = formatDrsScore(drs.score) / 100;
 
         return (
           <>
-            <EnergyVisual generation={generation} load={load} values={today.generation_kwh} />
+            <View style={{ marginHorizontal: -20, marginTop: 8 }}>
+              <SystemEnergyImmersiveHero
+                siteName={project.name}
+                weatherHint={`DRS ${formatDrsScore(drs.score)} · ${project.stage}`}
+                generationKwhToday={generation}
+                loadKwhToday={loadKwh}
+                generationHourly={genSeries.length ? genSeries : [generation / 24]}
+                loadHourly={loadSeries.length ? loadSeries : [loadKwh / 24]}
+                batterySoc={Math.min(0.96, Math.max(0.1, drs01 * 0.55 + utilization * 0.4))}
+                batteryStatus={batteryStatus}
+                savingsKesLabel={formatKes(Math.round(Math.min(generation, loadKwh) * 14))}
+                summaryCards={[
+                  { label: "Used today", value: `${round(loadKwh)} kWh`, hint: "Aggregate load", icon: "business-outline" },
+                  { label: "Produced", value: `${round(generation)} kWh`, hint: "Dedicated path", icon: "sunny-outline" },
+                  { label: "Utilization", value: loadKwh > 0 ? `${Math.round(utilization * 100)}%` : "—", hint: "Ops view", icon: "pulse-outline" },
+                ]}
+              />
+            </View>
             <MetricGrid
               metrics={[
-                { label: "Generated", value: `${round(generation)} kWh`, detail: "Building-level today.", tone: generation > 0 ? "good" : "neutral" },
-                { label: "Load", value: `${round(load)} kWh`, detail: "Aggregate only." },
-                { label: "Use", value: load > 0 ? `${Math.round(utilization * 100)}%` : "pending", detail: "Operational view.", tone: utilization >= 0.75 ? "good" : "warn" },
+                { label: "Generated", value: `${round(generation)} kWh`, detail: "e.mappa solar plant (dedicated path).", tone: generation > 0 ? "good" : "neutral" },
+                { label: "Load", value: `${round(loadKwh)} kWh`, detail: "Aggregate only." },
+                { label: "Use", value: loadKwh > 0 ? `${Math.round(utilization * 100)}%` : "pending", detail: "Operational view.", tone: utilization >= 0.75 ? "good" : "warn" },
                 { label: "Payout", value: "wallet", detail: "Sold solar only." },
               ]}
             />
@@ -266,6 +291,14 @@ export function BuildingOwnerProfileScreen() {
         <>
           <ProfileCard user={user} project={project} />
           <CredentialsDeck project={project} />
+          <ProfileEssentials
+            roleLabel="Building owner"
+            accountRows={[
+              { label: "Building", value: project.name, note: project.address },
+              { label: "Roof record", value: project.roofSource ?? "Pending", note: project.roofAreaM2 ? `${Math.round(project.roofAreaM2)} sqm` : "capture needed" },
+            ]}
+            supportSubject={`Building owner support - ${project.name}`}
+          />
           <ActionList
             title="Account"
             items={[
@@ -318,7 +351,7 @@ export function BuildingOwnerDeploymentScreen() {
         const gates = [
           { label: "Building access", ready: Boolean(project.roofAreaM2), detail: "Roof and meter-room evidence before scheduling." },
           { label: "Prepaid demand", ready: project.prepaidCommittedKes > 0, detail: "No prepaid cash means no solar allocation or payout." },
-          { label: "DRS decision", ready: drs.decision === "approve", detail: "Review or block decisions hold deployment movement." },
+          { label: "DRS decision", ready: drs.decision === "deployment_ready", detail: "Review or block decisions hold deployment movement." },
           { label: "Monitoring", ready: drs.components.installationReadiness >= 0.6, detail: "Installation and monitoring readiness are checked by DRS." },
         ];
 
@@ -387,7 +420,7 @@ export function BuildingOwnerApproveTermsScreen() {
             empty="No terms context returned."
             rows={[
               { label: "Building", value: project.name, note: project.address },
-              { label: "Deployment", value: drs.decision, note: "Funding, supplier lock, installer scheduling, and go-live remain DRS-gated.", tone: decisionTone(drs.decision) },
+              { label: "Deployment", value: drs.decision, note: "Funding, provider lock, electrician scheduling, and go-live remain DRS-gated.", tone: decisionTone(drs.decision) },
               { label: "Payout basis", value: "sold solar", note: "Owner royalty can come only from monetized prepaid solar.", tone: "good" },
               { label: "Prepaid demand", value: formatKes(project.prepaidCommittedKes), note: "Cash-backed demand returned by the project endpoint." },
             ]}
@@ -474,12 +507,15 @@ function OwnerDataFrame<T>({
   title,
   subtitle,
   children,
+  immersive = false,
 }: {
   state: { data: T | null; error: Error | null; isLoading: boolean; refetch: () => void };
   eyebrow: string;
   title: string;
   subtitle: string;
   children: (data: T) => ReactNode;
+  /** Tesla / Enphase system-overview hero: hide document header for full-bleed diagram. */
+  immersive?: boolean;
 }) {
   if (state.isLoading) {
     return (
@@ -511,15 +547,19 @@ function OwnerDataFrame<T>({
   return (
     <View style={styles.root}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.eyebrow}>{eyebrow}</Text>
-            <Text style={styles.kicker}>Private building workspace</Text>
-          </View>
-          <AppMark />
-        </View>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        {immersive ? null : (
+          <>
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.eyebrow}>{eyebrow}</Text>
+                <Text style={styles.kicker}>Private building workspace</Text>
+              </View>
+              <AppMark />
+            </View>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.subtitle}>{subtitle}</Text>
+          </>
+        )}
         {children(state.data)}
       </ScrollView>
     </View>
@@ -560,7 +600,7 @@ function BuildingReadinessMap({ project, drs }: { project: BuildingProject; drs:
     { icon: "business-outline", label: "Building", ready: true },
     { icon: "scan-outline", label: "Roof", ready: Boolean(project.roofAreaM2) },
     { icon: "people-outline", label: "Residents", ready: project.prepaidCommittedKes > 0 },
-    { icon: "shield-checkmark-outline", label: "DRS", ready: drs.decision === "approve" },
+    { icon: "shield-checkmark-outline", label: "DRS", ready: drs.decision === "deployment_ready" },
   ] as const;
 
   return (
@@ -882,7 +922,7 @@ function tabIcon(name: string): keyof typeof Ionicons.glyphMap {
 }
 
 function decisionTone(decision: DrsPayload["decision"]): Tone {
-  return decision === "approve" ? "good" : decision === "review" ? "warn" : "bad";
+  return decision === "deployment_ready" ? "good" : decision === "review" ? "warn" : "bad";
 }
 
 function toneColor(tone: Tone = "neutral") {

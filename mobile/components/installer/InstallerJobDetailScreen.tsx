@@ -15,17 +15,24 @@ export function InstallerJobDetailScreen() {
     <InstallerScaffold
       section="Job"
       title="Site Packet"
-      subtitle="Map. Meter. Photos."
+      subtitle="Apartment ATS, solar path, PAYG map."
       actions={["Capture proof", "Crew queue", "Lead card"]}
-      hero={(building) => ({
-        label: building.project.locationBand,
-        value: building.project.drs.meterInverterMatchResolved ? "Mapped" : "Review",
-        sub: "Meter and inverter match",
-        tone: building.project.drs.meterInverterMatchResolved ? "good" : "bad",
-      })}
+      hero={(building) => {
+        const drs = building.project.drs;
+        const pathReady =
+          drs.solarApartmentCapacityFitVerified && drs.apartmentAtsMeterMappingVerified && drs.atsKplcSwitchingVerified;
+        return {
+          label: building.project.locationBand,
+          value: pathReady ? "Cleared" : "Review",
+          sub: "Capacity fit · ATS map · switching",
+          tone: pathReady ? "good" : "bad",
+        };
+      }}
     >
       {(building) => {
         const drs = building.project.drs;
+        const pathReady =
+          drs.solarApartmentCapacityFitVerified && drs.apartmentAtsMeterMappingVerified && drs.atsKplcSwitchingVerified;
 
         return (
           <>
@@ -40,10 +47,10 @@ export function InstallerJobDetailScreen() {
                   note: "Named job.",
                 },
                 {
-                  label: "Meter map",
-                  value: drs.meterInverterMatchResolved ? "Matched" : "Review",
-                  note: "Mismatch blocks go-live.",
-                  tone: drs.meterInverterMatchResolved ? "good" : "bad",
+                  label: "Apartment supply path",
+                  value: pathReady ? "Verified" : "Review",
+                  note: "Non-participating units stay on KPLC only.",
+                  tone: pathReady ? "good" : "bad",
                 },
                 {
                   label: "Access",
@@ -74,9 +81,7 @@ export function InstallerJobDetailScreen() {
                     Tap the next physical proof.
                   </Text>
                 </View>
-                <Pill tone={drs.meterInverterMatchResolved ? "good" : "bad"}>
-                  {drs.meterInverterMatchResolved ? "mapped" : "review"}
-                </Pill>
+                <Pill tone={pathReady ? "good" : "bad"}>{pathReady ? "cleared" : "review"}</Pill>
               </View>
               <View
                 style={{
@@ -97,7 +102,7 @@ export function InstallerJobDetailScreen() {
                 <View style={{ position: "absolute", top: 18, bottom: 18, right: 82, width: 1, backgroundColor: colors.borderStrong }} />
                 {[
                   ["Access", drs.ownerPermissionsComplete ? "Open" : "Hold", 12, 18],
-                  ["Meter", drs.meterInverterMatchResolved ? "Match" : "Fix", 134, 56],
+                  ["ATS path", pathReady ? "OK" : "Fix", 134, 56],
                   ["Inverter", drs.settlementDataTrusted ? "Live" : "Read", 48, 105],
                 ].map(([label, value, left, top]) => (
                   <View
@@ -165,7 +170,7 @@ export function InstallerJobDetailScreen() {
                 }}
               >
                 {[
-                  ["Meter", drs.meterInverterMatchResolved ? "Matched" : "Mismatch"],
+                  ["Apartment path", pathReady ? "Verified" : "Open"],
                   ["Cable", drs.ownerPermissionsComplete ? "Open" : "Blocked"],
                   ["Telemetry", drs.settlementDataTrusted ? "Trusted" : "Recapture"],
                 ].map(([label, value], index) => (

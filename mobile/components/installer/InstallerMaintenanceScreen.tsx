@@ -20,13 +20,13 @@ export function InstallerMaintenanceScreen() {
       actions={["Service ticket", "Capture proof", "Profile"]}
       hero={(building) => ({
         label: "Tickets",
-        value: `${building.roleViews.installer.maintenanceTickets}`,
+        value: `${building.roleViews.electrician.maintenanceTickets}`,
         sub: "Open service items",
-        tone: building.roleViews.installer.maintenanceTickets === 0 ? "good" : "warn",
+        tone: building.roleViews.electrician.maintenanceTickets === 0 ? "good" : "warn",
       })}
     >
       {(building) => {
-        const view = building.roleViews.installer;
+        const view = building.roleViews.electrician;
         const drs = building.project.drs;
 
         return (

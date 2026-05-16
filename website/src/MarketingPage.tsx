@@ -191,29 +191,29 @@ function ProductSuite() {
       label: 'resident balance',
     },
     {
-      title: 'Operate shared rooftop supply',
-      body: 'Providers plug capacity into measured buildings with clear generated and sold kWh.',
+      title: 'Operate dedicated solar path supply',
+      body: 'Providers plug capacity into measured buildings with clear generated and sold kWh on the e.mappa path—not a common-bus shortcut.',
       className: 'suite-card wide flow',
       metric: '2,435 kWh',
       label: 'verified solar',
     },
     {
       title: 'Control deployment gates',
-      body: 'Owners, electricians, and suppliers move through readiness checks before go-live.',
+      body: 'Owners, electricians, and providers move through DRS/LBRS gate checklists before installation or go-live—not a single percentage threshold.',
       className: 'suite-card gates',
       metric: '83.9',
       label: 'DRS score',
     },
     {
       title: 'Settle only monetized energy',
-      body: 'Generated energy pays out only after a building actually buys and uses it.',
+      body: 'Stakeholder pools allocate from prepaid, delivered kWh (E_sold). Generated-but-unmonetized solar does not create payout.',
       className: 'suite-card ledger',
-      metric: '80%',
-      label: 'sold coverage',
+      metric: '60–90%',
+      label: 'typical utilization band',
     },
     {
       title: 'Keep every role isolated',
-      body: 'Residents, providers, owners, financiers, electricians, and suppliers each get their own operating room.',
+      body: 'Residents, homeowners, building owners, financiers, electricians, and providers each get their own operating room.',
       className: 'suite-card wide roles',
       metric: '6',
       label: 'stakeholder portals',
@@ -226,7 +226,7 @@ function ProductSuite() {
         <div className="suite-heading">
           <h2>Flexible operating rooms for every building energy model.</h2>
           <p>
-            Start with pledged solar for apartments. Grow into financing, fulfillment, ownership,
+            Start with pledged solar for apartments on a dedicated path. Grow into financing, fulfillment, ownership,
             maintenance, and settlement, all on one measured energy truth layer.
           </p>
         </div>
@@ -296,7 +296,7 @@ function RadicalHero() {
           <h1>Energy operating systems for apartment buildings.</h1>
           <p className="hero-line">Map. Build. Empower.</p>
           <p>
-            e.mappa turns a building into a measured energy economy: solar production, resident demand,
+            e.mappa turns a building into a measured energy economy: solar production on a dedicated e.mappa path, enrolled apartment demand,
             pledged tokens, deployment readiness, ownership, compliance, and settlement all move through
             one truth layer.
           </p>
@@ -305,7 +305,7 @@ function RadicalHero() {
             <a href="#how-it-works" style={btnSecondary}>See the system</a>
           </div>
           <div className="hero-proof-strip" aria-label="e.mappa stakeholder surfaces">
-            {['Residents', 'Providers', 'Owners', 'Financiers', 'Installers', 'Suppliers'].map((label) => (
+            {['Residents', 'Homeowners', 'Building owners', 'Providers', 'Financiers', 'Electricians'].map((label) => (
               <span key={label}>{label}</span>
             ))}
           </div>
@@ -318,10 +318,10 @@ function RadicalHero() {
 
 function OperatingSystemScene() {
   const layers = [
-    ['Physical layer', 'Rooftop access, panels, meters, inverter, battery, DB, and gateway.'],
+    ['Physical layer', 'Rooftop plant, dedicated e.mappa solar path, inverter, battery, DB, gateway, and per-apartment ATS near PAYG meters.'],
     ['Data layer', 'Production, apartment load, battery state, certification proof, and audit trail.'],
     ['Economic layer', 'Prepaid tokens, monetized kWh, payout waterfall, ownership, and margins.'],
-    ['Role layer', 'Residents, providers, owners, financiers, electricians, and suppliers see only their truth.'],
+    ['Role layer', 'Residents, homeowners, building owners, providers, financiers, and electricians see only their truth.'],
   ];
 
   return (
@@ -329,7 +329,7 @@ function OperatingSystemScene() {
       <div style={s.container} className="scene-grid">
         <div className="scene-copy">
           <div style={s.badge}>What is e.mappa</div>
-          <h2>A control plane for shared rooftop solar.</h2>
+          <h2>A control plane for apartment solar on a dedicated path.</h2>
           <p>
             Premium composition for e.mappa starts with the building:
             hardware above, homes below, and a software/economic layer in the middle that makes every kWh legible.
@@ -375,7 +375,7 @@ function BuildingEconomyScene() {
             <div className="ledger-card">
               <span>Monthly result</span>
               <strong>KSh 622 saved</strong>
-              <small>from monetized building solar</small>
+              <small>from monetized solar on enrolled apartments</small>
             </div>
           </div>
         </div>
@@ -390,8 +390,8 @@ function StakeholderMarketScene() {
     ['Providers', 'Plug panels into verified demand.'],
     ['Owners', 'Host rooftops and track readiness.'],
     ['Financiers', 'Fund named building deals.'],
-    ['Installers', 'Certify proof before go-live.'],
-    ['Suppliers', 'Fulfill BOMs with warranty proof.'],
+    ['Electricians', 'Certify evidence, DRS/LBRS tasks, and safe ATS paths before go-live.'],
+    ['Providers', 'Panels and/or infrastructure with separate economics (businessType).'],
   ];
 
   return (
@@ -424,8 +424,8 @@ function StakeholderMarketScene() {
 
 function DeploymentProofScene() {
   const gates = [
-    ['Demand', 'Resident prepayment is visible before deployment.'],
-    ['Readiness', 'DRS gates provider lock, install scheduling, and go-live.'],
+    ['Demand', 'Resident pledges/prepay show participating demand before deployment.'],
+    ['Readiness', 'DRS includes capacity fit, apartment ATS/meter mapping, and switching verification.'],
     ['Settlement', 'Only monetized solar creates payout.'],
   ];
 
@@ -436,8 +436,8 @@ function DeploymentProofScene() {
           <div style={s.badge}>Deployment discipline</div>
           <h2>Deploy after proof, not optimism.</h2>
           <p>
-            e.mappa is not a solar company with a prettier app. It is the operating discipline around building-level
-            energy economies: gates, proofs, settlement, and role isolation.
+            e.mappa is not a solar company with a prettier app. It is the operating discipline around apartment-level
+            energy economies on a dedicated solar path: gates, proofs, settlement, and role isolation.
           </p>
         </div>
         <div className="proof-board">
@@ -462,14 +462,14 @@ function NetworkScene() {
           <div style={s.badge}>Local network</div>
           <h2>Clean energy infrastructure becomes local industry.</h2>
           <p>
-            Electricians, fabricators, suppliers, and providers are not side notes. They are the buildout engine.
+            Electricians and providers (panels + infrastructure) are not side notes. They are the buildout engine.
           </p>
         </div>
         <div className="network-table">
           {[
             ['Electricians', 'Certification', 'Install proof and maintenance'],
             ['Fabricators', 'Build-to-spec', 'Racks, enclosures, brackets'],
-            ['Suppliers', 'BOM fulfillment', 'Warranty, dispatch, delivery'],
+            ['Providers', 'Hardware + array liquidity', 'Quotes, EaaS, delivery, warranty'],
             ['Providers', 'Panel capacity', 'Measured output and payout'],
           ].map(([role, status, detail]) => (
             <article key={role}>
@@ -497,7 +497,7 @@ const navGroups: NavDropdownGroup[] = [
         heading: 'Foundation',
         items: [
           { label: 'The problem', href: '#problem', description: 'Why electricity access for apartment residents is still broken.' },
-          { label: 'What is e.mappa', href: '#what-is-emappa', description: 'The shared rooftop system, software layer, and plug-in model.' },
+          { label: 'What is e.mappa', href: '#what-is-emappa', description: 'Dedicated solar path, apartment ATS at PAYG meters, software layer, and provider coordination.' },
         ],
       },
       {
@@ -616,7 +616,7 @@ function Navbar() {
     >
       <div style={{ ...s.container, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
         {/* Logo */}
-        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '0px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--navy)' }}>
+        <a href="#pilot" style={{ display: 'flex', alignItems: 'center', gap: '0px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--navy)' }} aria-label="e.mappa pilot scope">
           <span style={{ color: 'var(--emappa-solar-strong)' }}>e</span>
           <span>.mappa</span>
         </a>
@@ -770,7 +770,7 @@ function Hero() {
 
             <p style={{ fontSize: '1rem', lineHeight: 1.68, color: 'var(--text-soft)', maxWidth: '640px', marginBottom: '32px' }}>
               Solar energy for apartment buildings, made accessible, affordable, and transparent. e.mappa connects residents, energy providers,
-              and building owners in one marketplace, supported by the electricians, fabricators, and suppliers who help the network come to life.
+              and building owners in one coordination layer, supported by certified electricians and verified providers who help the network come to life.
             </p>
 
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
@@ -786,7 +786,7 @@ function Hero() {
               {[
                 { stat: '30–40%', label: 'target savings vs grid prices' },
                 { stat: 'payment rail', label: 'native payment rail for token purchases' },
-                { stat: 'Battery-backed', label: 'shared resilience at the building level' },
+                { stat: 'Battery-backed', label: 'night & outage support on the e.mappa path' },
               ].map(({ stat, label }) => (
                 <div key={stat}>
                   <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--navy)' }}>{stat}</div>
@@ -874,24 +874,22 @@ function WhatIsEmappa() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }} className="two-col">
           <div>
             <div style={s.badge}>What is e.mappa</div>
-            <h2 style={s.h2}>A solar energy marketplace for apartment buildings.</h2>
+            <h2 style={s.h2}>A solar coordination layer for apartment buildings.</h2>
             <p style={{ ...s.body, marginBottom: '20px' }}>
-              We will build shared solar infrastructure on apartment rooftops and open it up to independent solar
-              providers through a plug-in solar model. Instead of rebuilding every site from scratch, providers will be able to connect into shared infrastructure that is already in place. Residents will access that energy through our app, buying solar
-              tokens cheaper than grid tokens, with full transparency.
+              e.mappa deploys rooftop solar, inverter, and battery on a separate e.mappa solar supply path. Each participating apartment is wired through an apartment-level automatic transfer switch (ATS) at or near its KPLC PAYG meter, switching that unit between the e.mappa path and grid fallback. Non-participating apartments stay on KPLC and are not connected to the e.mappa supply. Residents buy solar tokens in-app once their unit is capacity-cleared and ATS-active; pledges alone do not guarantee service.
             </p>
             <p style={s.body}>
               We will not replace the grid. We will complement it, like WiFi complements cellular networks.
-              e.mappa will handle distributed solar at the building level. The grid will provide the backbone when solar
-              is not available. Together, residents will get more reliable, more affordable, more transparent electricity.
+              e.mappa handles the dedicated solar path per enrolled apartment; KPLC remains the backbone when the ATS selects grid or for neighbors who never enroll.
+              Together, participating residents get clearer pricing, switching proof, and transparent electricity.
             </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
-              { icon: 'hardware' as IconName, title: 'The physical layer', body: "Weatherproof rooftop infrastructure with modular panel mounts, a junction box, microinverters, battery storage, production meters, and a data gateway will be owned and maintained by e.mappa. That junction box is what makes plug-in solar possible. Providers will bring their panels, connect into the shared rooftop system, and plug in." },
-              { icon: 'app' as IconName, title: 'The software layer', body: "A virtual allocation engine will track every kWh, who generated it, who consumed it, and what it is worth. On top of that, e.mappa will provide dedicated interfaces for residents, providers, building owners, electricians, fabricators, and component providers, so every participant in the network can manage work, see performance, and track earnings." },
-              { icon: 'battery' as IconName, title: 'The battery layer', body: "Integrated battery storage at each building will store excess solar for evenings, cloudy periods, and grid outages. When the grid goes down, buildings will be able to keep running on stored solar." },
+              { icon: 'hardware' as IconName, title: 'The physical layer', body: "Weatherproof rooftop plant with modular panel mounts, inverter, battery storage, production metering, and a data gateway—feeding a dedicated e.mappa solar path. Each enrolled apartment gets an ATS at or near its PAYG meter so the unit cleanly selects e.mappa solar versus KPLC. Providers bring panels and balance-of-system that land on the documented path, not a speculative common-bus injection." },
+              { icon: 'app' as IconName, title: 'The software layer', body: "A virtual allocation engine tracks every monetized kWh, who generated it, which enrolled apartments consumed it, and what it is worth. Dedicated interfaces for residents, providers, building owners, electricians, fabricators, and component providers keep each role isolated while the same truth layer runs underneath." },
+              { icon: 'battery' as IconName, title: 'The battery layer', body: "Integrated battery storage at the plant supports the e.mappa path for evenings, cloudy periods, and brief grid outages for apartments that are ATS-selected onto solar." },
               { icon: 'payments' as IconName, title: 'The payments layer', body: "Everything will run through email-led pilot pledge flow. Residents will use it to make solar pledges, and everyone else in the network will use it to get paid through e.mappa, from providers earning on generation to electricians, fabricators, and providers earning on the work and components that keep each building running." },
             ].map(({ icon, title, body }) => (
               <div key={title} style={{ display: 'flex', gap: '16px', padding: '20px', borderRadius: '14px', border: '1px solid var(--border)', background: 'var(--surface)' }}>
@@ -925,8 +923,8 @@ function SolarTokens() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '40px' }}>
           {[
-            { title: 'Solar first', body: "When your building's solar panels are generating, you will consume solar energy first. The app will show your balance in real time: kWh available, savings versus grid, and when you are running low." },
-            { title: 'Seamless fallback', body: "When solar runs out, at night or on heavy-demand days, your grid connection will take over seamlessly. No interruption. No confusion. Just electricity." },
+            { title: 'Solar first', body: "When your apartment's ATS selects the e.mappa path and the plant is producing, you consume that solar first. The app shows your balance in real time: kWh available, savings versus grid, and when you are running low." },
+            { title: 'KPLC fallback', body: "When the ATS selects KPLC, your PAYG meter behaves like today—grid tokens keep the lights on. No hidden common-bus injection: only enrolled apartments touch the e.mappa path." },
             { title: 'Your choice, always', body: "Buy tokens on demand via payment rail, subscribe monthly for a fixed allocation with rollover, or combine both as a safety net. The choice is yours, and that choice is the point." },
           ].map(({ title, body }) => (
             <div key={title} style={s.card} className="card-hover">
@@ -1098,35 +1096,34 @@ function WhoWeServe() {
 /* ─── HOW IT WORKS ─── */
 function HowItWorks() {
   const hardwareNodes = [
-    ['Provider A solar array', 'Production data', 'sun' as IconName],
-    ['Provider A smart meter', 'Generation proof', 'hardware' as IconName],
-    ['Provider B solar array', 'Production data', 'sun' as IconName],
-    ['Hybrid inverter', 'Battery + MPPT', 'battery' as IconName],
-    ['Main distribution board', 'Building load routing', 'document' as IconName],
-    ['Grid CT / KPLC grid', 'Import / export data', 'plug' as IconName],
-    ['Resident smart meters', 'Consumption data', 'hardware' as IconName],
-    ['Apartments', 'Resident demand', 'home' as IconName],
+    ['Rooftop solar plant', 'Dedicated e.mappa path', 'sun' as IconName],
+    ['Inverter + battery', 'Conditions the solar path', 'battery' as IconName],
+    ['ATS at PAYG meter', 'Per participating apartment', 'hardware' as IconName],
+    ['KPLC prepay meter', 'Grid token fallback', 'plug' as IconName],
+    ['Provider arrays', 'Measured output onto path', 'sun' as IconName],
+    ['Monitoring gateway', 'Telemetry + DRS evidence', 'network' as IconName],
+    ['Enrolled apartments', 'Selective participation', 'home' as IconName],
   ];
   const leftActors = [
-    ['Residents', 'Pledge demand, view allocation, track savings and wallet history', 'home' as IconName],
+    ['Residents', 'Pledge demand, see DRS gates, buy tokens once capacity + ATS clear', 'home' as IconName],
     ['Providers', 'Submit equipment, retain shares, track generation and payouts', 'provider' as IconName],
     ['Building owners', 'Host rooftops, clear DRS, view demand and royalty flow', 'building' as IconName],
   ];
   const rightActors = [
     ['Providers', 'Supply panels, batteries, inverters, receive payments', 'plug' as IconName],
-    ['Electricians', 'Install, route, meter, maintain, certify workflow', 'wrench' as IconName],
+    ['Electricians', 'Install, route ATS, meter, maintain, certify workflow', 'wrench' as IconName],
     ['Fabricators', 'Build mounts, rails, brackets, follow fabrication specs', 'hardware' as IconName],
   ];
   const dataEngine = [
-    ['Production ingestion', 'Provider output', 'network' as IconName],
-    ['Resident consumption', 'Apartment load', 'home' as IconName],
-    ['Pledge allocation', 'Demand accounting', 'payments' as IconName],
-    ['Audit trails', 'DRS evidence', 'document' as IconName],
+    ['Production ingestion', 'Plant output on e.mappa path', 'network' as IconName],
+    ['Enrolled apartment load', 'ATS-selected consumption', 'home' as IconName],
+    ['Pledge accounting', 'Participating demand signal', 'payments' as IconName],
+    ['Audit trails', 'DRS + settlement receipts', 'document' as IconName],
     ['Analytics', 'Real-time visibility', 'eye' as IconName],
   ];
   const appModules = [
     ['Resident app', 'Pledge balance, kWh used, savings, support', 'phone' as IconName],
-    ['Provider portal', 'Discover, inventory, generation, wallet', 'provider' as IconName],
+    ['Provider portal', 'Discover, projects, generation, wallet', 'provider' as IconName],
     ['Building owner dashboard', 'Consumption, rooftop participation, royalty', 'building' as IconName],
   ];
   const operatingModules = [
@@ -1134,9 +1131,9 @@ function HowItWorks() {
     ['Partner ops & compliance', 'Onboarding, certification workflows, install specs', 'shield' as IconName],
   ];
   const flowSteps = [
-    ['1', 'Data is measured across production, consumption, and the grid.', 'hardware' as IconName],
+    ['1', 'Data is measured across the solar path, enrolled apartment load, and KPLC fallback.', 'hardware' as IconName],
     ['2', 'The operating layer ingests and validates data in real time.', 'network' as IconName],
-    ['3', 'Pledged demand is allocated fairly and transparently to residents.', 'payments' as IconName],
+    ['3', 'Pledged demand signals readiness; tokens unlock per apartment after capacity + ATS clearance.', 'payments' as IconName],
     ['4', 'Stakeholders view live data via apps and dashboards.', 'phone' as IconName],
     ['5', 'Payments settle and payouts are automated.', 'scale' as IconName],
     ['6', 'Partners follow certified workflows and strict standards.', 'shield' as IconName],
@@ -1148,10 +1145,10 @@ function HowItWorks() {
         <div className="section-kicker-grid">
           <div>
             <div style={s.badge}>How It Works</div>
-            <h2 style={s.h2}>A building-level energy economy, mapped end to end.</h2>
+            <h2 style={s.h2}>A selective apartment energy economy, mapped end to end.</h2>
           </div>
           <p style={s.body}>
-            Hardware, measured data, pledged demand, stakeholder portals, and settlement move through one operating workflow. The graph below is modeled as a live system map: structured for clarity, not pasted as an image.
+            Hardware, measured data, pledged demand, stakeholder portals, and settlement move through one operating workflow for apartments that enroll on the e.mappa path. The graph below is modeled as a live system map: structured for clarity, not pasted as an image.
           </p>
         </div>
 
@@ -1182,7 +1179,7 @@ function HowItWorks() {
           <aside className="reference-brand-panel">
             <strong>Pilot operating map</strong>
             <em>Measured. Transparent. Local.</em>
-            <p>Maps hardware data, pledge allocation, stakeholder portals, partner proof, and settlement across one shared building economy.</p>
+            <p>Maps hardware on a dedicated solar path, enrolled apartment ATS, pledge signals, stakeholder portals, partner proof, and settlement for participating units.</p>
             <div className="reference-legend">
               <span><i />Measured data flow</span>
               <span><i />Payments / payouts flow</span>
@@ -1331,9 +1328,8 @@ function TheMarketplace() {
             </div>
             <h2 style={s.h2}>We will not be a solar company. We will be the marketplace solar companies use.</h2>
             <p style={{ ...s.body, marginBottom: '20px' }}>
-              A solar company owns panels, manages installations, and sells electricity. e.mappa will own the
-              shared infrastructure layer and the software that will let multiple solar companies operate
-              on the same rooftop, serve the same residents, and compete on reliability and output.
+              A solar company owns panels, manages installations, and sells electricity. e.mappa owns the
+              coordination stack—readiness, metering evidence, apartment ATS mapping, and settlement—so multiple providers can serve the same building without unsafe common-bus shortcuts.
             </p>
             <p style={s.body}>
               Think of it like Airbnb for rooftop solar. Airbnb does not own apartments, it owns the marketplace.
@@ -1441,7 +1437,7 @@ function NetworkSection() {
             The money residents spend on solar tokens will circulate through their own community before it goes anywhere else. This is not a side effect. It is the design.
           </p>
           <p style={{ ...s.body, marginTop: '18px' }}>
-            The marketplace will center on residents, providers, and building owners, while electricians, fabricators, and suppliers make that marketplace possible on the ground.
+            The marketplace will center on residents, providers, and building owners, while electricians and hardware providers make that marketplace possible on the ground.
           </p>
         </div>
 
@@ -1455,7 +1451,7 @@ function NetworkSection() {
             },
             {
               icon: 'provider' as IconName,
-              title: 'Local suppliers',
+              title: 'Verified providers',
               body: "A solar provider on e.mappa will not have to be a company. It could be anyone, a teacher, a shopkeeper, a retiree, who buys two panels, mounts them on a partner building's rooftop, and begins earning monthly income from their generation.",
               detail: "That could make solar a side hustle, a retirement plan, and a way to build wealth from an asset that produces value every day the sun rises. The barrier to entry will be the cost of two panels. The return would be automated payment rail deposits every month for 20 or more years.",
             },
@@ -1518,7 +1514,7 @@ function NetworkSection() {
               The network only works if every part of it has a place to plug in.
             </h3>
             <p style={s.body}>
-              We are planning this with electricians, fabricators, providers, local suppliers, and building partners from the start. If you want to be part of the network, reach out.
+              We are planning this with electricians, providers, financiers, and building partners from the start. If you want to be part of the network, reach out.
             </p>
           </div>
 

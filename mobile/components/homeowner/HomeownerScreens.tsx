@@ -16,6 +16,8 @@ import { Ionicons } from "@expo/vector-icons";
 import type { DrsResult, PrepaidCommitment, User, WalletTransaction } from "@emappa/shared";
 import { colors, Label, Pill, PrimaryButton, typography } from "@emappa/ui";
 import { useAuth } from "../AuthContext";
+import { ProfileEssentials } from "../ProfileEssentials";
+import { SystemEnergyImmersiveHero } from "../energy/SystemImmersiveOverview";
 import { readPilotSession } from "../session";
 import { useApi } from "../../lib/api";
 import { useApiData } from "../../lib/useApiData";
@@ -154,7 +156,7 @@ export function HomeownerEnergyScreen() {
   const { data, error, isLoading, refetch } = useHomeownerSnapshot();
 
   return (
-    <HomeownerShell title="Energy" subtitle="Roof flow, not asset ownership.">
+    <HomeownerShell title="Energy" subtitle="Roof flow, not asset ownership." immersive>
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           if (!snapshot.building) {
@@ -165,9 +167,34 @@ export function HomeownerEnergyScreen() {
           const load = sum(snapshot.energy?.load_kwh);
           const sold = Math.min(generation, load);
           const coverage = load > 0 ? sold / load : 0;
+          const genSeries = snapshot.energy?.generation_kwh ?? [];
+          const loadSeries = snapshot.energy?.load_kwh ?? [];
+          const utilization = snapshot.drs ? drsScore(snapshot.drs) / 100 : 0.55;
+          const peakGen = genSeries.length ? Math.max(...genSeries) : 0;
+          const peakLoad = loadSeries.length ? Math.max(...loadSeries) : 0;
+          const batteryStatus = peakGen > peakLoad * 1.08 ? "charging" : peakLoad > peakGen * 1.08 ? "discharging" : "idle";
+          const savingsKesPilot = Math.round(Math.min(generation, load) * 10);
 
           return (
             <>
+              <View style={{ marginHorizontal: -20, marginTop: -8 }}>
+                <SystemEnergyImmersiveHero
+                  siteName={snapshot.building.name}
+                  weatherHint="Pilot · synthetic"
+                  generationKwhToday={generation}
+                  loadKwhToday={load}
+                  generationHourly={genSeries.length ? genSeries : [generation / 24]}
+                  loadHourly={loadSeries.length ? loadSeries : [load / 24]}
+                  batterySoc={Math.min(0.96, Math.max(0.1, 0.2 + utilization * 0.65))}
+                  batteryStatus={batteryStatus}
+                  savingsKesLabel={formatKes(savingsKesPilot)}
+                  summaryCards={[
+                    { label: "Used today", value: formatKwh(load), hint: "Household", icon: "home-outline" },
+                    { label: "Produced", value: formatKwh(generation), hint: "Roof path", icon: "sunny-outline" },
+                    { label: "Matched", value: formatPercent(coverage), hint: "Solar-first", icon: "pulse-outline" },
+                  ]}
+                />
+              </View>
               <EnergyFlowCard generation={generation} load={load} source={snapshot.building.dataSource ?? "unreported"} />
               <MetricGrid
                 metrics={[
@@ -196,14 +223,14 @@ export function HomeownerWalletScreen() {
   const [segment, setSegment] = useState<"income" | "account">("income");
 
   return (
-    <HomeownerShell title="Wallet" subtitle="Roof income and account records.">
+    <HomeownerShell title="Wallet" subtitle="Consumption, savings, external monetization, and ownership — no host royalty on your own roof.">
       <SnapshotState data={data} error={error} isLoading={isLoading} refetch={refetch}>
         {(snapshot) => {
           if (!snapshot.building) {
             return <NoBuildingCard />;
           }
 
-          const royalties = snapshot.transactions
+          const savingsOffset = snapshot.transactions
             .filter((tx) => tx.kind === "royalty")
             .reduce((total, tx) => total + Math.max(0, tx.amountKes), 0);
           const shareEarnings = snapshot.transactions
@@ -213,10 +240,10 @@ export function HomeownerWalletScreen() {
 
           return (
             <>
-              <IncomeHero royalties={royalties} shareEarnings={shareEarnings} walletBalance={snapshot.walletBalance?.kes ?? 0} />
+              <IncomeHero royalties={savingsOffset} shareEarnings={shareEarnings} walletBalance={snapshot.walletBalance?.kes ?? 0} />
               <MetricGrid
                 metrics={[
-                  { label: "Roof income", value: formatKes(royalties), detail: "Royalty credits" },
+                  { label: "Savings / external", value: formatKes(savingsOffset + shareEarnings), detail: "Not host royalty on self-use" },
                   { label: "Account", value: formatKes(snapshot.walletBalance?.kes ?? 0), detail: "Wallet balance" },
                   { label: "Share record", value: formatPercent(ownedShare), detail: "Cashflow position" },
                 ]}
@@ -304,6 +331,14 @@ export function HomeownerProfileScreen() {
                   ]}
                 />
               </WhiteCard>
+
+              <ProfileEssentials
+                roleLabel="Homeowner"
+                accountRows={[
+                  { label: "Property", value: snapshot.building?.name ?? "No home attached", note: snapshot.building?.address ?? "submit a property first" },
+                ]}
+                supportSubject={`Homeowner support - ${snapshot.building?.name ?? "property"}`}
+              />
 
               <WhiteCard>
                 <Label>Support</Label>
@@ -486,14 +521,28 @@ function SnapshotState({
   return <>{children(data)}</>;
 }
 
-function HomeownerShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+function HomeownerShell({
+  title,
+  subtitle,
+  children,
+  immersive = false,
+}: {
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+  immersive?: boolean;
+}) {
   return (
     <View style={styles.screen}>
       <SafeAreaView style={styles.safe}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-          <Text style={styles.kicker}>Homeowner</Text>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
+          {immersive ? null : (
+            <>
+              <Text style={styles.kicker}>Homeowner</Text>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.subtitle}>{subtitle}</Text>
+            </>
+          )}
           <View style={styles.stack}>{children}</View>
         </ScrollView>
       </SafeAreaView>
@@ -555,7 +604,7 @@ function Segmented<TValue extends string>({
 
 function TransactionList({ transactions }: { transactions: WalletTransaction[] }) {
   if (transactions.length === 0) {
-    return <EmptyCard icon="wallet-outline" title="No income yet" body="Roof royalty credits appear after settlement." />;
+    return <EmptyCard icon="wallet-outline" title="No external cashflow yet" body="Savings and export/trading credits appear when monetized solar is settled." />;
   }
 
   return (

@@ -1,7 +1,7 @@
 import { getRoleHome, type RoleHome } from "@emappa/api-client";
 import type { DeploymentDecision, ProjectedBuilding } from "@emappa/shared";
 import { useEffect, useState, type ReactNode } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import {
   AppMark,
   Pill,
@@ -39,6 +39,8 @@ export function FinancierScreenShell({
   actions,
   hero,
   showActivity = false,
+  hideChrome = false,
+  pilotSlot,
   children,
 }: {
   section: string;
@@ -47,6 +49,10 @@ export function FinancierScreenShell({
   actions: string[];
   hero: (home: LoadedRoleHome) => FinancierHero;
   showActivity?: boolean;
+  /** Tesla / Enphase system-overview: full-bleed project pulse, hide document header + hero card. */
+  hideChrome?: boolean;
+  /** Screen-level pilot / disclosure banner (e.g. Discover per PILOT_SCOPE §2–3). */
+  pilotSlot?: ReactNode;
   children: (home: LoadedRoleHome) => ReactNode;
 }) {
   const [home, setHome] = useState<RoleHome | null>(null);
@@ -69,17 +75,22 @@ export function FinancierScreenShell({
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <View style={styles.topbar}>
-          <View>
-            <Text style={styles.section}>{section}</Text>
-            <Text style={styles.role}>Financier</Text>
-          </View>
-          <AppMark size={34} />
-        </View>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
-        <ActionRail actions={actions} />
-        <HeroCard hero={heroMetric} />
+        {hideChrome ? null : (
+          <>
+            <View style={styles.topbar}>
+              <View>
+                <Text style={styles.section}>{section}</Text>
+                <Text style={styles.role}>Financier</Text>
+              </View>
+              <AppMark size={34} />
+            </View>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.subtitle}>{subtitle}</Text>
+            {pilotSlot ? <View style={{ marginBottom: spacing.md }}>{pilotSlot}</View> : null}
+            <ActionRail actions={actions} />
+            <HeroCard hero={heroMetric} />
+          </>
+        )}
         {children(loadedHome)}
         {showActivity ? <ActivityCard activity={home.activity} /> : null}
       </ScrollView>
@@ -123,9 +134,14 @@ function ActionRail({ actions }: { actions: string[] }) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
       {actions.map((action, index) => (
-        <Pressable key={action} style={[styles.action, index === 0 && styles.actionActive]}>
+        <View
+          key={action}
+          style={[styles.action, index === 0 && styles.actionActive]}
+          accessibilityRole="text"
+          accessibilityLabel={action}
+        >
           <Text style={[styles.actionText, index === 0 && styles.actionTextActive]}>{action}</Text>
-        </Pressable>
+        </View>
       ))}
     </ScrollView>
   );
@@ -244,7 +260,7 @@ export function FinancierScoreArtifact({ building }: { building: ProjectedBuildi
     { label: "Prepaid", value: components.prepaidCommitment, tone: components.prepaidCommitment > 0 ? "good" : "bad" },
     { label: "Load", value: components.loadProfile, tone: components.loadProfile >= 65 ? "good" : "warn" },
     { label: "Install", value: components.installationReadiness, tone: components.installationReadiness >= 65 ? "good" : "warn" },
-    { label: "Labor", value: components.installerReadiness, tone: components.installerReadiness >= 65 ? "good" : "warn" },
+    { label: "Electrician", value: components.electricianReadiness, tone: components.electricianReadiness >= 65 ? "good" : "warn" },
     { label: "Capital", value: components.capitalAlignment, tone: components.capitalAlignment >= 65 ? "good" : "warn" },
   ] as const;
 
@@ -278,7 +294,7 @@ export function GateRailCard({ building }: { building: ProjectedBuilding }) {
   const gates = [
     { label: "Owner", complete: building.project.drs.ownerPermissionsComplete },
     { label: "Supplier", complete: building.project.drs.hasVerifiedSupplierQuote },
-    { label: "Installer", complete: building.project.drs.hasCertifiedLeadElectrician },
+    { label: "Electrician", complete: building.project.drs.hasCertifiedLeadElectrician },
     { label: "Monitor", complete: building.project.drs.monitoringConnectivityResolved },
     { label: "Data", complete: building.project.drs.settlementDataTrusted },
   ];
@@ -464,7 +480,7 @@ export function formatPercent(value: number) {
 }
 
 export function drsTone(building: ProjectedBuilding): FinancierTone {
-  return building.drs.decision === "approve" ? "good" : building.drs.decision === "review" ? "warn" : "bad";
+  return building.drs.decision === "deployment_ready" ? "good" : building.drs.decision === "review" ? "warn" : "bad";
 }
 
 function ProgressRail({ value, label, right }: { value: number; label: string; right: string }) {
@@ -502,7 +518,7 @@ function ActivityCard({ activity }: { activity: string[] }) {
 }
 
 function decisionTone(decision: DeploymentDecision): FinancierTone {
-  return decision === "approve" ? "good" : decision === "review" ? "warn" : "bad";
+  return decision === "deployment_ready" ? "good" : decision === "review" ? "warn" : "bad";
 }
 
 function toneColor(tone: FinancierTone = "neutral") {

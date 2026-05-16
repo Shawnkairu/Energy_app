@@ -16,7 +16,9 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
+from app.config import get_settings
 from app.db.session import SessionLocal
+from app.data.seed_uuids import seed_uuid as _det_uuid
 from app.models.building import Building
 from app.models.certification import Certification
 from app.models.energy import EnergyReading
@@ -25,13 +27,6 @@ from app.models.inventory import InventoryItem
 from app.models.user import User
 from app.repos import wallet as wallet_repo
 from app.services.solar.load_profiles import generate_load_profile
-
-SEED_NS = uuid.UUID("11111111-1111-1111-1111-111111111111")
-
-
-def _det_uuid(name: str) -> uuid.UUID:
-    return uuid.uuid5(SEED_NS, name)
-
 
 BUILDINGS = [
     {
@@ -132,6 +127,20 @@ def users_for_buildings(b_ids: dict[str, uuid.UUID]) -> list[dict]:
             "role": "electrician",
         },
     ]
+
+
+def _parse_admin_allowlist(raw: str) -> set[str]:
+    return {email.strip().lower() for email in raw.split(",") if email.strip()}
+
+
+def _assert_seed_admins_allowed(user_specs: list[dict]) -> None:
+    allowed = _parse_admin_allowlist(get_settings().admin_emails)
+    for spec in user_specs:
+        if spec.get("role") == "admin" and spec["email"].lower() not in allowed:
+            raise RuntimeError(
+                f"Seed admin {spec['email']} is not in EMAPPA_ADMIN_EMAILS; "
+                "refusing to create a publicly-unlisted admin outside the allowlist."
+            )
 
 
 async def _ensure_building(session, spec: dict) -> Building:
@@ -332,8 +341,10 @@ async def run_seed() -> None:
         }
 
         # Users
+        user_specs = users_for_buildings(b_ids)
+        _assert_seed_admins_allowed(user_specs)
         users_by_email: dict[str, User] = {}
-        for spec in users_for_buildings(b_ids):
+        for spec in user_specs:
             u = await _ensure_user(session, spec)
             users_by_email[u.email] = u
 

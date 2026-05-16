@@ -203,7 +203,7 @@ GET  /prepaid/{building_id}/history → PrepaidCommitment[]
 
 GET  /drs/{building_id} → DrsResult
 GET  /drs/{building_id}/history → DrsSnapshot[]
-POST /drs/{building_id}/update            (admin/installer only)
+POST /drs/{building_id}/update            (admin/electrician only)
      body: { gates: Partial<DrsGates> }
      → 200 { drs: DrsResult }
 

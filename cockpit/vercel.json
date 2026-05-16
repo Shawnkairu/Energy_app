@@ -1,0 +1,7 @@
+{
+  "framework": "vite",
+  "installCommand": "cd .. && npm ci",
+  "buildCommand": "cd .. && npm run build:cockpit",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

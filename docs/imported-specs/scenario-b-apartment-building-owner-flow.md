@@ -129,4 +129,3 @@ When DRS reaches 100%, installation is scheduled. Owner sees access obligations 
 
 After installation, the app switches to LBRS: safety tests, ATS switching tests, metering verification, inverter/battery tests, settlement dry run.
 
-When LBRS reaches 100%, the building goes live. Owner home becomes a live health dashboard and wallet starts showing host royalty only after monetized prepaid solar is consumed.

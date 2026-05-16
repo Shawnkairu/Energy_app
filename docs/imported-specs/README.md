@@ -2,17 +2,24 @@
 
 These files are Markdown imports of the latest product and strategy documents used to update the repo. They are intended for Cursor/Codex/agent reference during repo-wide implementation work. Treat them as product source material, but keep the executable source of truth for formulas/types/business rules inside `packages/shared` and backend services.
 
+**Compliance matrix:** Track implementation status against IA, pilot scope, and these imports in [`../SPEC_COMPLIANCE_CHECKLIST.md`](../SPEC_COMPLIANCE_CHECKLIST.md).
+
 ## Imported files
 
-- `scenario-a-resident-ats-capacity-ownership-trading.md` - apartment resident flow, ATS allocation, capacity queue, ownership, trading roadmap.
-- `scenario-b-apartment-building-owner-flow.md` - apartment building owner onboarding, hosting role, DRS/LBRS, owner royalty, optional ownership.
-- `scenario-c-homeowner-flow-net-metering-trading.md` - homeowner flow, no host royalty, self-consumption savings, external monetization via net metering/trading.
-- `scenario-d-electrician-flow.md` - electrician onboarding, certification, Discover/Projects/Wallet/Profile, DRS/LBRS execution and signoff.
-- `scenario-e-supplier-provider-flow.md` - supplier/provider inventory, quotes, EaaS, provider pool vs infrastructure pool, share buy-down.
-- `scenario-f-financier-flow.md` - financier onboarding, compliance gating, instruments, project discovery, buyouts, wallet, portfolio.
-- `installation-process-drs-lbrs-go-live.md` - deployment process, DRS, LBRS, canonical apartment hardware architecture, electrician economics.
-- `settlement-payback-stress-test-blueprint.md` - prepaid settlement doctrine, formulas, waterfall, payback, stress tests.
-- `ai-native-company-system-design.md` - AI-native/closed-loop company strategy notes.
+- [`scenario-a-resident-ats-capacity-ownership-trading-spec.md`](./scenario-a-resident-ats-capacity-ownership-trading-spec.md) — apartment resident flow, ATS allocation, capacity queue, ownership, trading roadmap.
+- [`scenario-b-apartment-building-owner-flow.md`](./scenario-b-apartment-building-owner-flow.md) — apartment building owner onboarding, hosting role, DRS/LBRS, owner royalty, optional ownership.
+- [`scenario-c-homeowner-flow-net-metering-trading.md`](./scenario-c-homeowner-flow-net-metering-trading.md) — homeowner flow, no host royalty, self-consumption savings, external monetization via net metering/trading.
+- [`scenario-d-electrician-flow.md`](./scenario-d-electrician-flow.md) — electrician onboarding, certification, Discover/Projects/Wallet/Profile, DRS/LBRS execution and signoff.
+- [`scenario-e-suppliers-providers-flow.md`](./scenario-e-suppliers-providers-flow.md) — supplier/provider inventory, quotes, EaaS, provider pool vs infrastructure pool, share buy-down.
+- [`scenario-f-financier-flow.md`](./scenario-f-financier-flow.md) — financier onboarding, compliance gating, instruments, project discovery, buyouts, wallet, portfolio.
+- [`installation-process-drs-lbrs-go-live.md`](./installation-process-drs-lbrs-go-live.md) — deployment process, DRS, LBRS, canonical apartment hardware architecture, electrician economics.
+- [`ai-native-company-system-design.md`](./ai-native-company-system-design.md) — AI-native/closed-loop company strategy notes.
+
+Settlement, payback, and stress-test framing for implementation also live in [`../SETTLEMENT_AND_PAYBACK.md`](../SETTLEMENT_AND_PAYBACK.md).
+
+## Original Word documents
+
+The exact `.docx` files are preserved in [`original-docx/`](./original-docx/).
 
 ## Non-negotiable doctrine summary
 

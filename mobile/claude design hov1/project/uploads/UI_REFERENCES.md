@@ -55,6 +55,6 @@ Robinhood reference: finance hierarchy, bold numbers, simple chart controls, and
 - Owner: Airbnb-style trust/onboarding plus DRS deployment confidence.
 - Provider: Robinhood-style asset and payout clarity.
 - Financier: deal-room finance clarity without guaranteed returns.
-- Installer/Supplier: operational checklists and order status with clean, high-trust cards.
+- Electrician/Supplier: operational checklists and order status with clean, high-trust cards.
 - Internal cockpit: light-first command center, not consumer marketing.
 - Marketing `How it Works`: use `emappa-gpt-workflow-reference.png` as the primary visual reference and the e.mappa system relationship map as source material. Build a native light orange/white workflow, not a dark screenshot clone.

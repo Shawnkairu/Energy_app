@@ -1,3 +1,4 @@
+import { ImmersiveEnergyHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalWorkflow } from "../../../components/PortalPrimitives";
 import { PilotBanner, TokenHero, kes, kwh, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -14,6 +15,7 @@ export default function ResidentHome({ project, data }: PortalScreenProps) {
   return (
     <>
       <PilotBanner>Pledges are non-binding, resident balances stay separate from grid fallback, and no money is charged in this demo.</PilotBanner>
+      <ImmersiveEnergyHero project={project} energyToday={data.energyToday} />
       <TokenHero project={project} title="Resident solar wallet" />
 
       <PortalPanel eyebrow="Today" title="What your pledge unlocks">

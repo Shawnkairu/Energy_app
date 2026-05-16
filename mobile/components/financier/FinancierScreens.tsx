@@ -1,3 +1,4 @@
+export { FinancierGenerationScreen } from "./FinancierGenerationScreen";
 export { FinancierHomeScreen } from "./FinancierHomeScreen";
 export { FinancierDealsScreen } from "./FinancierDealsScreen";
 export { FinancierDealDetailScreen } from "./FinancierDealDetailScreen";

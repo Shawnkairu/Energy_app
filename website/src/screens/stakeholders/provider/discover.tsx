@@ -1,3 +1,4 @@
+import { ImmersiveProjectHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel } from "../../../components/PortalPrimitives";
 import { ProjectCardList, kes } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
@@ -11,6 +12,7 @@ export default function ProviderDiscover({ project, data }: PortalScreenProps) {
 
   return (
     <>
+      <ImmersiveProjectHero project={project} mode="provider" />
       <PortalKpiBar items={[
         { label: "Qualified projects", value: String(visible.length || 1), detail: "provider-fit opportunities" },
         { label: "Panel requests", value: String(requestedPanels || Math.round(project.project.energy.arrayKw * 2)), detail: "visible in open asks" },
@@ -22,7 +24,7 @@ export default function ProviderDiscover({ project, data }: PortalScreenProps) {
           <span>Cards emphasize DRS status, requested components, and remaining deal size so providers can decide whether to quote stock, infrastructure, or a combined package.</span>
         </ProviderCallout>
         <PortalLedger rows={[
-          { label: "Infrastructure asks", value: requestedInfra.length ? requestedInfra.join(", ") : "Inverter, smart meters", note: "from project feed" },
+          { label: "Infrastructure asks", value: requestedInfra.length ? requestedInfra.join(", ") : "Inverter, apartment ATS, PAYG-side metering", note: "from project feed" },
           { label: "Current project stage", value: project.project.stage, note: project.project.locationBand },
           { label: "Verified supplier quote", value: project.project.drs.hasVerifiedSupplierQuote ? "Yes" : "Needed", note: "readiness gate" },
         ]} />

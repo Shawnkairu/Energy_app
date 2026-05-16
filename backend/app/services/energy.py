@@ -8,7 +8,6 @@ def ratio(numerator: float, denominator: float) -> float:
 
 def calculate_energy(input: dict) -> dict:
     daily_generation = input["arrayKw"] * input["peakSunHours"] * input["systemEfficiency"]
-    e_gen = daily_generation * 30
     daily_demand = input["monthlyDemandKwh"] / 30
     daily_daytime_demand = daily_demand * input["daytimeDemandFraction"]
     daily_night_demand = daily_demand - daily_daytime_demand
@@ -18,13 +17,29 @@ def calculate_energy(input: dict) -> dict:
     charged_daily = min(excess_daily, usable_battery)
     battery_used_daily = min(charged_daily * input["batteryRoundTripEfficiency"], daily_night_demand)
     waste_daily = max(0, excess_daily - charged_daily)
-    e_direct = direct_daily * 30
-    e_charge = charged_daily * 30
-    e_battery_used = battery_used_daily * 30
-    e_sold = e_direct + e_battery_used
-    e_waste = waste_daily * 30
-    e_grid = max(0, input["monthlyDemandKwh"] - e_sold)
-    return {"E_gen": round2(e_gen), "E_direct": round2(e_direct), "E_charge": round2(e_charge), "E_battery_used": round2(e_battery_used), "E_sold": round2(e_sold), "E_waste": round2(e_waste), "E_grid": round2(e_grid), "utilization": round2(ratio(e_sold, e_gen)), "coverage": round2(ratio(e_sold, input["monthlyDemandKwh"]))}
+
+    e_gen = round2(daily_generation * 30)
+    e_direct = round2(direct_daily * 30)
+    e_charge = round2(charged_daily * 30)
+    e_battery_used = round2(battery_used_daily * 30)
+    e_sold_uncapped = round2(e_direct + e_battery_used)
+    e_sold = round2(min(e_sold_uncapped, input["monthlyDemandKwh"], e_gen))
+    e_waste = round2(max(0, e_gen - e_direct - e_charge))
+    e_grid = round2(max(0, input["monthlyDemandKwh"] - e_sold))
+    utilization = round2(ratio(e_sold, e_gen))
+    waste_rate = round2(ratio(e_waste, e_gen))
+    return {
+        "E_gen": e_gen,
+        "E_direct": e_direct,
+        "E_charge": e_charge,
+        "E_battery_used": e_battery_used,
+        "E_sold": e_sold,
+        "E_waste": e_waste,
+        "E_grid": e_grid,
+        "utilization": utilization,
+        "wasteRate": waste_rate,
+        "coverage": round2(ratio(e_sold, input["monthlyDemandKwh"])),
+    }
 
 
 def calculate_revenue(e_sold: float, price_per_kwh: float) -> float:

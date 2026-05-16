@@ -1,3 +1,5 @@
+import { View } from "react-native";
+import { SystemProjectImmersiveHero } from "../energy/SystemImmersiveOverview";
 import {
   OwnerBriefCard,
   OwnerGateCard,
@@ -28,9 +30,34 @@ export function OwnerDrsScreen() {
         const view = building.roleViews.owner;
         const openGates = view.gates.filter((gate) => !gate.complete);
         const components = building.drs.components;
+        const drsProgress = building.drs.score <= 1 ? building.drs.score : building.drs.score / 100;
+        const gates = view.gates;
+        const gateDone = gates.filter((g) => g.complete).length;
 
         return (
           <>
+            <View style={{ marginHorizontal: -20, marginTop: 8 }}>
+              <SystemProjectImmersiveHero
+                siteName={building.project.name}
+                weatherHint="Owner readiness · DRS"
+                ringLabel="Owner view tracks DRS, resident participation, and prepaid signal before capital and install move."
+                ringProgress={drsProgress}
+                ringCenterHint="DRS"
+                statusLine={building.drs.label ?? building.drs.decision}
+                primaryCtaHint="Resolve blockers & review gates"
+                callouts={[
+                  { label: "DRS", value: `${Math.round(drsProgress * 100)}` },
+                  { label: "Stage", value: building.project.stage },
+                  { label: "Gates", value: `${gateDone}/${gates.length}` },
+                  { label: "Prepaid", value: formatPercent(view.prepaidCoverage) },
+                ]}
+                summaryCards={[
+                  { label: "Open gates", value: String(openGates.length), hint: "Need attention", icon: "alert-circle-outline" },
+                  { label: "Participation", value: formatPercent(view.residentParticipation), hint: "Demand", icon: "people-outline" },
+                  { label: "Prepaid", value: formatPercent(view.prepaidCoverage), hint: "Cash signal", icon: "wallet-outline" },
+                ]}
+              />
+            </View>
             <OwnerScoreArtifact
               score={building.drs.score}
               label={building.drs.label}
@@ -43,7 +70,7 @@ export function OwnerDrsScreen() {
                 {
                   label: "Decision",
                   value: building.drs.decision,
-                  detail: "Capital, supplier lock, installer scheduling, and go-live follow this gate.",
+                  detail: "Capital, provider lock, electrician scheduling, and go-live follow this gate.",
                   tone: decisionTone(building.drs.decision),
                 },
                 {
@@ -73,7 +100,7 @@ export function OwnerDrsScreen() {
                 { label: "Prepaid commitment", value: components.prepaidCommitment, detail: "Prepaid cash committed before allocation.", tone: components.prepaidCommitment > 0 ? "good" : "bad" },
                 { label: "Load profile", value: components.loadProfile, detail: "Quality of building demand shape.", tone: components.loadProfile >= 65 ? "good" : "warn" },
                 { label: "Installation", value: components.installationReadiness, detail: "Site and permission readiness.", tone: components.installationReadiness >= 65 ? "good" : "warn" },
-                { label: "Installer/labor", value: components.installerReadiness, detail: "Certified labor readiness.", tone: components.installerReadiness >= 65 ? "good" : "warn" },
+                { label: "Electrician / labor", value: components.electricianReadiness, detail: "Certified crew readiness.", tone: components.electricianReadiness >= 65 ? "good" : "warn" },
                 { label: "Capital alignment", value: components.capitalAlignment, detail: "Named building capital progress.", tone: components.capitalAlignment >= 65 ? "good" : "warn" },
               ]}
             />
