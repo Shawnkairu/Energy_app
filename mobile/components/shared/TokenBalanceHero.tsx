@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { colors, officialPalette, shadows, spacing, typography } from "@emappa/ui";
 
-export interface TokenHeroProps {
+export interface TokenBalanceHeroProps {
   eyebrow?: string;
   title?: string;
   subtitle?: string;
@@ -9,13 +9,13 @@ export interface TokenHeroProps {
   tokenValue?: string;
 }
 
-export function TokenHero({
+export function TokenBalanceHero({
   eyebrow = "e.mappa token",
   title = "Prepaid solar allocation",
   subtitle = "Track readiness, ownership, and payout state before any allocation goes live.",
   tokenLabel = "Available allocation",
   tokenValue = "0 kWh",
-}: TokenHeroProps) {
+}: TokenBalanceHeroProps) {
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
