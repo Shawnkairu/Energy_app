@@ -29,6 +29,82 @@ Every PR cites: spec section (IA_SPEC) + backlog row (MISSING) + plan task ID (B
 - Holds merge authority on `main` (no agent self-merges)
 - Resolves cross-agent conflicts (e.g., what's the API shape for `/residents/{id}/queue-position`)
 
+## Pre-flight dev environment status (2026-05-16 smoke test)
+
+| Component | Status | Action |
+|---|---|---|
+| Postgres 16 | ✅ Running, `emappa` DB + role exist | none |
+| `backend/.env` | ✅ Created from `.env.example` | review `EMAPPA_JWT_SECRET` before any deploy |
+| Website dev (`npm run dev:website`) | ✅ Boots on `http://127.0.0.1:5173` | none |
+| Cockpit dev (`npm run dev:cockpit`) | ✅ Boots on `http://127.0.0.1:5174` | none |
+| Mobile dev (`npm run dev:mobile`) | ✅ Already running on `:8081` (user's main checkout) | use port 8082 from worktree if needed |
+| **Backend Python venv** | ❌ **Broken** — Homebrew `python@3.12` + `python@3.14` both have broken `pyexpat` (Symbol not found `_XML_SetAllocTrackerActivationThreshold`); system `libexpat` is older than Homebrew Python expects | **User action before Sat AM:** `brew reinstall expat python@3.12` AND/OR install Docker Desktop to use `docker compose up` (Dockerfile + compose file already in repo) |
+| `docker` CLI | ❌ Not installed | optional but recommended as backup for Python issue |
+
+**Without backend boot, the Claude backend agent cannot run P0.3 migrations or any P1.6+ endpoint task.** Resolve the Python install before Saturday or fall back to Docker.
+
+---
+
+## Branch + merge model
+
+Same model for both weekend and 2-week pace. Single source of truth: `main`.
+
+### Branches
+
+```
+main                                        (protected; only coordinator merges)
+└── phase/P{N}-{theme}                      (one branch per phase, lives ~1 day to ~1 sprint)
+    └── task/P{N}.{g}.{t}-short-name        (one branch per task, lives ~30 min to a few hours)
+```
+
+Examples:
+- `phase/P0-foundation` ← `task/P0.2.1-building-availability-state-pill`
+- `phase/P1-resident` ← `task/P1.1.1-resident-home-wire-state-pills`
+- `phase/P7-cockpit` ← `task/P7.4.1-drs-queue-page`
+
+### Per-agent worktrees (avoid stomping)
+
+Each agent works in its own git worktree off `main`, **not** in the main checkout:
+
+```sh
+# Coordinator (you) sets these up once
+git worktree add ../emappa-mobile  main
+git worktree add ../emappa-web     main
+git worktree add ../emappa-backend main
+```
+
+- **Cursor mobile** opens `../emappa-mobile/` and only touches `mobile/`, `mobile/components/shared/` (when its task is in P0.2), and `packages/shared/` types it needs (with coordinator approval).
+- **Codex web** opens `../emappa-web/` and only touches `website/` + `cockpit/`.
+- **Claude backend** opens `../emappa-backend/` and only touches `backend/`, `packages/shared/src/types.ts` (owner), `backend/alembic/`.
+
+Each agent does `git fetch && git rebase origin/main` at the start of each task.
+
+### Merge authority
+
+- **Tasks merge into phase branches** by their owner agent (PR self-merged after CI green; review optional for trivial primitives).
+- **Phase branches merge into `main`** only by coordinator (Claude backend), and only after the phase verification gate from [BUILD_PLAN.md](../BUILD_PLAN.md) passes.
+- **Tag** `phase-P{N}-done-YYYY-MM-DD` after each phase merge.
+
+### What this looks like Saturday morning
+
+```
+09:00  Coordinator creates `phase/P0.0-prefoundation` off main + 3 worktrees if not yet set up
+09:00  All 3 agents fetch, claim P0.0 sub-tasks, push to `phase/P0.0-prefoundation`
+10:00  Coordinator merges `phase/P0.0-prefoundation` → main; tag `phase-P0.0-done`
+10:00  Coordinator creates `phase/P0-foundation`; agents rebase + start P0.1/P0.2/P0.3
+12:30  Coordinator merges P0 → main
+13:00  3 agents create phase/P1-resident, phase/P2-homeowner, phase/P3-bo in their worktrees in parallel
+... etc
+```
+
+### Failure modes
+
+- **Phase branch goes red mid-day:** coordinator drops the offending task PR back to in-progress; phase branch stays open, agent fixes + re-PRs.
+- **Two agents need the same file in different phases:** they each PR to their own phase branch, coordinator resolves the merge conflict at phase-merge time (rare because phases are sequential at the merge layer even when parallel at the work layer).
+- **Coordinator unavailable:** task PRs queue up on phase branches; merge to `main` waits. No one bypasses this — bypass breaks audit.
+
+---
+
 ## Phase kickoff (30 min)
 
 Run this before any agent picks up a phase task:
