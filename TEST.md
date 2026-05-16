@@ -4,7 +4,7 @@
 
 > **Canonical product model:** [docs/imported-specs/](docs/imported-specs/README.md). DRS decisions are `deployment_ready` | `review` | `blocked` (all critical gates required for deployment_ready). LBRS gates go-live. Settlement uses **E_sold**, not E_gen.
 
-> **Pilot mode override:** during the pilot, "phone OTP" gates read as "email OTP" gates, "prepaid" gates read as "pledge" gates, and energy-truth gates apply against synthesized data tagged `source='synthetic'`. See [docs/PILOT_SCOPE.md](docs/PILOT_SCOPE.md) for the authoritative pilot scope. Gates marked **[deferred-pilot]** are not required for pilot release but must be re-enabled before each post-pilot exit criterion is met.
+
 
 Use these markers:
 - `[ ]` not tested
@@ -210,8 +210,8 @@ The release is blocked if any item below fails.
 - [ ] Users only see buildings they are authorized for.
 - [ ] Admin-only endpoints reject non-admin users.
 - [ ] Agent tools enforce the same role/building scope as APIs.
-- [ ] **[deferred-pilot]** SMS-based OTP via Africa's Talking / Twilio.
-- [ ] **[deferred-pilot]** Phone-as-primary-identifier login.
+- [ ] SMS-based OTP via Africa's Talking / Twilio.
+- [ ] Phone-as-primary-identifier login.
 
 ### 4.4 Pledge API (Pilot mode for Prepaid)
 - [ ] `POST /prepaid/commit` with `payment_method='pledge'` creates a confirmed pledge in one step.
@@ -221,13 +221,13 @@ The release is blocked if any item below fails.
 - [ ] Balance endpoint returns confirmed pledge total.
 - [ ] History endpoint returns sorted records, all tagged `payment_method='pledge'`.
 - [ ] Pledge insert emits event/audit log.
-- [ ] No UI string in pilot mode says "charge", "pay", "top up", or implies cash transfer.
-- [ ] Every pledge / wallet screen renders the pilot banner ("pledges are non-binding and no money is charged").
+- [ ] No UI string says "charge", "pay", "top up", or implies cash transfer.
+- [ ] Every pledge / wallet screen renders the synthetic-data banner ("pledges are non-binding and no money is charged").
 - [ ] Settlement run on a pledged building tags the resulting period `simulation=true` and produces no payout instruction.
-- [ ] **[deferred-pilot]** `POST /prepaid/{id}/confirm` two-step flow gated on real cash receipt.
-- [ ] **[deferred-pilot]** M-Pesa Daraja STK push, callback handling, idempotent confirmation.
-- [ ] **[deferred-pilot]** Refund and partial-commitment flows.
-- [ ] **[deferred-pilot]** Payout instructions to provider/financier/owner wallets.
+- [ ] `POST /prepaid/{id}/confirm` two-step flow gated on real cash receipt.
+- [ ] M-Pesa Daraja STK push, callback handling, idempotent confirmation.
+- [ ] Refund and partial-commitment flows.
+- [ ] Payout instructions to provider/financier/owner wallets.
 
 ### 4.4.1 Synthetic Energy Data
 - [ ] Every `EnergyReading` carries `source ∈ {synthetic, measured}` and a non-empty `provenance` string.
@@ -247,7 +247,7 @@ The release is blocked if any item below fails.
 - [ ] Shoelace area calculation matches a known reference polygon within ±2%.
 - [ ] DRS surfaces a blocker if proposed array kWp exceeds the 5.5 m²/kWp rooftop budget.
 - [ ] Cockpit building card renders the roof polygon overlay on the satellite tile.
-- [ ] **[deferred-pilot]** Google Solar API roof segmentation, tilt, azimuth, and shade analysis (when Kenya is added to Google coverage).
+- [ ] Google Solar API roof segmentation, tilt, azimuth, and shade analysis (when Kenya is added to Google coverage).
 
 ### 4.5 DRS API
 - [ ] `GET /drs/{building_id}` returns current DRS.
