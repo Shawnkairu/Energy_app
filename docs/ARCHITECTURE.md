@@ -77,6 +77,6 @@ flowchart LR
   API --> Cockpit
 ```
 
-## Pilot vs production
+## Source of truth
 
-[PILOT_SCOPE.md](./PILOT_SCOPE.md) documents email OTP, non-binding pledges, and synthetic energy. Doctrine in [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) is the long-term truth.
+Product doctrine lives in [docs/imported-specs/](./imported-specs/README.md) (scenarios A–F, the DRS/LBRS/go-live installation spec, and the AI-native system design). Architecture decisions captured here must conform to those specs. Outstanding gaps between code and the imported specs are tracked in [SPEC_COMPLIANCE_CHECKLIST.md](./SPEC_COMPLIANCE_CHECKLIST.md); deployment maturity per environment is tracked in [DEPLOYMENT_AND_READINESS.md](./DEPLOYMENT_AND_READINESS.md).

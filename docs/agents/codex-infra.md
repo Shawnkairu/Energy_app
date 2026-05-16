@@ -1,5 +1,9 @@
 # Codex — Cockpit + Website + Infra sprint prompt (Day 1, branch: `sprint/infra`)
 
+> ⚠️ **SUPERSEDED 2026-05-16.** Historical Day-1 sprint contract — do not follow for the active build. Use: [SPRINT_KICKOFF.md](SPRINT_KICKOFF.md), [BUILD_PLAN.md](../BUILD_PLAN.md) ("Codex web" owner column), [MISSING.md](../MISSING.md), [DONE_DEFINITION.md](../DONE_DEFINITION.md), [IA_SPEC.md](../IA_SPEC.md) v3.2.
+>
+> Stale reference: `TokenHero` → `TokenBalanceHero` (renamed P0.1.9).
+
 You are OpenAI Codex working on the e.mappa monorepo. Your mission: make the cockpit and website operate against the real backend, set up CI/CD, deployment configs, and observability so the pilot can be put in front of a stakeholder by end of day.
 
 You work in parallel with Cursor (mobile) and Claude Code (backend). The contract you all agreed on is at [docs/SPRINT_CONTRACT.md](../SPRINT_CONTRACT.md). Read it first.
@@ -18,7 +22,7 @@ git checkout -b sprint/infra
 
 Read these:
 - `docs/SPRINT_CONTRACT.md` — endpoints, types, env vars
-- `docs/PILOT_SCOPE.md` — what's pilot, what's deferred
+- `docs/SPEC_COMPLIANCE_CHECKLIST.md` — what's pilot, what's deferred
 - `cockpit/src/App.tsx` and `cockpit/src/stress-test/StressTest.jsx`
 - `website/src/App.tsx` and `website/src/MarketingPage.tsx`
 - `package.json` (root), `turbo.json`, `vercel.json`, `docker-compose.yml`
@@ -50,7 +54,7 @@ Spawn **4 parallel subagents**:
 | Subagent | Branch | Owned paths | Task |
 |---|---|---|---|
 | `cockpit` | `sprint/infra/cockpit` | `cockpit/**` | Real auth + real data + synthetic badge + DRS queue + settlement monitor |
-| `website` | `sprint/infra/website` | `website/**` | Real waitlist hookup + pilot copy update + role portal data wiring |
+| `website` | `sprint/infra/website` | `website/**` | Real waitlist hookup + copy update + role portal data wiring |
 | `ci` | `sprint/infra/ci` | `.github/**`, root `package.json` scripts | GitHub Actions: typecheck + tests + lint + build |
 | `deploy` | `sprint/infra/deploy` | `vercel.json`, `docker-compose.yml`, `.env.example`, new `infra/` folder | Staging deploy: backend on Fly.io or Railway, frontends on Vercel, env wiring |
 
@@ -103,7 +107,7 @@ Goal: cockpit is a real ops console — admin logs in, sees the portfolio, can r
 
 ## Subagent: `website`
 
-Goal: marketing site reflects pilot reality, waitlist actually persists, **and stakeholder portals mirror mobile IA exactly** per [docs/IA_SPEC.md §9](../IA_SPEC.md). Required reading before code: `docs/IA_SPEC.md` (the entire document), `docs/SPRINT_CONTRACT.md`.
+Goal: marketing site reflects current state, waitlist actually persists, **and stakeholder portals mirror mobile IA exactly** per [docs/IA_SPEC.md §9](../IA_SPEC.md). Required reading before code: `docs/IA_SPEC.md` (the entire document), `docs/SPRINT_CONTRACT.md`.
 
 ### Hard mirror rule
 Every screen the mobile app has, the website portal must have. **Same names, same order, same data sources.** A user who logs in as `resident@emappa.test` on the website sees Home, Energy, Wallet, Profile in that order — same content as mobile.
@@ -112,7 +116,7 @@ The website may add **clearly-marked web-only depth** (wider charts, side-by-sid
 
 ### Step 1 — Marketing copy update ([website/src/MarketingPage.tsx](../../website/src/MarketingPage.tsx))
 - Update hero / how-it-works to reference "pledge" instead of "preload"
-- Add a "Pilot" section explaining pilot scope (email signup, non-binding pledges, synthesized data) with non-technical exit criteria
+- Add a "Pilot" section explaining product scope (email signup, non-binding pledges, synthesized data) with non-technical exit criteria
 - Remove all mentions of M-Pesa or SMS
 
 ### Step 2 — Waitlist ([website/src/WaitlistForm.tsx](../../website/src/WaitlistForm.tsx))
@@ -130,7 +134,7 @@ The website may add **clearly-marked web-only depth** (wider charts, side-by-sid
 ### Step 4 — Portal layout
 Build a shared portal shell at `website/src/portal/PortalShell.tsx`:
 - Left rail (desktop) / bottom bar (mobile-web) with the same tabs as mobile per [IA_SPEC.md](../IA_SPEC.md)
-- Top bar: pilot banner (variant configurable), user avatar dropdown (Profile, Logout)
+- Top bar: synthetic-data banner (variant configurable), user avatar dropdown (Profile, Logout)
 - Outlet for tab content
 
 ### Step 5 — Stakeholder portal screens
@@ -263,7 +267,7 @@ Goal: stack runs in a real environment that a stakeholder can hit from a browser
 ## Definition of done
 
 - Cockpit functions as a real admin console against the live backend
-- Website marketing reflects pilot scope; waitlist persists
+- Website marketing reflects product scope; waitlist persists
 - Role portals show real data for logged-in seed users
 - CI runs on every PR and blocks broken merges
 - Backend deployed to staging; cockpit + website deployed to Vercel staging

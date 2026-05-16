@@ -37,3 +37,7 @@ e-mappa-standalone.html
 emappawebsite/
 .vercel
 backend/.env
+mobile/.env
+website/.env.local
+cockpit/.env.local
+docs/adr/local/

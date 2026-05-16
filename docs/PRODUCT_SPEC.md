@@ -11,7 +11,7 @@ e.mappa turns apartment buildings into prepaid, locally financed energy economie
 - No opaque financier pool in the initial product.
 - Show distributions and benchmarks, not private counterpart finances.
 
-> **Pilot mode** ([PILOT_SCOPE.md](PILOT_SCOPE.md)) temporarily relaxes three of these: pre-onboarded demand is captured as **non-binding pledges** rather than prepaid cash, settlement runs in **simulation mode** with synthesized energy data, and identity is verified by **email OTP** instead of SMS. The doctrine above remains the long-term truth and is restored at each documented pilot exit criterion.
+> **Source of truth:** the canonical scenario specs in [docs/imported-specs/](./imported-specs/README.md) (A: resident, B: apartment building owner, C: homeowner, D: electrician, E: provider, F: financier) plus the DRS/LBRS/go-live installation spec and the AI-native system design. This file is a summary; where it conflicts with imported specs, the imported specs win. Per-role field-level conformance is tracked in [SPEC_COMPLIANCE_CHECKLIST.md §3.2](./SPEC_COMPLIANCE_CHECKLIST.md).
 
 ## Primary Surfaces
 

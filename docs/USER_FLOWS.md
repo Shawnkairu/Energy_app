@@ -1,6 +1,6 @@
 # User Flows
 
-> **Pilot mode:** email OTP, resident **pledges** (non-binding), synthetic energy. See [PILOT_SCOPE.md](PILOT_SCOPE.md). Screen layout: [IA_SPEC.md](IA_SPEC.md). Canonical scenarios: [imported-specs/](imported-specs/README.md).
+> **Canonical scenarios:** [imported-specs/](imported-specs/README.md) (A–F). Screen layout: [IA_SPEC.md](IA_SPEC.md). Field-level conformance to the scenario specs: [SPEC_COMPLIANCE_CHECKLIST.md §3.2](SPEC_COMPLIANCE_CHECKLIST.md).
 
 ## Resident (Home / Energy / Wallet / Profile)
 
