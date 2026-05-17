@@ -29,7 +29,7 @@
     "test:shared": "npm run test --workspace @emappa/shared",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
-    "ci": "npm run audit:shared && npm run test:shared && npm run typecheck && npm run lint && npm run build"
+    "ci": "npm run audit:shared && npm run test:shared && npm run typecheck && npm run lint && npm run build && npm run test:backend"
   },
   "overrides": {
     "postcss": "8.5.12",
