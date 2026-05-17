@@ -29,19 +29,45 @@ Every PR cites: spec section (IA_SPEC) + backlog row (MISSING) + plan task ID (B
 - Holds merge authority on `main` (no agent self-merges)
 - Resolves cross-agent conflicts (e.g., what's the API shape for `/residents/{id}/queue-position`)
 
-## Pre-flight dev environment status (2026-05-16 smoke test)
+## Pre-flight dev environment status (2026-05-16 smoke test — final)
 
-| Component | Status | Action |
+| Component | Status | Notes |
 |---|---|---|
-| Postgres 16 | ✅ Running, `emappa` DB + role exist | none |
-| `backend/.env` | ✅ Created from `.env.example` | review `EMAPPA_JWT_SECRET` before any deploy |
-| Website dev (`npm run dev:website`) | ✅ Boots on `http://127.0.0.1:5173` | none |
-| Cockpit dev (`npm run dev:cockpit`) | ✅ Boots on `http://127.0.0.1:5174` | none |
-| Mobile dev (`npm run dev:mobile`) | ✅ Already running on `:8081` (user's main checkout) | use port 8082 from worktree if needed |
-| **Backend Python venv** | ❌ **Broken** — Homebrew `python@3.12` + `python@3.14` both have broken `pyexpat` (Symbol not found `_XML_SetAllocTrackerActivationThreshold`); system `libexpat` is older than Homebrew Python expects | **User action before Sat AM:** `brew reinstall expat python@3.12` AND/OR install Docker Desktop to use `docker compose up` (Dockerfile + compose file already in repo) |
-| `docker` CLI | ❌ Not installed | optional but recommended as backup for Python issue |
+| Postgres 16 | ✅ Running, `emappa` DB + `emappa` role exist | macOS Homebrew service |
+| `backend/.env` | ✅ Created from `.env.example` | review `EMAPPA_JWT_SECRET` before any non-dev deploy |
+| Website dev (`npm run dev:website`) | ✅ Boots on `http://127.0.0.1:5173` | — |
+| Cockpit dev (`npm run dev:cockpit`) | ✅ Boots on `http://127.0.0.1:5174` | — |
+| Mobile dev (`npm run dev:mobile`) | ✅ Boots on `:8081` (or `:8082` if main checkout already uses 8081) | — |
+| **Backend Python venv** | ✅ **Fixed via `uv`** | Homebrew `python@3.12` pyexpat was broken (linked to outdated system `libexpat`). Resolved by provisioning Python through [astral.sh/uv](https://docs.astral.sh/uv/), which ships its own self-contained Python builds. See recipe below. |
+| Backend boot (`uvicorn`) | ✅ `/health` returns `{"status":"ok","db":"ok"}` on `:8765` | — |
+| Backend migrations (`alembic upgrade head`) | ✅ At `0002_onboarding_extensions`; 12 tables present including `audit_log` | — |
+| Backend tests (`npm run test:backend`) | ✅ 32/32 pass | — |
 
-**Without backend boot, the Claude backend agent cannot run P0.3 migrations or any P1.6+ endpoint task.** Resolve the Python install before Saturday or fall back to Docker.
+### Backend dev recipe (the fix, codified)
+
+If you ever wipe `backend/.venv` or move to a fresh machine:
+
+```sh
+# One-time: install uv if not present
+brew install uv
+
+# One-time per repo: provision Python + venv
+cd backend
+uv python install 3.12              # downloads uv-managed CPython 3.12
+uv venv --python 3.12 .venv         # creates .venv against uv Python
+uv pip install --python .venv/bin/python -r requirements.txt
+
+# Daily: just use the venv
+.venv/bin/uvicorn app.main:app --reload    # boot backend
+.venv/bin/alembic upgrade head             # apply migrations
+.venv/bin/python -m pytest tests -q        # run tests
+```
+
+Or from repo root: `npm run dev:backend`, `npm run migrate`, `npm run test:backend` — these all use `backend/.venv/bin/...`.
+
+### Why not Docker?
+
+Docker Desktop is the documented alternative (Dockerfile + `docker-compose.yml` in repo) and works fine if you prefer it. `uv` was chosen here because: (a) lighter (one Homebrew package vs Docker Desktop's ~600 MB GUI app), (b) faster cold start, (c) keeps existing `npm run` scripts working unchanged.
 
 ---
 
