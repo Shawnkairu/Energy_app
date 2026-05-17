@@ -109,6 +109,12 @@ jobs:
         working-directory: backend
         run: python -m alembic upgrade head
 
+      - name: Seed dev fixtures
+        working-directory: backend
+        env:
+          EMAPPA_DEV_SEED: "true"
+        run: python -m scripts.seed
+
       - name: Run backend tests
         working-directory: backend
         run: python -m pytest tests -q
