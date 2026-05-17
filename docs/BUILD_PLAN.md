@@ -455,7 +455,7 @@ You'd have one role fully demoable end-to-end, doctrine enforced, foundation for
 | Task | Endpoint | Target | Spec | Owner |
 |---|---|---|---|---|
 | P3.6.1 | `POST /building-owner/{id}/authority-docs` | `backend/app/api/building_owner.py` | Scenario B §3 | Claude backend |
-| P3.6.2 | `POST /building-owner/{id}/payout-account` | `backend/app/api/building_owner.py` | Scenario B §5 | Claude backend |
+| P3.6.2 | `POST /building-owner/{id}/payout-account` — **point-of-need** (per [ADR 0003](adr/0003-no-payment-at-onboarding.md)), invoked inline before first host-royalty payout; NOT an onboarding endpoint. Wallet first-royalty card has "Set up payout account" CTA at `mobile/app/(building-owner)/_embedded/payout-setup.tsx` + web mirror | `backend/app/api/building_owner.py` + `mobile/app/(building-owner)/_embedded/payout-setup.tsx` | Scenario B §5 (adapted) | Claude backend + Cursor mobile + Codex web |
 | P3.6.3 | `GET /building-owner/{id}/host-royalty` (host royalty pool computation) | `backend/app/api/building_owner.py` | Scenario B §5/§6 | Claude backend |
 | P3.6.4 | `GET /settlement/{building}/owner-statement` | `backend/app/api/settlement.py` | Scenario B §6 | Claude backend |
 | P3.6.5 | Table: `host_royalty_payout` | Alembic + `backend/app/models/host_royalty.py` | Scenario B §5 | Claude backend |
@@ -549,6 +549,7 @@ You'd have one role fully demoable end-to-end, doctrine enforced, foundation for
 | P4.6.5 | `POST /providers/{id}/warranty-ticket` | `backend/app/api/providers.py` | Claude backend |
 | P4.6.6 | `GET /providers/{id}/settlement` | `backend/app/api/providers.py` | Claude backend |
 | P4.6.7 | Tables: `provider_verification`, `provider_quote`, `eaas_contract`, `share_buydown` | Alembic + `backend/app/models/{provider_verification,provider_quote,eaas,share_buydown}.py` | Claude backend |
+| P4.6.8 | `POST /providers/{id}/payout-account` — **point-of-need** (per [ADR 0003](adr/0003-no-payment-at-onboarding.md)), invoked before first sale payout (first delivered inventory or first usage-linked period); NOT an onboarding endpoint. Wallet first-payout card has "Set up payout account" CTA at `mobile/app/(provider)/_embedded/payout-setup.tsx` + web mirror | `backend/app/api/providers.py` + `mobile/app/(provider)/_embedded/payout-setup.tsx` | Claude backend + Cursor mobile + Codex web |
 
 ### P4 Verification gate
 
@@ -635,6 +636,7 @@ You'd have one role fully demoable end-to-end, doctrine enforced, foundation for
 | P5.6.7 | `POST /electricians/{id}/labor-as-capital-claim` (opt-in, not default — CI gate) | `backend/app/api/electricians.py` | Claude backend |
 | P5.6.8 | Verify `GET /electricians/{id}/wallet` returns all 8 sections | `backend/app/api/electricians.py` | Claude backend |
 | P5.6.9 | Tables: `training_progress`, `lbrs_test_result` (extend), `signoff`, `labor_as_capital_claim`, `household_request`, `electrician_profile` (extend tier/crew/ratings) | Alembic + `backend/app/models/*` | Claude backend |
+| P5.6.10 | `POST /electricians/{id}/payout-account` — **point-of-need** (per [ADR 0003](adr/0003-no-payment-at-onboarding.md)), invoked before first milestone payout (first DRS task signoff approved); NOT an onboarding endpoint. Wallet first-milestone card has "Set up M-Pesa/payout" CTA at `mobile/app/(electrician)/_embedded/payout-setup.tsx` + web mirror | `backend/app/api/electricians.py` + `mobile/app/(electrician)/_embedded/payout-setup.tsx` | Claude backend + Cursor mobile + Codex web |
 
 ### P5 Verification gate
 
@@ -701,7 +703,7 @@ You'd have one role fully demoable end-to-end, doctrine enforced, foundation for
 | P6.4.4 | Risk profile & suitability | `mobile/app/(onboard)/financier/risk-profile.tsx` | Cursor mobile |
 | P6.4.5 | Regulatory disclosures (acceptance gate) | `mobile/app/(onboard)/financier/disclosures.tsx` | Cursor mobile |
 | P6.4.6 | Jurisdiction gating | `mobile/app/(onboard)/financier/jurisdiction.tsx` | Cursor mobile |
-| P6.4.7 | Payment rail setup | `mobile/app/(onboard)/financier/payment-rail.tsx` | Cursor mobile |
+| ~~P6.4.7~~ | ~~Payment rail setup~~ | **REMOVED per [ADR 0003](adr/0003-no-payment-at-onboarding.md)** — moved to point-of-need at first commit (P6.6.11) | — |
 | P6.4.8 | Investment limits | `mobile/app/(onboard)/financier/limits.tsx` | Cursor mobile |
 | P6.4.9 | Education module | `mobile/app/(onboard)/financier/education.tsx` | Cursor mobile |
 | P6.4.10 | Access decision (8 outcomes) | `mobile/app/(onboard)/financier/decision.tsx` | Cursor mobile |
@@ -731,12 +733,15 @@ You'd have one role fully demoable end-to-end, doctrine enforced, foundation for
 | P6.6.8 | `GET /financiers/{id}/payback` | `backend/app/api/financiers.py` | Claude backend |
 | P6.6.9 | `GET /financiers/{id}/statements` | `backend/app/api/financiers.py` | Claude backend |
 | P6.6.10 | Tables: `eligibility_evidence`, `escrow`, `buyout_offer`, extend `financier_profile` (tier/jurisdiction/limits) | Alembic + `backend/app/models/*` | Claude backend |
+| P6.6.11 | `POST /financiers/{id}/payment-rail` — **point-of-need** (per ADR 0003), invoked inline at first commit before escrow release; not an onboarding endpoint | `backend/app/api/financiers.py` + `mobile/app/(financier)/_embedded/payment-rail-setup.tsx` + web mirror | Claude backend + Cursor mobile + Codex web |
 
 ### P6 Verification gate
 
-- Walk Scenario F end-to-end including all 15 onboarding steps and the 8-decision access matrix.
+- Walk Scenario F end-to-end including all 14 onboarding steps (was 15 — payment rail moved per ADR 0003) and the 8-decision access matrix.
+- Walk first-commit flow end-to-end: payment-rail prompt appears inline before escrow release; financier cannot commit without setting rail.
 - Discover hides ineligible offerings (CI gate); jurisdiction filter is server-enforced.
 - Escrow funds released only on DRS/LBRS gate conditions; withdraw flow refunds pre-DRS.
+- Onboarding endpoints accept no payment field (CI gate P9.1.25).
 - See [docs/DONE_DEFINITION.md](DONE_DEFINITION.md).
 
 ---
@@ -965,6 +970,10 @@ All gates land in P9; backend gates run in `pytest backend/`, UI/lint gates in `
 | P9.1.22 | PII view claim enforced | `backend/tests/test_pii_claim.py` | Claude backend |
 | P9.1.23 | Conservative-by-default banner (CR-5) | `backend/tests/test_conservative_settle.py` | Claude backend |
 | P9.1.24 | Agent eval pass threshold ≥80% | `backend/tests/test_agent_eval.py` | Claude backend |
+| P9.1.25 | No payment fields on onboarding endpoints (ADR 0003) | `backend/tests/test_no_payment_at_onboarding.py` (scans every onboarding endpoint's Pydantic request model + asserts no field name matches `/bank|mpesa|m_pesa|iban|card|paypal|crypto|payout|account_number|routing/i`) + lint rule on mobile/website onboarding component imports | Claude backend + Cursor mobile + Codex web |
+| P9.1.26 | PII claim TTL enforced (ADR 0001) | `backend/tests/test_pii_claim_ttl.py` (asserts expired claim returns 403 + denied-attempt audit row) | Claude backend |
+| P9.1.27 | PII step-up auth for `financial` (ADR 0001) | `backend/tests/test_pii_step_up.py` (asserts unmask in `financial` class without fresh step-up token returns 403 + audit row) | Claude backend |
+| P9.1.28 | Pledge/token parity during dual-write (ADR 0002 PR 1) | `backend/tests/test_pledges_tokens_dual_write.py` + `scripts/audit_pledge_token_parity.py` daily run | Claude backend |
 
 **Weekend MVP cut:** ship at least P9.1.6, P9.1.7, P9.1.8, P9.1.11, P9.1.14 (top 5). Full 24-gate suite is realistic for a 2-week sprint, not a weekend.
 

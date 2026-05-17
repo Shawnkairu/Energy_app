@@ -1,6 +1,6 @@
 # ADR 0002 — Pledge vs token API split
 
-- **Status:** Proposed
+- **Status:** Accepted (stricter variant — 2-PR migration with observation window)
 - **Date:** 2026-05-16
 - **Driver:** [BUILD_PLAN.md §P0.0.5](../BUILD_PLAN.md#p00--pre-foundation-must-land-before-p01p04), §P1.6.2
 - **Constraint:** [Scenario A §5](../imported-specs/scenario-a-resident-ats-capacity-ownership-trading-spec.md), [IA_SPEC §Doctrine Enforcement](../IA_SPEC.md)
@@ -19,11 +19,11 @@ We need to decide whether to:
 - **Option B: Dual-write** — keep `/prepaid/commit` as a façade that routes to one or the other based on building activation state. Deprecate over a sprint.
 - **Option C: In-place rename** — keep one endpoint but require an explicit `kind: 'pledge' | 'token_purchase'` discriminator. Deprecate later.
 
-## Decision
+## Decision (Accepted — 2-PR migration)
 
-**Option A: Hard-cut.**
+**Hard-cut destination, achieved in 2 PRs with a 24-hour parity observation window.** This is stricter than a single-PR hard-cut because it adds a safety net that catches doctrine drift before the legacy endpoint is irreversibly gone.
 
-Three reasons:
+Three reasons for hard-cut destination:
 
 1. **There are no production clients.** The repo is pre-MVP. Every client (mobile, website, cockpit, simulator, tests) is in this monorepo and we control the rollout. Backwards-compat costs us nothing and a clean cut prevents the bug class where a client accidentally sends a pledge as a purchase or vice-versa.
 
@@ -31,26 +31,36 @@ Three reasons:
    - `POST /pledges` rejects if `apartment.is_activated == true` (Scenario A §5 — pledges only pre-activation).
    - `POST /tokens/purchase` rejects if `apartment.is_activated == false` OR `capacity_status != 'cleared'` (Scenario A §5 + §6 — purchase only post-activation + capacity-cleared, enforces P9.1.5 + P9.1.6).
 
-3. **Backend foundation P0.3.15 already splits the tables** — the migration creates `pledge` and `token_purchase` as separate tables with different invariants (pledge.kes is `nullable=true` and `cancellable=true`; token_purchase.kes is `nullable=false` and immutable). Endpoints should mirror table shape.
+3. **Backend foundation P0.3.15 already splits the tables** — the migration creates `pledge` and `token_purchase` as separate tables with different invariants. Endpoints should mirror table shape.
 
-### Migration steps
+### 2-PR Migration
 
-1. **P0.3.15** (Claude backend, Sat morning): Alembic migration creates `pledge` and `token_purchase` tables. Backfill from current `prepaid_commit` rows: if `apartment.is_activated == false` → `pledge`; if `true` → `token_purchase`.
+**PR 1 — Land new endpoints + dual-write (P0.3.15 + P1.6.2a)**
 
-2. **P1.6.2** (Claude backend, Sat afternoon): Implement `POST /pledges` and `POST /tokens/purchase` with the spec-mandated preconditions + audit middleware (CR-2) + Pydantic v2 request/response models. Each writes to its respective table.
+1. Alembic migration creates `pledge` (nullable + cancellable) and `token_purchase` (NOT NULL + immutable) tables. Backfill from existing `prepaid_commit` rows by apartment activation state.
+2. Implement `POST /pledges` + `POST /tokens/purchase` with spec preconditions + audit middleware + Pydantic v2 models.
+3. **Keep `POST /prepaid/commit` alive** as a thin façade: receives the legacy payload, classifies by `apartment.is_activated`, and writes to BOTH the legacy `prepaid_commit` table AND the new split table. Reads still hit the legacy table.
+4. Add `backend/tests/test_pledges_tokens_dual_write.py`: every `POST /prepaid/commit` write produces a matching new-table row with identical economic meaning.
+5. **Observation window: 24h.** Coordinator runs `scripts/audit_pledge_token_parity.py` daily — asserts `sum(prepaid_commit) == sum(pledge) + sum(token_purchase)` for the same period, by user. Any drift = halt PR 2.
 
-3. **Same PR:** Delete the `POST /prepaid/commit` route + handler. Search-and-replace every client call site:
+**PR 2 — Switch reads + delete legacy (P1.6.2b)**
+
+1. Switch every read path (Resident Wallet, Cockpit Settlement Monitor, Settlement Service) to the new tables.
+2. Update every client write call site to call the new endpoints directly:
    - `mobile/app/(resident)/_embedded/first-pledge.tsx` → `POST /pledges`
    - `mobile/app/(resident)/_embedded/token-purchase.tsx` (P1.2.7) → `POST /tokens/purchase`
    - `website/src/screens/stakeholders/resident/wallet.tsx` → match by intent
-   - `cockpit/src/pages/SettlementMonitor.tsx` (P7.2.3) → read-side only, no client call to update
+3. Delete the `POST /prepaid/commit` route + façade + legacy table (after final backup snapshot per D6 reversibility).
+4. `backend/tests/test_prepaid_legacy.py` — assert old endpoint returns 410 Gone.
+5. Audit row: migration completion logged with `actor='migration'`, `reason='adr-0002 step 2 — legacy retired'`.
 
-4. **Tests:**
-   - `backend/tests/test_pledges.py` — happy + sad (cannot pledge post-activation)
-   - `backend/tests/test_tokens.py` — happy + sad (cannot purchase pre-activation, cannot purchase without capacity_cleared per P9.1.5)
-   - `backend/tests/test_prepaid_legacy.py` — assert old endpoint returns 410 Gone (or just doesn't exist)
+### Why 2 PRs not 1
 
-5. **Audit:** the migration backfill writes a single audit row per converted row with `actor='migration'`, `reason='adr-0002 split'`.
+Single-PR hard-cut: if the new endpoint's doctrine check is subtly wrong, you've already deleted the old one when you find out. **You can't roll back.**
+
+2-PR migration: the dual-write phase produces real parity data. If `sum(pledge) + sum(token_purchase) != sum(prepaid_commit)` for any user, you halt PR 2, fix the classifier, and try again. The legacy endpoint stays available as the source of truth until you've proven the new ones agree with it.
+
+The cost is one extra PR (~150 LOC of dual-write logic that gets deleted in PR 2). For infrastructure that handles real money downstream of these tables, that observation window is cheap insurance.
 
 ## Consequences
 

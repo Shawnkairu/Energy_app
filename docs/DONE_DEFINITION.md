@@ -70,6 +70,7 @@ Same as Screens, plus:
 | **O4 Web parity** | Equivalent step exists in `website/src/onboard/<role>/<step>.tsx`; no monolithic single-page onboarding |
 | **O5 Back/exit safe** | Back preserves in-progress state; exit prompts confirm |
 | **O6 Idempotent** | Re-submitting the same step does not double-write |
+| **O7 No payment fields (ADR 0003)** | Onboarding step must NOT capture bank account, M-Pesa, card, IBAN, PayPal, crypto, payout, account_number, routing fields. Payment-rail setup is point-of-need (post-onboarding), inline at first-action that needs it. Enforced by CI gate + lint rule. |
 
 ---
 
@@ -232,6 +233,32 @@ These are *cross-cutting* tests — not tied to a single artifact, but every art
 | Conservative-by-default banner (CR-5) | `backend/tests/test_conservative_settle.py` | Response sets `X-Emappa-Conservative: true` when any input data-quality flag is missing/disputed |
 | Agent eval pass threshold | `backend/tests/test_agent_eval.py` | Each agent's eval suite (per A4) passes ≥80% threshold; CI fails on regression |
 
+### Doctrine: payment / onboarding (ADR 0003)
+
+| Gate | Test file | Asserts |
+|---|---|---|
+| No payment fields on onboarding endpoints | `backend/tests/test_no_payment_at_onboarding.py` | Scans every onboarding endpoint's Pydantic request model + asserts no field name matches `/bank\|mpesa\|m_pesa\|iban\|card\|paypal\|crypto\|payout\|account_number\|routing/i` |
+| No payment fields in onboarding components | eslint custom rule `no-payment-at-onboarding` | Imports or text matching the above pattern inside `mobile/app/(onboard)/**` or `website/src/onboard/**` → lint error |
+| Point-of-need payment-rail flow exists per role | `backend/tests/test_point_of_need_payout.py` | For Building Owner, Electrician, Provider, Financier: endpoint exists outside onboarding path + UI route exists at `_embedded/payout-setup.tsx` (or equivalent) |
+| Financier cannot commit without rail | `backend/tests/test_financier_commit.py` | `POST /financiers/{id}/commit` returns 409 if no rail set |
+| BO host-royalty cannot pay out without rail | `backend/tests/test_host_royalty_payout.py` | Settlement run for BO without rail set holds royalty + emits alert |
+
+### Doctrine: PII claims lifecycle (ADR 0001)
+
+| Gate | Test file | Asserts |
+|---|---|---|
+| PII claim TTL enforced | `backend/tests/test_pii_claim_ttl.py` | Expired claim returns 403 + writes denied-attempt audit row; class TTLs: contact 8h, identity 4h, financial 1h |
+| Step-up auth for `pii:view:financial` | `backend/tests/test_pii_step_up.py` | Unmask in `financial` class without fresh step-up token (5min window) returns 403 + audit row |
+| Reason-on-grant required | `backend/tests/test_pii_grant_reason.py` | RBAC console POST grant without non-empty `reason` returns 400; `identity` + `financial` additionally require `incident_id` |
+| Agents hold zero PII claims | `backend/tests/test_agent_pii_isolation.py` | Agent JWT scope rejected by PII middleware regardless of class requested; audit row written |
+
+### Doctrine: pledge/token migration (ADR 0002)
+
+| Gate | Test file | Asserts |
+|---|---|---|
+| Dual-write parity (PR 1 phase) | `backend/tests/test_pledges_tokens_dual_write.py` | Every `POST /prepaid/commit` write produces matching new-table row; `sum(prepaid_commit) == sum(pledge) + sum(token_purchase)` |
+| Legacy 410 (PR 2 phase) | `backend/tests/test_prepaid_legacy.py` | `POST /prepaid/commit` returns 410 Gone with pointer to new endpoints |
+
 Every PR must run `pnpm -w test` AND `pytest backend/` AND pass every gate above.
 
 ---
@@ -257,6 +284,9 @@ Every PR must run `pnpm -w test` AND `pytest backend/` AND pass every gate above
 - [ ] Audit middleware engaged (if mutation endpoint) + test added to `test_audit.py` verifying `reason` populated
 - [ ] Cockpit Universal Rules CR-1..CR-9 satisfied (if cockpit) — list which ones touched: ___
 - [ ] Anti-pattern scan: no `host_royalty` in homeowner wallet, no "guaranteed" copy, no common-bus default, no `role='admin'` at data-layer-only check
+- [ ] **If onboarding PR:** no payment fields captured (ADR 0003 — bank/M-Pesa/card/IBAN/PayPal/crypto/payout/routing/account_number)
+- [ ] **If PII-touching PR:** unmask path writes audit row (granted + denied); claim has TTL; `financial` requires step-up
+- [ ] **If pledge/token PR:** matches current ADR 0002 phase (PR 1 dual-writes; PR 2 returns 410 on legacy)
 - [ ] PR < 300 LOC diff
 - [ ] [MISSING.md](docs/MISSING.md) row updated to EXISTS (and stale name refs cleaned)
 
@@ -290,6 +320,12 @@ Every PR must run `pnpm -w test` AND `pytest backend/` AND pass every gate above
 - Force-complete button on DRS/LBRS critical-gate forms (CR-6 — even disabled is wrong; must not render)
 - Settlement code paths that pay out from `E_waste`, `E_unpaid`, or `E_disputed` kWh
 - Backend endpoint that returns ineligible offerings to a financier whose `eligibility_status != 'approved'` for that jurisdiction
+- **Any onboarding form, route, or backend endpoint that captures payment-rail data** (bank account, M-Pesa, card, IBAN, PayPal, crypto, payout, account_number, routing) — auto-reject per ADR 0003. Payment data is point-of-need only.
+- **PII unmask path that doesn't write to `audit_log`** — every unmask attempt (granted or denied) must produce an audit row per ADR 0001
+- **PII claim issued without TTL** — claims must expire (contact 8h, identity 4h, financial 1h)
+- **`pii:view:financial` claim used without step-up auth** — financial-class unmask requires fresh re-authentication within 5-min window
+- **Agent backend code path that requests or holds a `pii:view:*` claim** — agents are PII-blind by design (ADR 0001)
+- **`/prepaid/commit` write after ADR 0002 PR 2 lands** — endpoint must return 410 Gone; any caller still using it is a bug
 
 ---
 

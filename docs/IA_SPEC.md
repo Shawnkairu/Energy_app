@@ -1818,11 +1818,11 @@ Per Scenario F §5 + IA v2 §7.5 (adapted):
 1. **Welcome** — "e.mappa: finance verified local energy infrastructure and earn from measured, monetized energy performance"
 2. **Email/OTP** → verify
 3. **Role select** → "Financier / investor"
-4. **Account creation** — phone/email, secure password/passkey, country of residence, preferred currency, payout setup placeholder
+4. **Account creation** — phone/email, secure password/passkey, country of residence, preferred currency *(no payment-rail capture per ADR 0003)*
 5. **Account type selection** — individual / business / entity / investment club / fund / institutional / watch-only
 6. **Identity verification:**
    - **Individual:** ID/passport, selfie/liveness, address, DOB, tax residency, sanctions screening
-   - **Business/entity:** company registration, directors, beneficial owners, board authorization, tax/PIN, source of funds, authorized signatory, bank/M-Pesa
+   - **Business/entity:** company registration, directors, beneficial owners, board authorization, tax/PIN, source of funds, authorized signatory *(no bank/M-Pesa capture at this step per ADR 0003)*
 7. **Investor eligibility classification** — determine tier (retail / sophisticated / accredited / qualified / professional / institutional / restricted) per jurisdiction rules; do not allow self-selection without verification where law requires evidence
 8. **Risk profile & suitability:**
    - Income/asset band (where allowed)
@@ -1835,13 +1835,14 @@ Per Scenario F §5 + IA v2 §7.5 (adapted):
    - Illiquidity, variable payback, utilization risk, downtime risk, regulatory risk, currency risk, project-specific risk
    - [Accept] CTA (mandatory)
 10. **Jurisdiction gating** — determine which offerings visible based on residence, citizenship/tax status, local rules, currency rails, platform licenses
-11. **Payment rail setup** — connect bank / M-Pesa / escrow / custody account, withdrawal destination, anti-fraud checks
-12. **Investment limits** — set per-investor, per-project, per-period, per-jurisdiction, concentration limits based on eligibility and internal risk
-13. **Education module** — DRS, LBRS, monetized solar, settlement waterfall, utilization, payback ranges, provider vs infrastructure pools, buyout mechanics
-14. **Access decision** → approved / limited retail access / sophisticated-only / entity-approved / watch-only / restricted jurisdiction / documents needed / rejected
-15. → Discover (or watch-only landing)
+11. **Investment limits** — set per-investor, per-project, per-period, per-jurisdiction, concentration limits based on eligibility and internal risk
+12. **Education module** — DRS, LBRS, monetized solar, settlement waterfall, utilization, payback ranges, provider vs infrastructure pools, buyout mechanics
+13. **Access decision** → approved / limited retail access / sophisticated-only / entity-approved / watch-only / restricted jurisdiction / documents needed / rejected
+14. → Discover (or watch-only landing)
 
-**Spec citations:** Scenario F §5 (full onboarding), §5.1 (individual vs business/entity), IA v2 §7.5 (adapted for investor context).
+> **ADR 0003 — payment rail moved to point-of-need.** What imported-specs Scenario F §5 calls onboarding step 11 ("Payment rail setup") is **not** an onboarding step in this build. The financier completes onboarding without bank / M-Pesa / escrow details. The payment-rail setup screen is triggered later, inline in the **first commit flow** — before escrow funds release — at `(financier)/_embedded/payment-rail-setup.tsx`. See ADR 0003 for rationale.
+
+**Spec citations:** Scenario F §5 (full onboarding, with §5 step 11 deferred per ADR 0003), §5.1 (individual vs business/entity), IA v2 §7.5 (adapted for investor context).
 
 ---
 
@@ -2587,6 +2588,8 @@ Every universal rule from imported-specs README + scenario docs maps to UI enfor
 - **No payout from unpaid usage:** settlement never credits any stakeholder from unpaid, uncollected, or unverified kWh (Scenario A §8.5, Scenario C §12, Scenario F §15, AI-native doctrine).
 - **No ownership sale without valuation:** ownership marketplace always shows valuation basis + risk disclosure + no-guarantee copy (Scenario A §8.3, §8.6, Scenario C §11, Scenario E §21).
 - **No energy trading promise before enabled:** "future trading" shown as roadmap only unless utility/regulatory rules and metering support it (Scenario A §9, §9.1).
+- **No payment details at onboarding (ADR 0003):** no role's onboarding form, route, or backend endpoint accepts bank account, M-Pesa, card details, IBAN, PayPal, crypto address, or any other payment-rail identifier. Payment details are collected only at the point of first action that needs them — BO before first host-royalty payout, electrician before first milestone payout, provider before first sale payout, financier before first commit (inline in commit flow), resident inline at first token purchase, homeowner only if/when net-metering or trading is enabled. CI gate `backend/tests/test_no_payment_at_onboarding.py` enforces; lint rule rejects payment-field names in onboarding components. (Overrides Scenario B §4, D §3, E §5, F §5 step 11.)
+- **PII-class JWT claims required for unmask (ADR 0001):** rendering resident phone, national ID, payout account, M-Pesa, etc. requires the admin to hold `pii:view:contact`, `pii:view:identity`, or `pii:view:financial` claim. Claims are time-bounded (8h / 4h / 1h respectively), `financial` requires step-up re-auth at each unmask, all grants + unmasks + denials write `audit_log` rows. Agents hold zero PII claims structurally.
 
 ---
 
@@ -2599,7 +2602,7 @@ Every universal rule from imported-specs README + scenario docs maps to UI enfor
 | **Building Owner** | Welcome, email OTP, verify OTP, role select | Building location, ownership/authority verify, initial profile, roof capture (3-tier), terms preview | `(onboard)/building-owner/` | Must verify building before accessing DRS |
 | **Provider** | Welcome, email OTP, verify OTP, role select | Role fork (panels / infra / both), account type, business or individual verify, inventory snapshot, compatibility pre-check, inventory earning model, training/standards, verification decision | `(onboard)/provider/` | Must pass compatibility pre-check; unknown/unsafe equipment flagged or rejected |
 | **Electrician** | Welcome, email OTP, verify OTP, role select | Personal basics, identity, experience, credentials, background check, e.mappa certification training, practice test, certification decision | `(onboard)/electrician/` | Must complete all training + pass practice test (≥80%, 100% on safety/no-backfeed) to be certified |
-| **Financier** | Welcome, email OTP, verify OTP, role select | Account type, identity/KYC/KYB, investor eligibility classification, risk profile/suitability, regulatory disclosures, jurisdiction gating, payment rail, investment limits, education, access decision | `(onboard)/financier/` | Must pass KYC/KYB + eligibility classification before investing; jurisdiction gated; risk profile enforces product access |
+| **Financier** | Welcome, email OTP, verify OTP, role select | Account type, identity/KYC/KYB, investor eligibility classification, risk profile/suitability, regulatory disclosures, jurisdiction gating, investment limits, education, access decision *(payment rail deferred to first-commit per ADR 0003)* | `(onboard)/financier/` | Must pass KYC/KYB + eligibility classification before investing; jurisdiction gated; risk profile enforces product access; payment rail captured inline at first commit, not in onboarding |
 
 **Universal boundary:** Onboarding proves identity and role eligibility. DRS / LBRS / project-ops gates are separate, not inside onboarding.
 
@@ -2777,6 +2780,7 @@ UI: `cockpit/src/components/queues/QuoteStateColumn.tsx` renders the state pill 
 
 ## Change Log
 
+- **2026-05-16 (v3.3)** — Added 2 doctrine rules to §Doctrine Enforcement: "No payment details at onboarding" (per ADR 0003 — overrides Scenario B §4, D §3, E §5, F §5 step 11) and "PII-class JWT claims required for unmask" (per ADR 0001 stricter variant — time-bounded, step-up for financial, audit on every grant/unmask/denial, agents PII-blind). Removed Scenario F §5 step 11 "Payment rail setup" from Financier onboarding (renumbered 11→14, total 14 steps not 15); added inline note pointing to point-of-need flow at `(financier)/_embedded/payment-rail-setup.tsx`. Onboarding Summary table financier row updated.
 - **2026-05-16 (v3.2)** — Corrected Reference Appendix against verbatim re-read of imported-specs (cells were partly invented in v3.1): A.1 BO state machine triggers (B0/B5/B9), A.2 HO state machine triggers (H0/H5/H8), A.4 DRS now 8 components (regulatory rolled into #8 per spec, not separate 9th), A.5 LBRS test 2 weight 20% not 15% + tests 9/10 combined as single 10% line per spec scoring table, A.6 hardware checklist rewritten from 18 invented items to 26 spec-derived items (Type 2 SPD, total solar output meter, DIN rail spec, CT metering, glands, earth bonding, MCBs, labels added; combiner box + standalone charge controller removed), A.7 edge cases rewritten from 11 (4 invented, 1 wrong) to 8 verbatim from spec §15 rows, A.9 quote states added "Under review" + merged expired+rejected into single "Expired/cancelled" per spec §7.1. A.3, A.8, all 9 spec citations verified correct. TokenHero refs across spec body updated to canonical TokenBalanceHero. Cross-doc task-ID refs (428 BUILD_PLAN + 21 cross-doc) verified 100% resolvable.
 - **2026-05-16 (v3.1)** — Added Reference Appendix per imported-specs coverage audit: A.1–A.9 (initial draft, corrected in v3.2).
 - **2026-05-16 (v3.0)** — Full rewrite to definitive screen inventory, sourced entirely from imported-specs (scenarios A–F, installation/DRS/LBRS, AI-native). Every public-role screen, state, field, flow, gate, component cited. Admin/Cockpit section fully enumerated: 3 mobile tabs (read-only), 9 universal Cockpit rules (CR-1..CR-9), 4 operational dashboards (Command, Stress Test, Settlement Monitor, Alerts), 7 ops decision queues (DRS, LBRS, Provider Verification, Electrician Certification, Financier Eligibility, Doc Review, Counterparties), per-building drill-down (8+1 tabs), 5 AI-native cockpit surfaces (Query Layer, Agent Panels, Audit Log Viewer, Eval Harness, RBAC Console). §8.5 admin-role-visibility gates preserved. Replaces IA_SPEC.md v2 as single source of truth for build phase.
