@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_session
@@ -42,8 +42,7 @@ class RunBody(BaseModel):
     period_start: str = Field(alias="periodStart")
     period_end: str = Field(alias="periodEnd")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.post("/run")

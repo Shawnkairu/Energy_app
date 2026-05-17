@@ -11,8 +11,8 @@ export function PortalKpiBar({
       aria-label="Key metrics"
       style={{ "--portal-kpi-count": items.length } as CSSProperties}
     >
-      {items.map((item) => (
-        <article key={item.label}>
+      {items.map((item, index) => (
+        <article key={`${item.label}-${index}`}>
           <span>{item.label}</span>
           <strong>{item.value}</strong>
           {item.detail ? <small>{item.detail}</small> : null}
@@ -54,8 +54,8 @@ export function PortalLedger({
   return (
     <div className="portal-ledger">
       {title ? <div className="portal-ledger-title">{title}</div> : null}
-      {rows.map((row) => (
-        <div className="portal-ledger-row" key={row.label}>
+      {rows.map((row, index) => (
+        <div className="portal-ledger-row" key={`${row.label}-${index}`}>
           <span>{row.label}</span>
           <strong>{row.value}</strong>
           <small>{row.status ?? row.note}</small>
@@ -73,7 +73,7 @@ export function PortalWorkflow({
   return (
     <section className="portal-workflow" aria-label="Workflow">
       {steps.map((step, index) => (
-        <article key={step.label}>
+        <article key={`${step.label}-${index}`}>
           <em>{String(index + 1).padStart(2, "0")}</em>
           <span>{step.label}</span>
           <strong>{step.detail}</strong>

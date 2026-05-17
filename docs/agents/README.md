@@ -1,3 +1,21 @@
+# Multi-agent sprints
+
+> **ACTIVE:** [SPRINT_KICKOFF.md](SPRINT_KICKOFF.md) — multi-agent coordination protocol for executing [docs/BUILD_PLAN.md](../BUILD_PLAN.md). Read this before starting any phase.
+>
+> **The 4 docs that drive every build PR:**
+> 1. [IA_SPEC.md](../IA_SPEC.md) — definitive screen inventory (*what* exists)
+> 2. [MISSING.md](../MISSING.md) — backlog (*what's missing*, file targets)
+> 3. [BUILD_PLAN.md](../BUILD_PLAN.md) — phased sequence P0..P9 (*what to build next*)
+> 4. [DONE_DEFINITION.md](../DONE_DEFINITION.md) — verification gate (*when is it done*)
+>
+> **Phase 0 mechanical renames landed 2026-05-16** (DrsCard → DRSProgressCard, TokenHero → TokenBalanceHero, verify-phone → verify-otp, admin home.tsx deleted). Remaining P0 work is in [BUILD_PLAN.md §P0](../BUILD_PLAN.md#p0--foundation--cleanup).
+
+> **Superseded:** [COVERAGE_SPRINT.md](COVERAGE_SPRINT.md), [RUNTIME_REALITY_SPRINT.md](RUNTIME_REALITY_SPRINT.md) — their outputs are folded into MISSING.md + BUILD_PLAN.md.
+
+> **Historical:** Day 1 Sprint below — the original build sprint that landed the contract + IA + initial role surfaces.
+
+---
+
 # Day 1 Sprint — 32% to 70% in one day
 
 Three AI coding agents running in parallel, no path collisions, one merge sequence.
@@ -5,7 +23,7 @@ Three AI coding agents running in parallel, no path collisions, one merge sequen
 ## Read in this order
 
 1. [SPRINT_CONTRACT.md](../SPRINT_CONTRACT.md) — frozen types, endpoints, schema, env vars, branch + ownership map. **All three agents start here.**
-2. [PILOT_SCOPE.md](../PILOT_SCOPE.md) — what's pilot vs deferred (email OTP, pledge mode, synthetic data, roof capture)
+2. [SPEC_COMPLIANCE_CHECKLIST.md](SPEC_COMPLIANCE_CHECKLIST.md) — what's pilot vs deferred (email OTP, pledge mode, synthetic data, roof capture)
 3. Your assigned prompt:
    - **Cursor** → [cursor-mobile.md](cursor-mobile.md) — mobile/, 5 subagents
    - **Claude Code** → [claude-backend.md](claude-backend.md) — backend/, packages/, 6 subagents, **also coordinator**

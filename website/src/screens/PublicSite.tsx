@@ -75,7 +75,7 @@ export function PublicSite({
           <p className="eyebrow">What e.mappa sells</p>
           <h2>Solar that behaves like a pledged apartment service.</h2>
           <p>
-            Residents make non-binding pledges during pilot; post-pilot, prepaid cash still gates allocation. Participating apartments ride a dedicated e.mappa solar path through an apartment-level ATS at or near the PAYG meter, with KPLC when the ATS selects grid fallback. The experience stays simple on the surface because readiness, procurement, installation, monitoring, settlement, and ownership attribution stay explicit underneath.
+            Residents make non-binding pledges ; when live, prepaid cash still gates allocation. Participating apartments ride a dedicated e.mappa solar path through an apartment-level ATS at or near the PAYG meter, with KPLC when the ATS selects grid fallback. The experience stays simple on the surface because readiness, procurement, installation, monitoring, settlement, and ownership attribution stay explicit underneath.
           </p>
         </div>
         <div className="product-stack">

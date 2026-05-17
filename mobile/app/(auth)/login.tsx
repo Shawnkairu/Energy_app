@@ -33,7 +33,7 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       await api.requestOtp(normalizedEmail);
-      router.push({ pathname: "/(auth)/verify-phone", params: { email: normalizedEmail } });
+      router.push({ pathname: "/(auth)/verify-otp", params: { email: normalizedEmail } });
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : String(error);
       setStatus(`Could not send code: ${detail} (API: ${__API_BASE_URL ?? "none"})`);

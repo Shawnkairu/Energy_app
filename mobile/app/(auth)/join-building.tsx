@@ -27,8 +27,8 @@ export default function JoinBuilding() {
         <Text style={styles.hint}>Provided by your building owner or property manager.</Text>
         <View style={{ marginTop: 14 }}>
           <PrimaryButton
-            onPress={() => router.push("/(auth)/verify-phone")}
-            accessibilityLabel="Continue to phone verification"
+            onPress={() => router.push("/(auth)/verify-otp")}
+            accessibilityLabel="Continue to OTP verification"
           >
             Continue
           </PrimaryButton>

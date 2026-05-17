@@ -21,16 +21,16 @@ e.mappa is a mobile-first operating system for **apartment-level** energy econom
 - Stakeholder portals stay role-isolated; cockpit/admin remains internal-only.
 - Stakeholder sections are registered in `packages/shared`; every phone-visible non-admin section must have a matching website portal section, while web may add clearly marked web-only depth.
 
-> **Pilot mode** relaxes three of these rules until external integrations land: email OTP instead of SMS, non-binding pledges instead of prepaid cash, and synthesized energy/irradiance instead of on-site meters. See [docs/PILOT_SCOPE.md](docs/PILOT_SCOPE.md) for the authoritative pilot scope and exit criteria.
-
 ## Canonical docs
+
+> **Source of truth:** [docs/imported-specs/](docs/imported-specs/README.md) — scenarios A–F, the DRS/LBRS/go-live installation spec, and the AI-native system design are the only authoritative product docs. Every other doc in the repo must align with them; gaps in code are tracked in [docs/SPEC_COMPLIANCE_CHECKLIST.md](docs/SPEC_COMPLIANCE_CHECKLIST.md), not deferred.
 
 - [docs/imported-specs/](docs/imported-specs/README.md) — anchor product specs (scenarios A–F, DRS/LBRS installation)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — monorepo surfaces and physical/economic model
 - [docs/DRS_FORMULA.md](docs/DRS_FORMULA.md) · [docs/LBRS_FORMULA.md](docs/LBRS_FORMULA.md)
 - [docs/ENERGY_FORMULAS.md](docs/ENERGY_FORMULAS.md) · [docs/SETTLEMENT_AND_PAYBACK.md](docs/SETTLEMENT_AND_PAYBACK.md)
 - [docs/USER_FLOWS.md](docs/USER_FLOWS.md) · [docs/ROLE_MATRIX.md](docs/ROLE_MATRIX.md) · [docs/COMPLIANCE_AND_RISK.md](docs/COMPLIANCE_AND_RISK.md)
-- [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md) — maturity tiers (local → demo → pilot → prod), ops/readiness matrix, deployment gap log (distinct from spec/IA checklist)
+- [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md) — maturity tiers (local → demo → staged launch → production), ops/readiness matrix, deployment gap log (distinct from spec/IA checklist)
 
 ## Commands
 

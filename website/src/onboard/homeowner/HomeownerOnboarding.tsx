@@ -158,9 +158,9 @@ export function HomeownerOnboarding({ onFinished }: { onFinished: () => void | P
         {step === 3 ? (
           <div className="onboard-pane">
             <div className="terms-preview">
-              <p>Terms are pilot-only and non-binding: pledges do not charge money, royalties are simulated until measured settlement goes live, and synthesized data is clearly marked.</p>
-              <label className="terms-check" htmlFor="pilot-terms">
-                <input id="pilot-terms" type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} />
+              <p>Terms for this stage are non-binding: pledges do not charge money, royalties are simulated until measured settlement goes live, and synthesized data is clearly marked.</p>
+              <label className="terms-check" htmlFor="terms-acceptance">
+                <input id="terms-acceptance" type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} />
                 <span>I understand this demo does not charge money or issue live royalties.</span>
               </label>
             </div>

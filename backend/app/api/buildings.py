@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_session
@@ -51,8 +51,7 @@ class CreateBuildingBody(BaseModel):
     occupancy: float | None = None
     kind: str = "apartment"
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.post("")
@@ -101,8 +100,7 @@ class SetRoofBody(BaseModel):
     area_m2: float | None = Field(default=None, alias="areaM2")
     source: str
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.post("/{building_id}/roof")

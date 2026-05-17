@@ -51,7 +51,7 @@ export function FinancierScreenShell({
   showActivity?: boolean;
   /** Tesla / Enphase system-overview: full-bleed project pulse, hide document header + hero card. */
   hideChrome?: boolean;
-  /** Screen-level pilot / disclosure banner (e.g. Discover per PILOT_SCOPE §2–3). */
+  /** Screen-level pilot / disclosure banner (e.g. Discover per IA_SPEC.md §3 (Financier Discover screen)). */
   pilotSlot?: ReactNode;
   children: (home: LoadedRoleHome) => ReactNode;
 }) {

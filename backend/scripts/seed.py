@@ -39,6 +39,7 @@ BUILDINGS = [
         "occupancy": 0.83,
         "kind": "apartment",
         "stage": "live",
+        "invite_code": "NYERI1",
     },
     {
         "id": _det_uuid("karatina-court"),
@@ -50,6 +51,7 @@ BUILDINGS = [
         "occupancy": 0.62,
         "kind": "apartment",
         "stage": "qualifying",
+        "invite_code": "KARAT1",
     },
     {
         "id": _det_uuid("kahawa-sukari-1"),
@@ -61,6 +63,7 @@ BUILDINGS = [
         "occupancy": 1.0,
         "kind": "single_family",
         "stage": "listed",
+        "invite_code": "KAHAW1",
     },
 ]
 
@@ -146,6 +149,10 @@ def _assert_seed_admins_allowed(user_specs: list[dict]) -> None:
 async def _ensure_building(session, spec: dict) -> Building:
     existing = await session.get(Building, spec["id"])
     if existing:
+        # Backfill invite_code on older seeded rows that predate the column being populated.
+        if existing.invite_code is None and spec.get("invite_code"):
+            existing.invite_code = spec["invite_code"]
+            await session.flush()
         return existing
     b = Building(
         id=spec["id"],
@@ -157,6 +164,7 @@ async def _ensure_building(session, spec: dict) -> Building:
         occupancy=Decimal(str(spec["occupancy"])),
         kind=spec["kind"],
         stage=spec["stage"],
+        invite_code=spec.get("invite_code"),
         data_source="synthetic",
     )
     session.add(b)

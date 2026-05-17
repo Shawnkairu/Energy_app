@@ -16,9 +16,10 @@ On **`siteKind: homeowner`**, **stakeholder readiness** is satisfied when **`sta
 | `review` | No critical failures, but warnings (e.g. utilization watch band) |
 | `blocked` | One or more critical failures (missing BOM, low utilization, unpaid labor path, etc.) |
 
-## Demand / pledges (pilot)
+## Demand and pledge status (capacity queue)
 
-- **Pledges are not purchases** and do not create usable kWh.
+- **Pledges are non-binding demand signals** and do not create usable kWh, reserved slots, or service guarantees (scenario A §5).
+- Residents move through the capacity queue states defined in scenario A §6.2: `interested` → `pledged` → `capacity_review` → `capacity_cleared` → `queued` → `waitlisted` → `activated`.
 - `hasResidentDemandSignal` captures demand evidence; `projectedUtilization < 0.6` is a **critical** economic block for apartments.
 
 ## Code

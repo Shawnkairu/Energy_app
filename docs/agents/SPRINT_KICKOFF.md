@@ -1,0 +1,216 @@
+# Sprint Kickoff — Multi-Agent Coordination Protocol
+
+> Generated 2026-05-16. Drives the parallel build of [docs/BUILD_PLAN.md](../BUILD_PLAN.md) across three AI coding agents (Cursor mobile, Codex web, Claude backend) + one human coordinator. Read this before starting any phase.
+>
+> **Pace: weekend MVP.** 312 artifacts / 2 days / 3 agents = ~52 artifacts per agent per day = ~6–10 min per artifact end-to-end. **Mechanical pace only.** Ships spec-compliant structure with doctrine guards; no design pass, shallow tests, deferred hardening. Review must happen same-hour or agents stall. See [BUILD_PLAN.md §Phase map at a glance](../BUILD_PLAN.md#phase-map-at-a-glance) for the hour-by-hour calendar and the §What the weekend MVP delivers section for what ships vs what defers.
+
+## The 4 docs
+
+| Doc | Purpose | Update cadence |
+|---|---|---|
+| [IA_SPEC.md](../IA_SPEC.md) | Definitive screen inventory — *what* exists | Frozen unless spec changes |
+| [MISSING.md](../MISSING.md) | Backlog — *what's missing* | Re-audit after every phase |
+| [BUILD_PLAN.md](../BUILD_PLAN.md) | Sequence — *what to build next* | Mark tasks DONE inline |
+| [DONE_DEFINITION.md](../DONE_DEFINITION.md) | Verification gate — *when is it done* | Frozen unless rubric changes |
+
+Every PR cites: spec section (IA_SPEC) + backlog row (MISSING) + plan task ID (BUILD_PLAN) + done gates (DONE_DEFINITION).
+
+## Agent roster
+
+| Agent | Domain | Owns | Reads |
+|---|---|---|---|
+| **Cursor mobile** | `mobile/` | All `mobile/app/(role)/*`, `mobile/components/{shared,role}/*`, mobile tests | shared/, packages/, backend types |
+| **Codex web** | `website/`, `cockpit/`, infra | All `website/src/*`, `cockpit/src/*`, deployment configs | shared/, packages/, backend types |
+| **Claude backend** | `backend/`, `packages/shared/` | All `backend/app/*`, `backend/alembic/*`, `packages/shared/src/*`, backend tests + coordinator role | mobile/web for verification only |
+
+**Coordinator role.** Claude backend doubles as the sprint coordinator:
+- Owns the type contract in `packages/shared/src/types.ts` — never let it drift mid-sprint
+- Runs `scripts/audit-missing.ts` at end of each phase to publish the new tally
+- Holds merge authority on `main` (no agent self-merges)
+- Resolves cross-agent conflicts (e.g., what's the API shape for `/residents/{id}/queue-position`)
+
+## Pre-flight dev environment status (2026-05-16 smoke test — final)
+
+| Component | Status | Notes |
+|---|---|---|
+| Postgres 16 | ✅ Running, `emappa` DB + `emappa` role exist | macOS Homebrew service |
+| `backend/.env` | ✅ Created from `.env.example` | review `EMAPPA_JWT_SECRET` before any non-dev deploy |
+| Website dev (`npm run dev:website`) | ✅ Boots on `http://127.0.0.1:5173` | — |
+| Cockpit dev (`npm run dev:cockpit`) | ✅ Boots on `http://127.0.0.1:5174` | — |
+| Mobile dev (`npm run dev:mobile`) | ✅ Boots on `:8081` (or `:8082` if main checkout already uses 8081) | — |
+| **Backend Python venv** | ✅ **Fixed via `uv`** | Homebrew `python@3.12` pyexpat was broken (linked to outdated system `libexpat`). Resolved by provisioning Python through [astral.sh/uv](https://docs.astral.sh/uv/), which ships its own self-contained Python builds. See recipe below. |
+| Backend boot (`uvicorn`) | ✅ `/health` returns `{"status":"ok","db":"ok"}` on `:8765` | — |
+| Backend migrations (`alembic upgrade head`) | ✅ At `0002_onboarding_extensions`; 12 tables present including `audit_log` | — |
+| Backend tests (`npm run test:backend`) | ✅ 32/32 pass | — |
+
+### Backend dev recipe (the fix, codified)
+
+If you ever wipe `backend/.venv` or move to a fresh machine:
+
+```sh
+# One-time: install uv if not present
+brew install uv
+
+# One-time per repo: provision Python + venv
+cd backend
+uv python install 3.12              # downloads uv-managed CPython 3.12
+uv venv --python 3.12 .venv         # creates .venv against uv Python
+uv pip install --python .venv/bin/python -r requirements.txt
+
+# Daily: just use the venv
+.venv/bin/uvicorn app.main:app --reload    # boot backend
+.venv/bin/alembic upgrade head             # apply migrations
+.venv/bin/python -m pytest tests -q        # run tests
+```
+
+Or from repo root: `npm run dev:backend`, `npm run migrate`, `npm run test:backend` — these all use `backend/.venv/bin/...`.
+
+### Why not Docker?
+
+Docker Desktop is the documented alternative (Dockerfile + `docker-compose.yml` in repo) and works fine if you prefer it. `uv` was chosen here because: (a) lighter (one Homebrew package vs Docker Desktop's ~600 MB GUI app), (b) faster cold start, (c) keeps existing `npm run` scripts working unchanged.
+
+---
+
+## Branch + merge model
+
+Same model for both weekend and 2-week pace. Single source of truth: `main`.
+
+### Branches
+
+```
+main                                        (protected; only coordinator merges)
+└── phase/P{N}-{theme}                      (one branch per phase, lives ~1 day to ~1 sprint)
+    └── task/P{N}.{g}.{t}-short-name        (one branch per task, lives ~30 min to a few hours)
+```
+
+Examples:
+- `phase/P0-foundation` ← `task/P0.2.1-building-availability-state-pill`
+- `phase/P1-resident` ← `task/P1.1.1-resident-home-wire-state-pills`
+- `phase/P7-cockpit` ← `task/P7.4.1-drs-queue-page`
+
+### Per-agent worktrees (avoid stomping)
+
+Each agent works in its own git worktree off `main`, **not** in the main checkout:
+
+```sh
+# Coordinator (you) sets these up once
+git worktree add ../emappa-mobile  main
+git worktree add ../emappa-web     main
+git worktree add ../emappa-backend main
+```
+
+- **Cursor mobile** opens `../emappa-mobile/` and only touches `mobile/`, `mobile/components/shared/` (when its task is in P0.2), and `packages/shared/` types it needs (with coordinator approval).
+- **Codex web** opens `../emappa-web/` and only touches `website/` + `cockpit/`.
+- **Claude backend** opens `../emappa-backend/` and only touches `backend/`, `packages/shared/src/types.ts` (owner), `backend/alembic/`.
+
+Each agent does `git fetch && git rebase origin/main` at the start of each task.
+
+### Merge authority
+
+- **Tasks merge into phase branches** by their owner agent (PR self-merged after CI green; review optional for trivial primitives).
+- **Phase branches merge into `main`** only by coordinator (Claude backend), and only after the phase verification gate from [BUILD_PLAN.md](../BUILD_PLAN.md) passes.
+- **Tag** `phase-P{N}-done-YYYY-MM-DD` after each phase merge.
+
+### What this looks like Saturday morning
+
+```
+09:00  Coordinator creates `phase/P0.0-prefoundation` off main + 3 worktrees if not yet set up
+09:00  All 3 agents fetch, claim P0.0 sub-tasks, push to `phase/P0.0-prefoundation`
+10:00  Coordinator merges `phase/P0.0-prefoundation` → main; tag `phase-P0.0-done`
+10:00  Coordinator creates `phase/P0-foundation`; agents rebase + start P0.1/P0.2/P0.3
+12:30  Coordinator merges P0 → main
+13:00  3 agents create phase/P1-resident, phase/P2-homeowner, phase/P3-bo in their worktrees in parallel
+... etc
+```
+
+### Failure modes
+
+- **Phase branch goes red mid-day:** coordinator drops the offending task PR back to in-progress; phase branch stays open, agent fixes + re-PRs.
+- **Two agents need the same file in different phases:** they each PR to their own phase branch, coordinator resolves the merge conflict at phase-merge time (rare because phases are sequential at the merge layer even when parallel at the work layer).
+- **Coordinator unavailable:** task PRs queue up on phase branches; merge to `main` waits. No one bypasses this — bypass breaks audit.
+
+---
+
+## Phase kickoff (30 min)
+
+Run this before any agent picks up a phase task:
+
+1. **Read** the phase section of [BUILD_PLAN.md](../BUILD_PLAN.md) end-to-end (e.g., P1 = 6 sub-sections).
+2. **Partition** tasks: each agent claims by Owner column. Conflicts (a task with no Owner or with multiple owners) — coordinator decides.
+3. **Branch**: each agent creates a feature branch off `phase/P{N}-{theme}`:
+   - `phase/P1-resident` (Cursor mobile)
+   - `phase/P1-resident-web` (Codex web)
+   - `phase/P1-resident-backend` (Claude backend)
+4. **Type-contract lock** (only when a phase introduces new shared types):
+   - Claude backend adds types to `packages/shared/src/types.ts` first, in a *separate* PR
+   - Cursor / Codex rebase on that before starting
+5. **Surface dependencies**: walk the [BUILD_PLAN appendix](../BUILD_PLAN.md#appendix-dependency-graph) and confirm every shared primitive (P0.2) used in this phase is already built. If not, that's a phase blocker — escalate to coordinator.
+6. **Estimate**: each agent commits to a sub-set with a target end-of-week.
+
+## Daily flow
+
+Each agent independently:
+1. Picks an unassigned task from their column in the phase
+2. Creates `task/P{N}.{group}.{task}-short-name` branch off their phase branch
+3. Implements per [DONE_DEFINITION.md](../DONE_DEFINITION.md)
+4. PRs against their phase branch; coordinator + one peer review
+5. Squash-merges; marks the row **DONE YYYY-MM-DD** inline in BUILD_PLAN.md
+
+Aim for ≤300 LOC diff per PR (was 600 — tightened for 2-week pace). One PR per task in BUILD_PLAN. Larger work splits into multiple tasks so review stays fast.
+
+## Conflict & contract drift handling
+
+- **Two agents need the same shared component** → first builder ships, second imports.
+- **API shape drift mid-phase** → STOP. Coordinator updates `packages/shared/src/types.ts` first, both agents rebase.
+- **Spec ambiguity** → file an issue tagged `spec:ambiguous`, coordinator decides + amends IA_SPEC + commits the amendment.
+- **Backend renames a field** → coordinator broadcasts the change; mobile/web rebase before continuing.
+- **PR fails CI on someone else's code** → don't merge through it; coordinator triages.
+
+## End-of-phase gate
+
+Before merging `phase/P{N}-*` branches into `main`:
+
+1. **Verification checklist** per [DONE_DEFINITION.md](../DONE_DEFINITION.md):
+   - `pnpm -w typecheck` + `pnpm -w lint` + `pnpm -w build` green
+   - `pytest backend/` green
+   - All CI gates from MISSING.md §CI gates that apply to this phase pass
+   - For role phases: runtime walk of the role's mobile + web surfaces (Cursor + Codex demo)
+   - For cockpit phase: runtime walk of every queue + drill-down + agent panel
+2. **MISSING.md re-audit**: `scripts/audit-missing.ts` writes a fresh tally. Phase passes if tally meets the expected trajectory in BUILD_PLAN §Re-auditing MISSING.md.
+3. **Coordinator merges** in order: backend → mobile → web (mobile rebases on backend; web rebases on both).
+4. **Tag**: `git tag phase-P{N}-done-YYYY-MM-DD`.
+
+## Parallel phase execution (post-P0)
+
+Once P0 lands, phases P1..P6 run in parallel because each touches a different role's `(role)/*` path. **Cross-role shared primitives are owned by P0** — if a P1..P6 task needs a shared primitive that wasn't built in P0.2, escalate; don't build a per-role copy.
+
+The shared resources to watch:
+- `packages/shared/src/types.ts` — only Claude backend writes here
+- `mobile/components/shared/*` — only the phase that introduces it writes; others import
+- `backend/app/models/*` — coordinator merges schema PRs serially to avoid Alembic conflicts
+- Alembic version chain — Claude backend manages; no parallel migrations without coordination
+
+## Failure modes & responses
+
+| Failure | Response |
+|---|---|
+| Type-check fails post-merge | Coordinator reverts; original PR author re-PRs with fix |
+| Phase verification gate fails | Phase stays open; failing artifacts go back to in-progress |
+| Spec turns out to be wrong | Amend IA_SPEC.md (with change log entry); re-audit MISSING.md; affected tasks may move phases |
+| Two agents shipped duplicate components | Coordinator picks the spec-aligned one, deletes the other, refactors importers |
+| Agent missed a dependency from BUILD_PLAN appendix | Halt; build the dependency first; resume |
+| Cross-package change touched all 3 agents | Coordinator orchestrates: backend ships first, then mobile, then web; no parallel work on the touched surface |
+
+## Communication
+
+- **All decisions** live in commit messages or PR descriptions — no out-of-band channels become source of truth.
+- **Spec amendments** ship as PRs to `docs/IA_SPEC.md` with a change log entry; never edit silently.
+- **Status updates** at end-of-day: agent posts a one-line "P{N}.{g}.{t} done | P{N}.{g}.{t} in-progress | blocked on X".
+
+## When to update this doc
+
+- Roster change (new agent, agent retires)
+- Phase model change (e.g., we introduce a P10)
+- Coordination process breaks down (e.g., type-contract drift happens twice → update the lock protocol)
+
+**END SPRINT KICKOFF**

@@ -1,5 +1,14 @@
 # Cursor — Mobile sprint prompt (Day 1, branch: `sprint/mobile`)
 
+> ⚠️ **SUPERSEDED 2026-05-16.** Historical Day-1 sprint contract — do not follow this for the active build. Use instead:
+> - [SPRINT_KICKOFF.md](SPRINT_KICKOFF.md) — coordination protocol
+> - [BUILD_PLAN.md](../BUILD_PLAN.md) — your assignments are the "Cursor mobile" owner column (~190 tasks across P0..P9)
+> - [MISSING.md](../MISSING.md) — current backlog state
+> - [DONE_DEFINITION.md](../DONE_DEFINITION.md) — verification gates per artifact
+> - [IA_SPEC.md](../IA_SPEC.md) v3.2 — canonical screen inventory (includes Reference Appendix A.1–A.9)
+>
+> **Stale references below** (use the canonical names instead): `TokenHero` → `TokenBalanceHero`, `DrsCard` → `DRSProgressCard`, `compare-today.tsx` → `compare-bill.tsx`, `(building-owner)/compare-today.tsx` → moved per P3.2.2.
+
 You are Cursor working on the e.mappa monorepo. Your single mission: rebuild the mobile app to match [docs/IA_SPEC.md](../IA_SPEC.md) exactly — six roles, max 5 tabs each, zero redundancy, zero dead buttons, zero mock data, real onboarding flows, working email-OTP login, working pledge flow, working roof capture.
 
 You work **in parallel** with two other agents (Claude Code on backend/shared, Codex on cockpit/website/infra). The contract is at [docs/SPRINT_CONTRACT.md](../SPRINT_CONTRACT.md). The IA is at [docs/IA_SPEC.md](../IA_SPEC.md). **Read both completely before writing anything.**
@@ -21,7 +30,7 @@ git checkout -b sprint/mobile
 Required reading before any code:
 - `docs/SPRINT_CONTRACT.md` — types, endpoints, schema. Frozen.
 - `docs/IA_SPEC.md` — screen-by-screen IA. Frozen.
-- `docs/PILOT_SCOPE.md` — pilot rules: email OTP, pledge mode, synthetic data
+- `docs/SPEC_COMPLIANCE_CHECKLIST.md` — product rules: email OTP, pledge mode, synthetic data
 - Current state: `mobile/app/_layout.tsx`, `mobile/app/(auth)/*`, every `mobile/app/(*)/_layout.tsx`
 - `packages/api-client/src/index.ts` — Claude Code is updating this in parallel; assume it will match the contract by merge time
 
@@ -135,7 +144,7 @@ Push these as no-op-but-typed stubs first thing:
 - `mobile/lib/useApiData.ts` — `useApiData<T>(fetcher): { data, loading, error, refetch }`
 - `mobile/lib/geo.ts` — `polygonAreaM2(coords)` (can stub-return 0; finalize later)
 - `mobile/components/AuthContext.tsx` — Context with `{ session, login, requestOtp, logout, loading }`
-- `mobile/components/PilotBanner.tsx` — yellow banner component with copy from PILOT_SCOPE.md
+- `mobile/components/PilotBanner.tsx` — yellow banner component with copy from SPEC_COMPLIANCE_CHECKLIST.md
 - `mobile/components/SyntheticBadge.tsx` — pill `<SyntheticBadge source={'synthetic'|'measured'} />`
 - `mobile/components/ProjectCard.tsx` — Airbnb-style card; props: `ProjectCard` from shared types + `onPress`
 - `mobile/components/PortfolioRow.tsx` — Robinhood-style row; props: `FinancierPosition` + `onPress`

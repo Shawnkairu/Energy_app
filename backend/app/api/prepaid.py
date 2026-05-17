@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.session import get_session
@@ -38,8 +38,7 @@ class CommitBody(BaseModel):
     building_id: str = Field(alias="buildingId")
     amount_kes: float = Field(alias="amountKes", gt=0)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.post("/commit")

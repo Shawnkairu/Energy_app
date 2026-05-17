@@ -17,7 +17,7 @@ export function SyntheticBadge({ source = "synthetic" }: { source?: string }) {
   return <span className={`synthetic-badge source-${source}`}>{source} data</span>;
 }
 
-export function TokenHero({ project, title = "Pledge wallet", disabled = false }: { project: ProjectedBuilding; title?: string; disabled?: boolean }) {
+export function TokenBalanceHero({ project, title = "Pledge wallet", disabled = false }: { project: ProjectedBuilding; title?: string; disabled?: boolean }) {
   const view = project.roleViews.resident;
   return (
     <PortalPanel className={disabled ? "is-disabled" : ""} eyebrow="Pledges" title={title}>
@@ -31,7 +31,7 @@ export function TokenHero({ project, title = "Pledge wallet", disabled = false }
       <PortalWorkflow
         steps={[
           { label: "Create pledge", detail: disabled ? "Available after project goes live." : "Open pledge entry with amount presets.", status: disabled ? "locked" : "ready" },
-          { label: "Allocate solar", detail: "Solar-first allocation only happens against confirmed pledges.", status: "pilot" },
+          { label: "Allocate solar", detail: "Solar-first allocation only happens against confirmed pledges.", status: "demand-signal only" },
           { label: "Fallback", detail: "Grid usage stays separate from the pledge wallet.", status: "protected" },
         ]}
       />
@@ -189,8 +189,8 @@ export function ProfileBlocks({ user, roleLabel, extra }: { user: User; roleLabe
       <div className="portal-two-col">
         <PortalPanel eyebrow="Settings" title="Preferences">
           <PortalLedger rows={[
-            { label: "Notifications", value: "Email", note: "pilot default" },
-            { label: "Units", value: "KES / kWh", note: "Kenya pilot" },
+            { label: "Notifications", value: "Email", note: "default" },
+            { label: "Units", value: "KES / kWh", note: "Kenya" },
             { label: "Language", value: "English", note: "more later" },
           ]} />
         </PortalPanel>

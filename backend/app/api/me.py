@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -50,8 +50,7 @@ class SelectRoleBody(BaseModel):
     )
     role: str = Field(..., alias="role")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.post("/select-role")
@@ -119,8 +118,7 @@ class OnboardingCompleteBody(BaseModel):
         description="Optional; must never be 'admin' (rejected per IA_SPEC §8.5).",
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 @router.post("/onboarding-complete")

@@ -33,7 +33,7 @@ main                           ← starting commit, frozen
 | `package.json` (root) | Codex | — | scripts only |
 | `docker-compose.yml` | Codex | Claude Code may add backend env vars | |
 | `docs/SPRINT_CONTRACT.md` | Claude Code | read-only | this file |
-| `docs/PILOT_SCOPE.md` | Claude Code | read-only | |
+| `docs/SPEC_COMPLIANCE_CHECKLIST.md` | Claude Code | read-only | |
 | `ROADMAP.md`, `TEST.md`, `README.md` | nobody during sprint | — | updated post-merge |
 
 ### Conflict avoidance rules
@@ -52,7 +52,7 @@ Migration `0001_pilot_baseline` creates everything below. Owned by Claude Code; 
 ### users
 - `id uuid pk default gen_random_uuid()`
 - `email text not null unique`
-- `phone text` (nullable, post-pilot)
+- `phone text` (nullable, tracked in SPEC_COMPLIANCE_CHECKLIST)
 - `role text not null check (role in ('resident','homeowner','building_owner','provider','financier','electrician','admin'))`
 - `business_type text check (business_type in ('panels','infrastructure','both'))` — only meaningful when `role='provider'`; nullable otherwise
 - `building_id uuid references buildings(id)` (nullable; admins/financiers/electricians/providers may not be tied to one). Required for `homeowner` (the building they own and live in).
@@ -197,7 +197,7 @@ GET  /roles/{role}/home → RoleHome    (matches existing api-client shape)
 POST /prepaid/commit
      body: { building_id: string, amount_kes: number }
      → 200 { commitment: PrepaidCommitment }
-     (pilot: payment_method='pledge', status='confirmed' immediately)
+     (current state: payment_method='pledge', status='confirmed' immediately)
 GET  /prepaid/{building_id}/balance → { confirmed_total_kes: number }
 GET  /prepaid/{building_id}/history → PrepaidCommitment[]
 
@@ -210,7 +210,7 @@ POST /drs/{building_id}/update            (admin/electrician only)
 POST /settlement/run                       (admin only)
      body: { building_id: string, period_start: ISO, period_end: ISO }
      → 200 { period: SettlementPeriod }
-     (pilot: always sets simulation=true)
+     (current state: always sets simulation=true)
 GET  /settlement/{building_id}/latest → SettlementPeriod
 GET  /settlement/{building_id}/history → SettlementPeriod[]
 
@@ -294,7 +294,7 @@ POST /electricians/{user_id}/certifications  body: { name, issuer, doc_url, expi
 GET  /financiers/{user_id}/portfolio → FinancierPosition[]
 POST /financiers/{user_id}/pledge-capital
      body: { building_id, amount_kes }
-     → { position: FinancierPosition }   (pilot: simulation=true on resulting milestone)
+     → { position: FinancierPosition }   (current state: simulation=true on resulting milestone)
 
 # Wallet (universal — interprets per role server-side)
 GET  /wallet/{user_id}/balance       → { kes: number, breakdown: { ... role-specific ... } }

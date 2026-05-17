@@ -2,11 +2,9 @@
 
 > This document is the single source of truth for any coding agent (Cursor, Claude Code, Codex) working on e.mappa. Follow the steps in order. Do not skip ahead. Each step has acceptance benchmarks — do not mark a step complete until every benchmark passes. If you are unsure about a design decision, refer to the Core Rules section.
 
-> **Canonical product model:** [docs/imported-specs/](docs/imported-specs/README.md) + [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). DRS/LBRS use **critical-gate completion** (not 80% score). Public role is **electrician** (not installer). Settlement is from **E_sold** only.
+> **Source of truth:** [docs/imported-specs/](docs/imported-specs/README.md) (scenarios A–F, DRS/LBRS/go-live installation spec, AI-native system design) is the only authoritative product spec. Where this roadmap conflicts with imported specs, imported specs win. DRS/LBRS use **critical-gate completion** (not 80% score). Public role is **electrician** (not installer). Settlement is from **E_sold** only.
 
-> **Pilot mode (READ THIS FIRST):** [docs/PILOT_SCOPE.md](docs/PILOT_SCOPE.md) is the authoritative scope for the current pilot release and overrides any conflicting guidance below. The pilot uses **email OTP** (no SMS), **pledge mode** (no real money / no M-Pesa), and **synthesized solar generation, load, and irradiance** plus **owner-traced roof polygons** (no on-site meters, no Google Solar API). Long-term doctrine in the Core Rules is preserved; pilot carve-outs are temporary with explicit exit criteria.
-
-> **Deployment maturity (ship/ops vs spec/IA):** [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md) defines tiers (local prototype → synthetic demo → staged pilot → production), a readiness matrix, and a gap log — complementary to [docs/SPEC_COMPLIANCE_CHECKLIST.md](docs/SPEC_COMPLIANCE_CHECKLIST.md).
+> **Field-level conformance:** [docs/SPEC_COMPLIANCE_CHECKLIST.md §3.2](docs/SPEC_COMPLIANCE_CHECKLIST.md) tracks per-role doc-to-code gaps. Gaps are closed forward, not deferred. Deployment maturity per environment lives in [docs/DEPLOYMENT_AND_READINESS.md](docs/DEPLOYMENT_AND_READINESS.md).
 
 ## North Star
 
@@ -68,7 +66,7 @@ emappa/
 │   │   ├── index.tsx           # Landing screen — "Sign in to choose your role"
 │   │   ├── _layout.tsx         # Root Stack with role groups
 │   │   ├── (auth)/
-│   │   │   ├── login.tsx       # Pilot phone login (hardcoded, no real auth)
+│   │   │   ├── login.tsx       # Dev phone login (hardcoded, no real auth)
 │   │   │   └── role-select.tsx # 7-role selection → routes to role home
 │   │   ├── (resident)/        # Tabs: home, energy, ownership, profile
 │   │   ├── (owner)/           # Tabs: home, drs, deployment, earnings
@@ -387,7 +385,7 @@ The api-client already supports remote mode. When `configureApiClient({ baseUrl:
 ## Step 3: Authentication (Pilot Email OTP Flow)
 
 ### Context
-Currently login is hardcoded. For the pilot, we use **email-based OTP** — no SMS, no carrier dependencies. Backend generates a 6-digit code with a 10-minute TTL and sends it via a transactional email provider (Resend by default; AWS SES fallback). Phone/SMS OTP is deferred until carrier sender ID approval — see [docs/PILOT_SCOPE.md §1](docs/PILOT_SCOPE.md).
+Currently login is hardcoded. We use **email-based OTP** — no SMS, no carrier dependencies. Backend generates a 6-digit code with a 10-minute TTL and sends it via a transactional email provider (Resend by default; AWS SES fallback). Phone/SMS OTP is deferred until carrier sender ID approval .
 
 ### Actions
 
@@ -421,7 +419,7 @@ Currently login is hardcoded. For the pilot, we use **email-based OTP** — no S
 - [ ] Mobile: app remembers session across restarts (SecureStore)
 - [ ] Mobile: logout clears token and returns to login screen
 
-### Deferred (post-pilot)
+### Required (not yet built)
 - SMS OTP via Africa's Talking or Twilio (requires Safaricom sender ID approval)
 - Phone-as-primary-identifier; phone moves to optional secondary contact
 
@@ -430,16 +428,16 @@ Currently login is hardcoded. For the pilot, we use **email-based OTP** — no S
 ## Step 4: Pledge Flow (End-to-End, Pilot Mode)
 
 ### Context
-This is the first real user flow. A resident opens the app, sees their building, and **pledges** a non-binding KES amount toward solar. The pledge affects the building's DRS score and settlement projections exactly as prepaid would, but no money moves. M-Pesa, payouts, and reconciliation are deferred until post-pilot — see [docs/PILOT_SCOPE.md §2](docs/PILOT_SCOPE.md).
+This is the first real user flow. A resident opens the app, sees their building, and **pledges** a non-binding KES amount toward solar. The pledge affects the building's DRS score and settlement projections exactly as prepaid would, but no money moves. M-Pesa, payouts, and reconciliation are tracked in SPEC_COMPLIANCE_CHECKLIST.md .
 
 ### Actions
 
 #### 4.1 Backend: pledge endpoints
-- `POST /prepaid/commit` — accepts `{building_id, amount_kes}`, creates commitment with `payment_method='pledge'`, `status='confirmed'` immediately (no two-step confirm needed in pilot mode)
+- `POST /prepaid/commit` — accepts `{building_id, amount_kes}`, creates commitment with `payment_method='pledge'`, `status='confirmed'` immediately (no two-step confirm needed)
 - `GET /prepaid/{building_id}/balance` — returns total confirmed pledges for the building
 - `GET /prepaid/{building_id}/history` — returns list of all pledges with status
 
-The `prepaid_commitments` table gains a `payment_method` column with values `'pledge'` (pilot) or `'mpesa'` (post-pilot). Settlement and DRS treat both identically; only the resident UI differs.
+The `prepaid_commitments` table gains a `payment_method` column with values `'pledge'` or `'mpesa'`. Settlement and DRS treat both identically; only the resident UI differs.
 
 #### 4.2 Backend: pledges affect projections
 - When pledged total changes, the building's DRS score must be recalculated
@@ -467,12 +465,12 @@ The `prepaid_commitments` table gains a `payment_method` column with values `'pl
 - [ ] Settlement runs against pledged building and tags `simulation=true`
 - [ ] Mobile: resident can tap "Pledge solar" → see amount input → confirm → see updated balance
 - [ ] Mobile: pilot banner appears on every pledge / wallet screen
-- [ ] Mobile: no UI string says "charge", "pay", or "top up" in pilot mode
+- [ ] Mobile: no UI string says "charge", "pay", or "top up"
 - [ ] Mobile: home screen hero metric updates after new pledge
 - [ ] Domain test: pledge of 0 KES is rejected (400)
 - [ ] Domain test: pledge for non-existent building returns 404
 
-### Deferred (post-pilot)
+### Required (not yet built)
 - M-Pesa Daraja STK push, paybill, callback handling
 - Two-step pending → confirmed flow gated on real cash receipt
 - Refunds, partial commitments, dispute flows
@@ -483,7 +481,7 @@ The `prepaid_commitments` table gains a `payment_method` column with values `'pl
 ## Step 4.5: Synthetic Energy Data (Pilot Mode)
 
 ### Context
-The pilot ships with no on-site meters. Solar generation, load profiles, and irradiance are synthesized server-side from public APIs and treated as the canonical source. Every chart fed by synthetic data must be tagged so we never confuse pilot demos with measured truth. See [docs/PILOT_SCOPE.md §3](docs/PILOT_SCOPE.md).
+The system operates with no on-site meters. Solar generation, load profiles, and irradiance are synthesized server-side from public APIs and treated as the canonical source. Every chart fed by synthetic data must be tagged so we never confuse synthetic demos with measured truth.
 
 ### Actions
 
@@ -495,7 +493,7 @@ The pilot ships with no on-site meters. Solar generation, load profiles, and irr
 - **NREL PVWatts v8** for hourly AC generation per array (free, no key needed). Cache TMY output per `(lat, lon, kw, tilt, azimuth)` for 90 days.
 - **NASA POWER** for historical irradiance back-fill (free, no key). Hourly `ALLSKY_SFC_SW_DWN`.
 - **Open-Meteo Solar Radiation** for live "today's sun" UI cards (free, no key, no signup). Cache per lat/lon for 30 minutes.
-- Wrap each provider behind a `SolarDataAdapter` interface so a real meter feed can replace it post-pilot.
+- Wrap each provider behind a `SolarDataAdapter` interface so a real meter feed can replace it once on-site meters are wired.
 
 #### 4.5.3 Backend: load profile generator
 - Lift the four resident archetypes (`basic_lighting`, `lighting_tv`, `emerging_appliance`, `microbiz_kiosk`) from `Simulation/files/customers.py` into `packages/shared`
@@ -518,7 +516,7 @@ The pilot ships with no on-site meters. Solar generation, load profiles, and irr
 - [ ] Settlement run on synthetic data tags `data_source='synthetic'` on the resulting `SettlementPeriod`
 - [ ] Domain test: replacing the `SolarDataAdapter` with a stub returns identical projector output (interface integrity)
 
-### Deferred (post-pilot)
+### Required (not yet built)
 - On-site IoT meter ingestion (Modbus / MQTT / Helium)
 - Solcast or commercial irradiance APIs for higher-resolution forecasts
 - Reconciliation between synthetic projection and measured truth (requires hardware first)
@@ -528,7 +526,7 @@ The pilot ships with no on-site meters. Solar generation, load profiles, and irr
 ## Step 5.5: Roof Footprint Capture (Pilot Mode)
 
 ### Context
-Building owners list a building by drawing or confirming the roof polygon. Roof area in m² constrains maximum array kWp at design time, feeds DRS scoring, and renders a credible roof outline on the building card. **Google Solar API does not cover Kenya** — we use a three-tier waterfall instead. See [docs/PILOT_SCOPE.md §4](docs/PILOT_SCOPE.md).
+Building owners list a building by drawing or confirming the roof polygon. Roof area in m² constrains maximum array kWp at design time, feeds DRS scoring, and renders a credible roof outline on the building card. **Google Solar API does not cover Kenya** — we use a three-tier waterfall instead.
 
 ### Actions
 
@@ -562,7 +560,7 @@ Add to `buildings` table:
 - [ ] DRS surfaces a blocker if proposed array kWp exceeds rooftop budget
 - [ ] Cockpit building card renders the roof polygon overlay
 
-### Deferred (post-pilot)
+### Required (not yet built)
 - **Google Solar API** for automatic roof segmentation, tilt, azimuth, shade analysis (integrate when Kenya appears on Google's coverage list)
 - LiDAR / drone surveys for premium buildings
 - Automated roof condition / age detection

@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import type { DrsResult } from "@emappa/shared";
 import { colors, GlassCard, Label, Pill } from "@emappa/ui";
 
-export function DrsCard({ drs }: { drs: DrsResult & { label?: string } }) {
+export function DRSProgressCard({ drs }: { drs: DrsResult & { label?: string } }) {
   const tone = drs.decision === "deployment_ready" ? "good" : drs.decision === "review" ? "warn" : "bad";
 
   return (

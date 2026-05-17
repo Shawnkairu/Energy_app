@@ -11,9 +11,14 @@ export const roles: Array<{ id: StakeholderRole; label: string; promise: string 
   { id: "electrician", label: "Electrician", promise: "Execute verified energy deployments." },
 ];
 
+// IDs must match the deterministic UUIDs the backend seed produces via
+// app.data.seed_uuids.seed_uuid("nyeri-ridge-a"), etc. The cockpit and other
+// shells use these mock projects as scaffolding and then call backend
+// endpoints with the same id — a slug here means every project endpoint
+// returns 400 against a UUID-typed path.
 export const demoProjects: BuildingProject[] = [
   {
-    id: "nyeri-ridge-a",
+    id: "65f2a425-1d43-5beb-b8c4-ef46d44ceab2",
     name: "Nyeri Ridge A",
     locationBand: "Nyeri, peri-urban",
     units: 24,

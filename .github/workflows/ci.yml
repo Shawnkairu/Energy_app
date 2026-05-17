@@ -100,14 +100,20 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install backend dependencies
+      - name: Install backend dependencies (from lockfile for reproducibility)
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r backend/requirements.txt
+          python -m pip install -r backend/requirements.lock
 
       - name: Run migrations
         working-directory: backend
         run: python -m alembic upgrade head
+
+      - name: Seed dev fixtures
+        working-directory: backend
+        env:
+          EMAPPA_DEV_SEED: "true"
+        run: python -m scripts.seed
 
       - name: Run backend tests
         working-directory: backend

@@ -16,7 +16,7 @@ import { useAuth } from "../../components/AuthContext";
 import { useApi } from "../../lib/api";
 
 /** `ScreenVerify` — Nav title set via route; body matches OTP + resend + primary. */
-export default function VerifyPhone() {
+export default function VerifyOtp() {
   const router = useRouter();
   const api = useApi();
   const { signIn } = useAuth();

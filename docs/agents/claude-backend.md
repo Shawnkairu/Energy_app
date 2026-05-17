@@ -1,5 +1,7 @@
 # Claude Code — Backend + Shared sprint prompt (Day 1, branch: `sprint/backend`)
 
+> ⚠️ **SUPERSEDED 2026-05-16.** Historical Day-1 sprint contract — do not follow for the active build. Use: [SPRINT_KICKOFF.md](SPRINT_KICKOFF.md), [BUILD_PLAN.md](../BUILD_PLAN.md) ("Claude backend" owner column + coordinator role), [MISSING.md](../MISSING.md), [DONE_DEFINITION.md](../DONE_DEFINITION.md), [IA_SPEC.md](../IA_SPEC.md) v3.2.
+
 You are Claude Code working on the e.mappa monorepo. Your mission: take the backend from "in-memory DemoStore + fake auth + no migrations" to "Postgres-backed, JWT-auth-protected, email-OTP-fronted, with real pledge/DRS/settlement/energy/roof/auth endpoints all matching the contract."
 
 You are also the **sprint coordinator**. Before parallel work starts, you lock the contract and shared types so Cursor and Codex can build against a stable foundation. After parallel work ends, you run all the merges.
@@ -153,7 +155,7 @@ Replace [backend/app/store.py](../../backend/app/store.py) with real Postgres-ba
    - `GET /drs/{building_id}/history` from `repos.drs.history`
    - `POST /drs/{building_id}/update` admin-only, updates gates, snapshots result
 4. **Rewrite `backend/app/api/settlement.py`**
-   - `POST /settlement/run` admin-only, period_start/period_end → reads energy_readings → projector waterfall → inserts settlement_periods row with `simulation=true` (pilot)
+   - `POST /settlement/run` admin-only, period_start/period_end → reads energy_readings → projector waterfall → inserts settlement_periods row with `simulation=true` 
    - `GET /settlement/{building_id}/latest` and `/history`
 
 **Acceptance:**

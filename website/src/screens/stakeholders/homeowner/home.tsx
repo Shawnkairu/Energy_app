@@ -1,6 +1,6 @@
 import { ImmersiveProjectHero } from "@emappa/web-immersive";
 import { PortalKpiBar, PortalLedger, PortalPanel, PortalWorkflow } from "../../../components/PortalPrimitives";
-import { PilotBanner, TokenHero, kes, kwh, pct } from "../../../portal/PortalWidgets";
+import { PilotBanner, TokenBalanceHero, kes, kwh, pct } from "../../../portal/PortalWidgets";
 import type { PortalScreenProps } from "../../../portal/types";
 
 export default function HomeownerHome({ project }: PortalScreenProps) {
@@ -32,7 +32,7 @@ export default function HomeownerHome({ project }: PortalScreenProps) {
       ]} />
       {isLive ? (
         <div className="portal-two-col">
-          <TokenHero project={project} />
+          <TokenBalanceHero project={project} />
           <PortalPanel eyebrow="Next best action" title="Keep the live account moving">
             <p>Your pledge, energy, and wallet views are separated so the demo can show money movement without blurring grid fallback.</p>
             <PortalWorkflow steps={workflowSteps} />
@@ -40,7 +40,7 @@ export default function HomeownerHome({ project }: PortalScreenProps) {
         </div>
       ) : (
         <div className="portal-two-col">
-          <TokenHero project={project} title="Pledges activate once your project goes live" disabled />
+          <TokenBalanceHero project={project} title="Pledges activate once your project goes live" disabled />
           <PortalPanel eyebrow="Readiness brief" title="What unlocks the home project">
             <PortalLedger rows={[
               { label: "Decision", value: project.drs.label, note: `${project.drs.score}/100 DRS` },

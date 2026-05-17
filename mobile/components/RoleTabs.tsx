@@ -46,7 +46,6 @@ const hiddenTabRoutes: Partial<Record<StakeholderRole, string[]>> = {
   financier: ["tranche-release"],
   electrician: ["jobs-inbox", "compliance"],
   building_owner: ["compare-today", "resident-roster", "approve-terms", "owner-account"],
-  admin: ["home"],
 };
 
 export function RoleTabs({ role }: { role: StakeholderRole }) {

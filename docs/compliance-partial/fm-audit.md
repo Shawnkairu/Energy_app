@@ -1,7 +1,16 @@
 # FM-1 … FM-5 audit (§6 formulas / API parity)
 
+> ⚠️ **HISTORICAL — superseded by commit 37ce796** (2026-05-15). The "Gap" / "Partial" verdicts below were the input that motivated the formula rewrite landed in that commit. Several findings no longer reflect current code:
+> - **FM-2 (LBRS):** rewritten — [backend/app/services/lbrs.py](../../backend/app/services/lbrs.py) now implements the weighted checklist + structured failures (`responsibleRole`, stable codes) and is covered by [backend/tests/test_lbrs.py](../../backend/tests/test_lbrs.py). The original "`_default_lbrs` fixes siteKind to apartment" call-out no longer holds: `_default_lbrs` lives in [projector.py:9](../../backend/app/services/projector.py) and derives `siteKind` from `buildingKind` (`single_family` / `small_compound` → `homeowner`, else `apartment`), matching the TS `defaultLbrs` behaviour.
+> - **FM-3 (settlement phase):** `calculate_settlement(..., phase=None)` accepts a phase argument; the projector reads `settlementPhase` from the project dict and the simulator sets it to `"royalty"` when the project reaches the settlement stage.
+> - **FM-5 (consistency):** Python counterpart now exists at [backend/app/services/consistency.py](../../backend/app/services/consistency.py).
+>
+> For current parity status see [SPEC_COMPLIANCE_CHECKLIST.md §6](../SPEC_COMPLIANCE_CHECKLIST.md). The body of this file is retained as an audit trail of the pre-rewrite state.
+
+---
+
 **Scope:** `docs/SPEC_COMPLIANCE_CHECKLIST.md` §6 — compare `packages/shared/src` with `backend/app/services/`, note `backend/tests/` coverage, cross-read formula docs at high level.  
-**Date:** 2026-05-15  
+**Date:** 2026-05-15 (pre-37ce796)  
 **Out of scope:** Updating rows on `SPEC_COMPLIANCE_CHECKLIST.md` (parent task).
 
 ## Formula docs (high level)
